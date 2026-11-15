@@ -1,0 +1,101 @@
+import { describe, expect, it } from 'vitest';
+import { Chess } from 'chess.js';
+import {
+  exerciseOutcome, flagsAfterMyMove, generatePosition, hangingPieces, isValidExercise, levelProgress,
+  MATE_LEVELS, mulberry32, unlockedLevels,
+} from './mates';
+
+const play = (fen: string, sans: string[]) => { const c = new Chess(fen); sans.forEach((s) => c.move(s)); return c; };
+
+describe('positions générées', () => {
+  for (const level of MATE_LEVELS.filter((l) => l.available)) {
+    it(`${level.name} : 200 positions légales et conformes`, () => {
+      const rand = mulberry32(42);
+      let central = 0;
+      for (let i = 0; i < 200; i++) {
+        const fen = generatePosition(level, rand);
+        expect(isValidExercise(fen, level), fen).toBe(true);
+        expect(hangingPieces(fen, 'w'), fen).toEqual([]);
+        const bk = new Chess(fen).board().flat().find((p) => p && p.type === 'k' && p.color === 'b')!.square;
+        if ('cdef'.includes(bk[0]) && '3456'.includes(bk[1])) central++;
+        if (level.id === 'kbb') {
+          const bs = new Chess(fen).board().flat().filter((p) => p && p.type === 'b').map((p) => p!.square);
+          const light = (s: string) => ('abcdefgh'.indexOf(s[0]) + Number(s[1]) - 1) % 2 === 1;
+          expect(light(bs[0])).not.toBe(light(bs[1])); // fous de couleurs opposées
+        }
+      }
+      expect(central).toBeGreaterThan(130); // roi adverse plutôt au centre
+    });
+  }
+  it('reproductible avec la même graine', () => {
+    const l = MATE_LEVELS[0];
+    expect(generatePosition(l, mulberry32(7))).toBe(generatePosition(l, mulberry32(7)));
+  });
+  it('rejette les positions illégales', () => {
+    const kq = MATE_LEVELS[0];
+    expect(isValidExercise('8/8/8/3k4/8/8/8/3QK3 w - - 0 1', kq)).toBe(false); // roi noir en échec, trait aux Blancs
+    expect(isValidExercise('8/8/8/3k4/3K4/8/8/7Q w - - 0 1', kq)).toBe(false); // rois adjacents
+    expect(isValidExercise('8/8/8/3k4/8/8/7Q/4K3 w - - 0 1', kq)).toBe(true);
+    expect(isValidExercise('8/8/8/3k4/8/8/8/4K2Q w - - 0 1', kq)).toBe(false); // échec par la diagonale h1-d5
+    expect(isValidExercise('8/8/8/3k4/8/8/8/4K2R w - - 0 1', kq)).toBe(false); // mauvaises pièces
+  });
+});
+
+describe('issue de l’exercice', () => {
+  it('mat détecté', () => {
+    const c = play('7k/8/6K1/8/8/8/8/Q7 w - - 0 1', ['Qa8#']);
+    expect(exerciseOutcome(c, 1)).toBe('mate');
+  });
+  it('pat détecté', () => {
+    const c = play('7k/8/5K2/8/8/8/8/6Q1 w - - 0 1', ['Qg6']);
+    expect(c.isStalemate()).toBe(true);
+    expect(exerciseOutcome(c, 1)).toBe('stalemate');
+  });
+  it('pièce perdue', () => {
+    const c = play('8/8/8/3k4/8/2R5/8/6K1 w - - 0 1', ['Rc4', 'Kxc4']);
+    expect(exerciseOutcome(c, 1)).toBe('piece-lost');
+  });
+  it('règle des 50 coups', () => {
+    const c = new Chess('8/8/8/3k4/8/2R5/8/6K1 w - - 98 80');
+    c.move('Rc2'); c.move('Ke4');
+    expect(exerciseOutcome(c, 1)).toBe('fifty-moves');
+  });
+  it('partie en cours', () => {
+    expect(exerciseOutcome(play('8/8/8/3k4/8/2R5/8/6K1 w - - 0 1', ['Rc2']), 1)).toBeNull();
+  });
+});
+
+describe('alertes', () => {
+  it('pat frôlé : le roi n’a plus qu’une case', () => {
+    // Roi h8, Rg6 contrôle g7/h7 ? Dame g6 : le roi h8 n'a que g8.
+    const c = play('7k/8/5K2/8/8/8/8/1Q6 w - - 0 1', ['Qb7']);
+    expect(c.moves().length).toBe(1);
+    expect(flagsAfterMyMove(c.fen(), 0, 'Qb7').map((f) => f.kind)).toEqual(['near-stalemate']);
+  });
+  it('pièce sans protection', () => {
+    const c = play('8/8/8/3k4/8/2R5/8/6K1 w - - 0 1', ['Rc4']);
+    expect(flagsAfterMyMove(c.fen(), 0, 'Rc4').map((f) => f.kind)).toEqual(['unprotected']);
+  });
+  it('rien à signaler', () => {
+    const c = play('8/8/8/3k4/8/2R5/8/6K1 w - - 0 1', ['Rc1']);
+    expect(flagsAfterMyMove(c.fen(), 0, 'Rc1')).toEqual([]);
+  });
+});
+
+describe('validation et déblocage', () => {
+  const ok = { outcome: 'mate' as const, myMoves: 12, minMoves: 9 };
+  const slow = { outcome: 'mate' as const, myMoves: 20, minMoves: 9 };   // > min + 10
+  const fail = { outcome: 'stalemate' as const, myMoves: 15, minMoves: 9 };
+  it('3 réussites d’affilée en ≤ min + 10', () => {
+    expect(levelProgress([ok, ok]).validated).toBe(false);
+    expect(levelProgress([ok, ok, ok]).validated).toBe(true);
+    expect(levelProgress([ok, ok, slow, ok]).streak).toBe(1);
+    expect(levelProgress([ok, fail, ok, ok]).validated).toBe(false);
+    expect(levelProgress([ok, ok, ok, fail])).toEqual({ streak: 0, validated: true }); // validé reste validé
+  });
+  it('déblocage dans l’ordre, niveau 5 « plus tard »', () => {
+    expect([...unlockedLevels(new Set())]).toEqual(['kq']);
+    expect([...unlockedLevels(new Set(['kq']))]).toEqual(['kq', 'krr']);
+    expect([...unlockedLevels(new Set(['kq', 'krr', 'kr', 'kbb']))]).toEqual(['kq', 'krr', 'kr', 'kbb']);
+  });
+});
