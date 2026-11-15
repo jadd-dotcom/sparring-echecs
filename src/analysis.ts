@@ -1,5 +1,6 @@
 import { Chess } from 'chess.js';
-import { stockfish } from './engines/stockfish';
+import { browserEngine, stockfish } from './engines/stockfish';
+import { computeErrorDetail } from './lib/report/motifs';
 import { classify, winPercent, type Eval } from './lib/winpct';
 import { newCard, dayKey } from './lib/srs';
 import { db, type Card, type Color, type Game, type MoveAnalysis } from './db';
@@ -68,11 +69,28 @@ export async function analyseMoves(
   });
 }
 
+export const isError = (a: MoveAnalysis) => a.severity === 'mistake' || a.severity === 'blunder';
+
+/** Complète les erreurs/gaffes sans détail (suites Stockfish, motifs). */
+export async function addErrorDetails(g: Pick<Game, 'startFen' | 'uci' | 'myColor'>, analysis: MoveAnalysis[], onProgress?: (d: number, t: number) => void) {
+  const { fens } = replay(g.startFen, g.uci);
+  const todo = analysis.filter((a) => isError(a) && !a.detail);
+  let done = 0;
+  for (const a of todo) {
+    a.detail = await computeErrorDetail(browserEngine, fens[a.ply], a.uci, g.myColor);
+    onProgress?.(++done, todo.length);
+  }
+  return todo.length;
+}
+
 /** Analyse une partie enregistrée, met à jour la base et crée les cartes. */
 export async function analyseGame(gameId: number, onProgress?: (d: number, t: number) => void): Promise<Game> {
   const g = await db.games.get(gameId);
   if (!g) throw new Error('partie introuvable');
-  const analysis = await analyseMoves(g.startFen, g.uci, g.myColor, onProgress);
+  // Progression : positions analysées puis détails des erreurs (≈ 3 recherches chacune).
+  let movesTotal = 1;
+  const analysis = await analyseMoves(g.startFen, g.uci, g.myColor, (d, t) => { movesTotal = t; onProgress?.(d, t + 1); });
+  await addErrorDetails(g, analysis, (d, t) => onProgress?.(movesTotal + d / t, movesTotal + 1));
   const counts = { inaccuracy: 0, mistake: 0, blunder: 0 };
   for (const a of analysis) if (a.severity !== 'ok') counts[a.severity]++;
   const { fens } = replay(g.startFen, g.uci);

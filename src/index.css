@@ -97,3 +97,5 @@ label { display: block; }
 .hole { border-bottom: 1px solid var(--line); padding: 6px 0 10px; }
 .hole .row { margin-top: 6px; }
 textarea { font-family: ui-monospace, monospace; font-size: .9rem; }
+.thought { margin-top: 10px; }
+.thought textarea { font-family: inherit; }

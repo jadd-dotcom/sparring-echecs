@@ -6,6 +6,8 @@ export interface SearchResult {
   eval: Eval;
   bestMove: string | null;
   depth: number;
+  /** Variante principale (UCI). */
+  pv: string[];
 }
 
 class StockfishClient {
@@ -55,10 +57,20 @@ class StockfishClient {
   /** Analyse une position (FEN) pendant `ms` millisecondes. Appels sérialisés.
    *  `searchmoves` restreint la recherche à ce coup (pour mesurer sa perte). */
   analyse(fen: string, ms = 500, searchmoves?: string): Promise<SearchResult> {
+    return this.go(fen, 'movetime ' + ms + (searchmoves ? ' searchmoves ' + searchmoves : ''));
+  }
+
+  /** Recherche à profondeur fixe (reproductible), avec la variante principale. */
+  searchDepth(fen: string, depth: number): Promise<SearchResult> {
+    return this.go(fen, 'depth ' + depth);
+  }
+
+  private go(fen: string, goArgs: string): Promise<SearchResult> {
     const run = async (): Promise<SearchResult> => {
       await this.init();
       let ev: Eval = { cp: 0 };
       let depth = 0;
+      let pv: string[] = [];
       const done = this.waitFor(
         (l) => l.startsWith('bestmove'),
         (l) => {
@@ -69,14 +81,16 @@ class StockfishClient {
           if (m) {
             ev = m[1] === 'cp' ? { cp: Number(m[2]) } : { mate: Number(m[2]) };
             if (d) depth = Number(d[1]);
+            const p = l.split(' pv ')[1];
+            if (p) pv = p.trim().split(' ');
           }
         },
       );
       this.send('position fen ' + fen);
-      this.send('go movetime ' + ms + (searchmoves ? ' searchmoves ' + searchmoves : ''));
+      this.send('go ' + goArgs);
       const line = await done;
       const bm = line.split(' ')[1];
-      return { eval: ev, bestMove: bm && bm !== '(none)' ? bm : null, depth };
+      return { eval: ev, bestMove: bm && bm !== '(none)' ? bm : null, depth, pv };
     };
     const p = this.queue.then(run, run);
     this.queue = p.catch(() => undefined);
@@ -87,3 +101,11 @@ class StockfishClient {
 }
 
 export const stockfish = new StockfishClient();
+
+/** Adaptateur pour le calcul des motifs (même interface qu'en Node). */
+export const browserEngine = {
+  search: async (fen: string, depth: number) => {
+    const r = await stockfish.searchDepth(fen, depth);
+    return { score: r.eval, pv: r.pv };
+  },
+};

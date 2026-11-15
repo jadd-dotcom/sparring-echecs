@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 import type { Severity } from './lib/winpct';
 import type { BookExit } from './lib/repertoire';
+import type { ErrorDetail } from './lib/report/motifs';
 import { RATING_START, type Score } from './lib/rating';
 
 /** Origine d'une partie — prévu pour l'import Chess.com (V2). */
@@ -17,6 +18,8 @@ export interface MoveAnalysis {
   wpAfter: number;      // % de gain après mon coup
   drop: number;
   severity: Severity;
+  /** Erreurs et gaffes : suites Stockfish, bilans matériels, motif. */
+  detail?: ErrorDetail;
 }
 
 export interface Game {
@@ -40,6 +43,8 @@ export interface Game {
   /** Partie à thème : ouverture choisie et première sortie du répertoire. */
   openingId?: string;
   bookExit?: BookExit | null;
+  /** « Ce que je pensais », saisi pendant la revue : demi-coup → texte. */
+  thoughts?: Record<number, string>;
 }
 
 export type CardKind = 'mistake' | 'drill';

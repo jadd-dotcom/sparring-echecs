@@ -1,13 +1,42 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Board, { type BoardArrow } from '../Board';
 import { db, type Game } from '../db';
 import { analyseGame, replay } from '../analysis';
 import { SEVERITY_LABEL, type Severity } from '../lib/winpct';
 import { recordBookExit } from '../openings';
+import { MOTIF_LABEL } from '../lib/report/motifs';
 import { Chess } from 'chess.js';
 
 const SEV_CLASS: Record<Severity, string> = { ok: '', inaccuracy: 'sev-inacc', mistake: 'sev-mist', blunder: 'sev-blund' };
 const SEV_ICON: Record<Severity, string> = { ok: '', inaccuracy: '?!', mistake: '?', blunder: '??' };
+
+/** « Ce que je pensais » : 1-2 phrases, enregistrées automatiquement. */
+function ThoughtBox({ game, ply, onSaved }: { game: Game; ply: number; onSaved: (t: Record<number, string>) => void }) {
+  const [text, setText] = useState(game.thoughts?.[ply] ?? '');
+  const [saved, setSaved] = useState(true);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const save = async (v: string) => {
+    const fresh = (await db.games.get(game.id!))?.thoughts ?? {};
+    const thoughts = { ...fresh };
+    if (v.trim()) thoughts[ply] = v.trim(); else delete thoughts[ply];
+    await db.games.update(game.id!, { thoughts });
+    onSaved(thoughts);
+    setSaved(true);
+  };
+  return (
+    <label className="thought">Ce que je pensais <span className="muted small">(facultatif, 1-2 phrases)</span>
+      <textarea rows={2} maxLength={400} value={text} placeholder="ex. Je voulais attaquer le roi, je n’ai pas vu son fou."
+        onChange={(e) => {
+          setText(e.target.value); setSaved(false);
+          if (timer.current) clearTimeout(timer.current);
+          const v = e.target.value;
+          timer.current = setTimeout(() => save(v), 600);
+        }}
+        onBlur={() => { if (timer.current) clearTimeout(timer.current); if (!saved) save(text); }} />
+      <span className="muted small">{saved ? (text.trim() ? '✓ enregistré' : '') : '…'}</span>
+    </label>
+  );
+}
 
 export default function Review({ id }: { id: number }) {
   const [game, setGame] = useState<Game | null>(null);
@@ -43,7 +72,7 @@ export default function Review({ id }: { id: number }) {
       <div className="card center">
         <h2>Analyse de tes coups par Stockfish…</h2>
         <div className="progress big"><div style={{ width: (100 * d) / t + '%' }} /></div>
-        <p className="muted">{d} / {t} positions (~{Math.ceil(((t - d) * 0.55))} s restantes)</p>
+        <p className="muted">{d < t - 1 ? `${Math.floor(d)} / ${t - 1} positions` : 'Détail des erreurs (suites, motifs)…'} · {Math.round((100 * d) / t)} %</p>
       </div>
     );
   }
@@ -129,7 +158,14 @@ export default function Review({ id }: { id: number }) {
               <b className={SEV_CLASS[a.severity]}>{SEVERITY_LABEL[a.severity]}</b> : tu as joué <b>{a.san}</b> (flèche rouge).<br />
               Meilleur coup : <b>{a.bestSan}</b> (flèche verte).<br />
               Tes chances de gain : {Math.round(a.wpBefore)} % → {Math.round(a.wpAfter)} % (−{Math.round(a.drop)} pts)
+              {a.detail && <>
+                <br />Motif : <b>{MOTIF_LABEL[a.detail.motif]}</b>
+                <br /><span className="muted small">Réfutation : {a.detail.refutation || '—'}</span>
+              </>}
             </span>
+          )}
+          {isMistake && (a.severity === 'mistake' || a.severity === 'blunder') && (
+            <ThoughtBox key={ply} game={game} ply={ply} onSaved={(thoughts) => setGame((g) => (g ? { ...g, thoughts } : g))} />
           )}
         </div>
         <div className="moves card grid">
