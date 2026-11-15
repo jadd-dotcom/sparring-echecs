@@ -45,7 +45,7 @@
   transpositions sont reconnues (index par position).
 - **Trous du répertoire** : si l'adversaire sort du répertoire, la position est enregistrée avec le meilleur coup Stockfish (1 s) ;
   bouton « Ajouter X au répertoire » ou « Compléter à la main » ; les trous couverts disparaissent.
-- **Drill** : une carte par position du répertoire où c'est à moi de jouer (154 cartes pour les 3 ouvertures), mêmes intervalles
+- **Drill** : une carte par position du répertoire où c'est à moi de jouer (162 cartes : Londres 44, GDR 51, Française 67), mêmes intervalles
   (1re présentation → J+1, puis J+3, J+7, J+14, J+30 ; raté → J+1), correction immédiate (juste si le coup est dans le répertoire).
   Pour ne pas noyer l'accueil, 10 nouvelles positions sont introduites par jour ; le bouton « Drill » d'une ouverture en propose 10 de plus.
 - **Stats par ouverture** : parties, % de victoires, sorties de répertoire (par moi / par l'adversaire), gaffes par partie.
