@@ -3,18 +3,24 @@ import { db, getCurrent, getProfile, type Profile } from '../db';
 import { dayKey } from '../lib/srs';
 import { botRating, CALIBRATION_GAMES } from '../lib/rating';
 import { go } from '../router';
+import { isOfflineReady, waitOfflineReady } from '../offline';
 
 export default function Home() {
   const [p, setP] = useState<Profile | null>(null);
   const [due, setDue] = useState(0);
   const [total, setTotal] = useState(0);
   const [inProgress, setInProgress] = useState(false);
+  const [offline, setOffline] = useState<string>(isOfflineReady() ? 'ready' : '');
   useEffect(() => {
     (async () => {
       setP(await getProfile());
       setDue(await db.cards.where('due').belowOrEqual(dayKey()).count());
       setTotal(await db.cards.count());
       setInProgress(!!(await getCurrent()));
+      if (!isOfflineReady()) {
+        const ok = await waitOfflineReady((b, t) => setOffline(`${Math.round((100 * b) / t)} %`));
+        setOffline(ok ? 'ready' : '');
+      }
     })();
   }, []);
   if (!p) return null;
@@ -40,6 +46,9 @@ export default function Home() {
         <button onClick={() => go({ name: 'stats' })}>Statistiques et parties</button>
         <button onClick={() => go({ name: 'settings' })}>Sauvegarde</button>
       </div>
+      <p className="muted small center-text">
+        {offline === 'ready' ? '✓ Disponible hors ligne' : offline ? `Préparation du mode hors ligne… ${offline}` : ''}
+      </p>
     </div>
   );
 }

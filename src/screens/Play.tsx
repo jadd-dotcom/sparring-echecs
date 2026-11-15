@@ -5,6 +5,7 @@ import { getCurrent, setCurrent, db, type CurrentGame, type Game } from '../db';
 import { autoResult, chessFrom, finishGame, newCurrentGame } from '../game';
 import { go } from '../router';
 import { replay } from '../analysis';
+import { waitOfflineReady } from '../offline';
 
 const MIN_THINK_MS = 450; // pour que la réponse ne soit pas instantanée
 /** Maia accepte la nulle si sa probabilité de gain est ≤ 55 %. */
@@ -12,7 +13,8 @@ const DRAW_ACCEPT = 0.55;
 
 export default function Play() {
   const [cur, setCur] = useState<CurrentGame | null>(null);
-  const [loadPct, setLoadPct] = useState<number | null>(null);
+  const [loadPct, setLoadPct] = useState<number | null>(0);
+  const [prep, setPrep] = useState<string | null>(null);
   const [thinking, setThinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ended, setEnded] = useState<Game | null>(null);
@@ -23,7 +25,13 @@ export default function Play() {
   useEffect(() => {
     (async () => {
       setCur((await getCurrent()) ?? (await newCurrentGame()));
-      maia.onProgress((l, t) => setLoadPct(t ? Math.round((100 * l) / t) : null));
+      // 1er lancement : on laisse le service worker tout mettre en cache (une seule fois).
+      await waitOfflineReady((b, t) => {
+        setPrep(`${(b / 1e6).toFixed(0)} / ${(t / 1e6).toFixed(0)} Mo`);
+        setLoadPct(Math.min(99, Math.round((100 * b) / t)));
+      });
+      setPrep(null);
+      maia.onProgress((l, t) => setLoadPct(t ? Math.round((100 * l) / t) : 0));
       try { await maia.load(); } catch (e) { setError('Impossible de charger Maia : ' + (e as Error).message); }
       setLoadPct(null);
       maia.onProgress(null);
@@ -109,18 +117,18 @@ export default function Play() {
       <div className="board-col">
         <div className="player-line">
           <span>🤖 Maia · {Math.round(cur.botElo)}</span>
-          {thinking && <span className="muted pulse">réfléchit…</span>}
+          {thinking && loadPct === null && <span className="muted pulse">réfléchit…</span>}
         </div>
         <Board fen={chess.fen()} orientation={cur.myColor} movable={myTurn && loadPct === null ? cur.myColor : null}
           onMove={onMove} highlight={highlight} />
         <div className="player-line">
           <span>🙂 Toi · {Math.round(cur.rating)} ({cur.myColor === 'w' ? 'Blancs' : 'Noirs'})</span>
-          {myTurn && <span className="muted">à toi de jouer</span>}
+          {myTurn && loadPct === null && <span className="muted">à toi de jouer</span>}
         </div>
       </div>
       <aside className="side-col">
         {loadPct !== null && (
-          <div className="card">Chargement de Maia… {loadPct}%
+          <div className="card">{prep ? <>Premier lancement : téléchargement pour le hors ligne ({prep})…</> : <>Chargement de Maia… {loadPct}%</>}
             <div className="progress"><div style={{ width: loadPct + '%' }} /></div>
           </div>
         )}
