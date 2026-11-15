@@ -69,8 +69,9 @@ export const LINE_PLIES = 5;
 
 const mateIn = (s: Eval) => ('mate' in s && s.mate > 0 && s.mate <= MATE_HORIZON ? s.mate : null);
 
-/** Détail d'une erreur : suites, bilans matériels, motifs. */
-export async function computeErrorDetail(engine: Engine, fenBefore: string, myUci: string, me: Color, depth = DETAIL_DEPTH): Promise<ErrorDetail> {
+/** Détail d'une erreur : suites, bilans matériels, motifs.
+ *  `bestUci` (meilleur coup de l'analyse) : la suite affichée part de ce coup, pour rester cohérente. */
+export async function computeErrorDetail(engine: Engine, fenBefore: string, myUci: string, me: Color, depth = DETAIL_DEPTH, bestUci?: string | null): Promise<ErrorDetail> {
   const before = new Chess(fenBefore);
   const inCheck = before.inCheck();
   const after = new Chess(fenBefore);
@@ -78,7 +79,15 @@ export async function computeErrorDetail(engine: Engine, fenBefore: string, myUc
   const fenAfter = after.fen();
 
   const best = await engine.search(fenBefore, depth);
-  const bestPlay = playPv(fenBefore, best.pv, LINE_PLIES);
+  let bestPv = best.pv;
+  if (bestUci && bestUci !== best.pv[0]) {
+    const c = new Chess(fenBefore);
+    try {
+      c.move({ from: bestUci.slice(0, 2), to: bestUci.slice(2, 4), promotion: bestUci[4] });
+      bestPv = [bestUci, ...(c.isGameOver() ? [] : (await engine.search(c.fen(), depth)).pv)];
+    } catch { /* coup inconnu : on garde la suite du moteur */ }
+  }
+  const bestPlay = playPv(fenBefore, bestPv, LINE_PLIES);
 
   let refutation: EngineResult = { score: { cp: 0 }, pv: [] };
   let playedKeepsMate = false;

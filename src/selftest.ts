@@ -66,4 +66,10 @@ async function repMove(openingId: string, fen: string): Promise<string | null> {
   return e ? [...e.moves.keys()][0] : null;
 }
 
-Object.assign(globalThis, { __selftest: selftest, __sfBench: sfBench, __db: db, __repMove: repMove });
+/** Coup « humain » de Maia à un Elo donné (pour simuler un joueur débutant dans les tests). */
+async function maiaPick(fen: string, priorMoves: string[], selfElo: number, oppoElo: number) {
+  await maia.load();
+  return (await maia.chooseMove(fen, priorMoves, selfElo, oppoElo)).uci;
+}
+
+Object.assign(globalThis, { __selftest: selftest, __sfBench: sfBench, __db: db, __repMove: repMove, __maiaPick: maiaPick });

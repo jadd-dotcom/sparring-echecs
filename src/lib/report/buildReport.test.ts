@@ -53,6 +53,7 @@ describe('PGN annoté', () => {
     const pgn = annotatedPgn(G1, 1);
     expect(pgn).toContain('2. Nf3? {win% 60→35, meilleur : BEST. Je pensais : Je voulais développer vite.}');
     expect(pgn).toContain('3. Bc4?! {win% 60→48');
+    expect(pgn).toContain('1. e4 {win% 60}');
     expect(pgn).toContain('2... Nc6');
     expect(pgn).toMatch(/\[White "Moi \(901\)"\]/);
     expect(parsePgn(pgn).games).toBe(1); // PGN valide

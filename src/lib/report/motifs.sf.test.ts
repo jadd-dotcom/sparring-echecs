@@ -43,6 +43,11 @@ describe('motifs sur positions connues (Stockfish)', { timeout: 60000 }, () => {
     expect(d.motif).toBe('mat-ouvert');
     expect(d.refutation).toBe('2… Qh4#');
   });
+  it('la suite du meilleur coup part du coup donné par l’analyse', async () => {
+    const { fen, uci, me } = setup(['e4', 'd5'], 'Qg4');
+    const d = await computeErrorDetail(engine, fen, uci, me, 12, 'b1c3');
+    expect(d.bestLine).toMatch(/^2\. Nc3/);
+  });
   it('autre : 1.e4 e5 2.Ke2 (rien de tactique)', async () => {
     const { fen, uci, me } = setup(['e4', 'e5'], 'Ke2');
     const d = await computeErrorDetail(engine, fen, uci, me);

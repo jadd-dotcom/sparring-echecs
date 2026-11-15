@@ -77,7 +77,7 @@ export async function addErrorDetails(g: Pick<Game, 'startFen' | 'uci' | 'myColo
   const todo = analysis.filter((a) => isError(a) && !a.detail);
   let done = 0;
   for (const a of todo) {
-    a.detail = await computeErrorDetail(browserEngine, fens[a.ply], a.uci, g.myColor);
+    a.detail = await computeErrorDetail(browserEngine, fens[a.ply], a.uci, g.myColor, undefined, a.bestUci);
     onProgress?.(++done, todo.length);
   }
   return todo.length;

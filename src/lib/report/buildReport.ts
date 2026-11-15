@@ -80,7 +80,8 @@ export function annotatedPgn(g: Game, gameNo: number): string {
     let tok = num + s + (a && a.severity !== 'ok' ? NAG[a.severity] : '');
     if (a) {
       const thought = g.thoughts?.[i];
-      tok += ` {win% ${r0(a.wpBefore)}→${r0(a.wpAfter)}${a.severity !== 'ok' && a.bestSan ? `, meilleur : ${a.bestSan}` : ''}${thought ? `. Je pensais : ${thought.replace(/[{}]/g, '')}` : ''}}`;
+      const wp = a.severity === 'ok' ? `win% ${r0(a.wpAfter)}` : `win% ${r0(a.wpBefore)}→${r0(a.wpAfter)}${a.bestSan ? `, meilleur : ${a.bestSan}` : ''}`;
+      tok += ` {${wp}${thought ? `. Je pensais : ${thought.replace(/[{}]/g, '')}` : ''}}`;
     }
     parts.push(tok);
   });
