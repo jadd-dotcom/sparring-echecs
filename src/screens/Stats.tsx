@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { db, getProfile, type Game } from '../db';
+import { db, getProfile, type Game, type Opening } from '../db';
+import { openingStats } from '../lib/openingStats';
 import { RATING_START } from '../lib/rating';
 import { go } from '../router';
 
@@ -77,7 +78,9 @@ function BlunderChart({ games }: { games: Game[] }) {
 export default function Stats() {
   const [games, setGames] = useState<Game[] | null>(null);
   const [rating, setRating] = useState(RATING_START);
+  const [openings, setOpenings] = useState<Opening[]>([]);
   useEffect(() => {
+    db.openings.toArray().then(setOpenings);
     db.games.orderBy('date').toArray().then((g) => setGames(g.filter((x) => x.source === 'app')));
     getProfile().then((p) => setRating(p.rating));
   }, []);
@@ -87,6 +90,8 @@ export default function Stats() {
   const l = games.filter((g) => g.score === 0).length;
   const analysed = games.filter((g) => g.counts);
   const avgBl = analysed.length ? analysed.reduce((s, g) => s + g.counts!.blunder, 0) / analysed.length : null;
+  const perOpening = openingStats(games);
+  const fmt = (x: number, d = 1) => x.toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
   return (
     <div className="stats">
       <div className="tiles">
@@ -97,6 +102,26 @@ export default function Stats() {
       <section className="card"><h3>Mon niveau</h3><RatingChart games={games} /></section>
       <section className="card"><h3>Gaffes par partie <span className="muted">(30 dernières analysées)</span></h3><BlunderChart games={games} /></section>
       <section className="card">
+        <h3>Par ouverture <span className="muted">(parties à thème)</span></h3>
+        <table className="games">
+          <thead><tr><th>Ouverture</th><th>Parties</th><th>Victoires</th><th>Sorties de répertoire</th><th>Gaffes / partie</th></tr></thead>
+          <tbody>
+            {openings.map((o) => {
+              const st = perOpening[o.id];
+              return (
+                <tr key={o.id}>
+                  <td>{o.name} <span className="muted">({o.color === 'w' ? 'B' : 'N'})</span></td>
+                  <td>{st?.games ?? 0}</td>
+                  <td>{st ? fmt(st.winPct, 0) + ' %' : '–'}</td>
+                  <td>{st ? <>{st.myExits} <span className="muted">par moi</span> · {st.oppExits} <span className="muted">par l’adversaire</span></> : '–'}</td>
+                  <td>{st?.blundersPerGame != null ? fmt(st.blundersPerGame) : '–'}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </section>
+      <section className="card">
         <h3>Mes parties</h3>
         {games.length === 0 && <p className="muted">Pas encore de partie.</p>}
         <table className="games">
@@ -105,7 +130,7 @@ export default function Stats() {
             {[...games].reverse().map((g) => (
               <tr key={g.id}>
                 <td>{new Date(g.date).toLocaleDateString('fr-FR')}</td>
-                <td>{g.myColor === 'w' ? 'Blancs' : 'Noirs'}</td>
+                <td>{g.myColor === 'w' ? 'Blancs' : 'Noirs'}{g.openingId && <div className="muted small">📖 {openings.find((o) => o.id === g.openingId)?.name}</div>}</td>
                 <td>{g.score === 1 ? 'Victoire' : g.score === 0 ? 'Défaite' : 'Nulle'} <span className="muted">({g.termination})</span></td>
                 <td>{Math.round(g.ratingAfter ?? 0)}</td>
                 <td>{g.counts ? g.counts.blunder : '–'}</td>

@@ -85,7 +85,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   const g = await p.evaluate(() => window.__db.games.toArray().then((a) => a[0]));
   assert(g.analysis.length === Math.ceil(g.uci.length / 2), `analyse de ${g.analysis.length} coups en ${((Date.now() - t0) / 1000).toFixed(1)} s`);
   console.log('   classement :', JSON.stringify(g.counts), g.analysis.map((a) => `${a.san}:${a.drop.toFixed(0)}`).join(' '));
-  const nCards = await p.evaluate(() => window.__db.cards.count());
+  const nCards = await p.evaluate(() => window.__db.cards.filter((c) => c.kind !== 'drill').count());
   assert(nCards === g.counts.mistake + g.counts.blunder, `${nCards} carte(s) créée(s) = erreurs + gaffes`);
   const errBtn = p.getByRole('button', { name: 'Erreur suivante' });
   await errBtn.tap();
@@ -94,12 +94,12 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
 
   // Révision : on force l'échéance à aujourd'hui
   if (nCards > 0) {
-    await p.evaluate(() => window.__db.cards.toCollection().modify({ due: '2000-01-01' }));
+    await p.evaluate(() => window.__db.cards.filter((c) => c.kind !== 'drill').modify({ due: '2000-01-01' }));
     await p.goto(URL);
     await p.getByText(/positions? à revoir aujourd’hui/).waitFor();
     await p.screenshot({ path: OUT + '/5-accueil.png' });
     await p.getByText(/positions? à revoir aujourd’hui/).tap();
-    const card = await p.evaluate(() => window.__db.cards.toArray().then((a) => a.sort((x, y) => x.due < y.due ? -1 : 1)[0]));
+    const card = await p.evaluate(() => window.__db.cards.filter((c) => c.kind !== 'drill').toArray().then((a) => a.sort((x, y) => x.due < y.due ? -1 : 1)[0]));
     await sq(card.bestUci.slice(0, 2)).tap(); await sq(card.bestUci.slice(2, 4)).tap();
     if (card.bestUci.length === 5) await p.getByRole('button', { name: /Dame/ }).tap();
     await p.getByText(/Juste !/).waitFor({ timeout: 20000 });
@@ -117,7 +117,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.goto(URL + '#/settings');
   const [dl] = await Promise.all([p.waitForEvent('download'), p.getByRole('button', { name: /Exporter/ }).tap()]);
   const json = JSON.parse(require('fs').readFileSync(await dl.path(), 'utf8'));
-  assert(json.games.length === 1 && json.cards.length === nCards, 'export JSON complet');
+  assert(json.games.length === 1 && json.cards.filter((c) => c.kind !== 'drill').length === nCards && json.openings.length === 3, 'export JSON complet (parties, cartes, ouvertures)');
 
   // Portrait
   await p.setViewportSize({ width: 768, height: 1024 });

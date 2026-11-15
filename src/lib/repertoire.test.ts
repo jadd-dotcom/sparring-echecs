@@ -139,3 +139,20 @@ describe('cartes de drill', () => {
     expect(myMoves(root, 'b').map((m) => m.san)).toEqual(['d5', 'e6', 'Nf6', 'Be7', 'O-O', 'Nf6', 'Be7']);
   });
 });
+
+import { openingStats } from './openingStats';
+describe('stats par ouverture', () => {
+  it('parties, % de victoires, sorties, gaffes par partie', () => {
+    const s = openingStats([
+      { openingId: 'qgd', score: 1, bookExit: { by: 'me' }, counts: { blunder: 2 } },
+      { openingId: 'qgd', score: 0, bookExit: { by: 'opponent' }, counts: { blunder: 0 } },
+      { openingId: 'qgd', score: 0.5, bookExit: null },
+      { openingId: 'french', score: 0, bookExit: { by: 'end' } },
+      { score: 1 }, // partie libre : ignorée
+    ]);
+    expect(Object.keys(s).sort()).toEqual(['french', 'qgd']);
+    expect(s.qgd).toMatchObject({ games: 3, myExits: 1, oppExits: 1, blundersPerGame: 1, analysed: 2 });
+    expect(s.qgd.winPct).toBeCloseTo(33.33, 1);
+    expect(s.french.blundersPerGame).toBeNull();
+  });
+});

@@ -99,18 +99,20 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
     for (const u of ucis) await tapMove(u);
     await p.getByRole('button', { name: 'Enregistrer la ligne' }).tap();
   };
-  await playLine(['e2e4', 'e7e6', 'd2d4', 'd7d5', 'b1c3', 'f8b4']); // Winawer
-  await p.getByText(/Nouvelle ligne : 1 ligne ajoutée\./).waitFor({ timeout: 60000 });
-  assert(true, 'ligne 3...Bb4 ajoutée et validée par Stockfish');
+  await playLine(['e2e4', 'e7e6', 'd2d4', 'd7d5', 'b1c3', 'd5e4']); // Rubinstein 3...dxe4
+  await p.getByText(/Nouvelle ligne :/).waitFor({ timeout: 60000 });
+  const m1 = await p.getByText(/Nouvelle ligne :/).innerText();
+  assert(/1 ligne ajoutée\./.test(m1), 'ligne 3...dxe4 ajoutée et validée par Stockfish (' + m1 + ')');
   await playLine(['e2e4', 'e7e6', 'd2d4', 'd7d5', 'b1c3', 'd8g5']); // 3...Qg5?? perd la dame
-  await p.getByText(/Refusée.*Qg5/).waitFor({ timeout: 60000 });
+  await p.getByText(/Nouvelle ligne : 0/).waitFor({ timeout: 60000 });
+  assert(/Refusée.*Qg5/.test(await p.getByText(/Nouvelle ligne : 0/).innerText()), 'message de refus');
   await p.screenshot({ path: OUT + '/v2-5-ligne-refusee.png' });
   assert(true, 'ligne 3...Qg5?? refusée (perte > 0,5 pion)');
 
   // --- Suppression
   p.once('dialog', (d) => d.accept());
   const n0 = await p.locator('.line-row').count();
-  await p.locator('.line-row', { has: p.locator('.line-text', { hasText: /3\. Nc3 Bb4$/ }) }).getByTitle('Supprimer').tap();
+  await p.locator('.line-row', { has: p.locator('.line-text', { hasText: /3\. Nc3 dxe4$/ }) }).getByTitle('Supprimer').tap();
   await p.getByText('Ligne supprimée.').waitFor();
   assert(await p.locator('.line-row').count() === n0 - 1, 'ligne supprimée');
 
@@ -118,8 +120,9 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByRole('button', { name: 'Importer PGN' }).tap();
   await p.locator('textarea').fill('[Event "Étude"]\n\n1. e4 e6 2. d4 d5 3. Nc3 Bb4 (3... dxe4 4. Nxe4 Nd7) 4. e5 c5 *');
   await p.getByRole('button', { name: 'Importer', exact: true }).tap();
-  await p.getByText(/Import \(1 chapitre\) : 2 lignes ajoutées/).waitFor({ timeout: 60000 });
-  assert(true, 'import PGN avec variante : 2 lignes');
+  await p.getByText(/Import \(1 chapitre\)/).waitFor({ timeout: 60000 });
+  const m2 = await p.getByText(/Import \(1 chapitre\)/).innerText();
+  assert(/2 lignes ajoutées/.test(m2), 'import PGN avec variante : 2 lignes (' + m2 + ')');
   await p.getByRole('button', { name: 'Importer PGN' }).tap();
   await p.locator('textarea').fill('1. e4 e6 2. Ke3 *');
   await p.getByRole('button', { name: 'Importer', exact: true }).tap();
@@ -144,6 +147,19 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByText(/n’est pas ton coup de répertoire/).waitFor();
   const c2b = await p.evaluate((id) => window.__db.cards.get(id), c2.id);
   assert(!c2b.attempts[0].ok, `drill faux → correction immédiate (prévu ${c2.acceptSan.join('/')}), à revoir ${c2b.due}`);
+
+  // --- Stats par ouverture
+  await p.goto(URL + '#/stats');
+  await p.waitForTimeout(1500);
+  await p.screenshot({ path: OUT + '/v2-7-stats.png', fullPage: true });
+  if (errors.length) console.log('erreurs JS :', errors);
+  const row = p.locator('tr', { hasText: 'Gambit Dame refusé (N)' });
+  await row.waitFor();
+  const cells = await row.locator('td').allInnerTexts();
+  assert(cells[1] === '1' && cells[2] === '0 %' && /1 par moi/.test(cells[3]), 'stats GDR : 1 partie, 0 % de victoires, 1 sortie par moi');
+  const fr = await p.locator('tr', { hasText: 'Défense française (N)' }).locator('td').allInnerTexts();
+  assert(Number(fr[1]) >= 1 && /[1-9] par l’adversaire/.test(fr[3]), `stats Française : ${fr[1]} partie(s), ${fr[3]}`);
+  await p.screenshot({ path: OUT + '/v2-7-stats.png', fullPage: true });
 
   assert(errors.length === 0, 'aucune erreur JS ' + errors.join(' | '));
   await b.close();
