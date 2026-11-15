@@ -99,3 +99,8 @@ label { display: block; }
 textarea { font-family: ui-monospace, monospace; font-size: .9rem; }
 .thought { margin-top: 10px; }
 .thought textarea { font-family: inherit; }
+.report { max-width: 900px; margin: 0 auto; }
+.radio { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; min-height: 48px; }
+.radio.on { border-color: var(--accent); }
+.radio input { width: 22px; height: 22px; margin: 0; flex: none; }
+.md-preview { white-space: pre-wrap; word-break: break-word; font-size: .82rem; max-height: 60dvh; overflow: auto; background: var(--bg); padding: 12px; border-radius: 10px; }

@@ -6,6 +6,7 @@ import Revise from './screens/Revise';
 import Stats from './screens/Stats';
 import Settings from './screens/Settings';
 import Openings from './screens/Openings';
+import Report from './screens/Report';
 import RepertoireEditor from './screens/RepertoireEditor';
 import { ensureOpenings } from './openings';
 import './selftest';
@@ -36,6 +37,7 @@ export default function App() {
         {route.name === 'repertoire' && <RepertoireEditor key={route.id} id={route.id} />}
         {route.name === 'stats' && <Stats />}
         {route.name === 'settings' && <Settings />}
+        {route.name === 'report' && <Report />}
       </>}</main>
     </div>
   );

@@ -45,6 +45,7 @@ export default function Home() {
       <button className="huge" onClick={() => go({ name: 'openings' })}>📖 Ouvertures : parties à thème et drill</button>
       <div className="row">
         <button onClick={() => go({ name: 'stats' })}>Statistiques et parties</button>
+        <button onClick={() => go({ name: 'report' })}>Rapport pour Claude</button>
         <button onClick={() => go({ name: 'settings' })}>Sauvegarde</button>
       </div>
       <p className="muted small center-text">

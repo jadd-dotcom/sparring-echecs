@@ -6,14 +6,15 @@ export type Route =
   | { name: 'openings' }
   | { name: 'repertoire'; id: string }
   | { name: 'stats' }
-  | { name: 'settings' };
+  | { name: 'settings' }
+  | { name: 'report' };
 
 export function parse(hash: string): Route {
   const [name, arg] = hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
   if (name === 'review' && arg) return { name: 'review', id: Number(arg) };
   if (name === 'repertoire' && arg) return { name: 'repertoire', id: arg };
   if (name === 'play' || name === 'revise') return arg ? { name, opening: arg } : { name };
-  if (name === 'stats' || name === 'settings' || name === 'openings') return { name };
+  if (name === 'stats' || name === 'settings' || name === 'openings' || name === 'report') return { name };
   return { name: 'home' };
 }
 
