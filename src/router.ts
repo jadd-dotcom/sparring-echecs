@@ -1,19 +1,24 @@
 export type Route =
   | { name: 'home' }
-  | { name: 'play' }
+  | { name: 'play'; opening?: string }
   | { name: 'review'; id: number }
-  | { name: 'revise' }
+  | { name: 'revise'; opening?: string }
+  | { name: 'openings' }
+  | { name: 'repertoire'; id: string }
   | { name: 'stats' }
   | { name: 'settings' };
 
 export function parse(hash: string): Route {
-  const [name, arg] = hash.replace(/^#\/?/, '').split('/');
+  const [name, arg] = hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
   if (name === 'review' && arg) return { name: 'review', id: Number(arg) };
-  if (name === 'play' || name === 'revise' || name === 'stats' || name === 'settings') return { name };
+  if (name === 'repertoire' && arg) return { name: 'repertoire', id: arg };
+  if (name === 'play' || name === 'revise') return arg ? { name, opening: arg } : { name };
+  if (name === 'stats' || name === 'settings' || name === 'openings') return { name };
   return { name: 'home' };
 }
 
 export function go(r: Route) {
-  location.hash = r.name === 'home' ? '' : r.name === 'review' ? `/review/${r.id}` : `/${r.name}`;
+  const arg = r.name === 'review' ? r.id : r.name === 'repertoire' ? r.id
+    : (r.name === 'play' || r.name === 'revise') ? r.opening : undefined;
+  location.hash = r.name === 'home' ? '' : `/${r.name}${arg !== undefined ? '/' + encodeURIComponent(String(arg)) : ''}`;
 }
-

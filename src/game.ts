@@ -5,11 +5,14 @@ import { replay } from './analysis';
 
 export const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-export async function newCurrentGame(): Promise<CurrentGame> {
+/** Nouvelle partie ; avec `openingId`, partie à thème dans la couleur de l'ouverture. */
+export async function newCurrentGame(openingId?: string): Promise<CurrentGame> {
   const p = await getProfile();
+  const o = openingId ? await db.openings.get(openingId) : undefined;
   const g: CurrentGame = {
-    myColor: p.nextColor, startFen: START_FEN, uci: [],
+    myColor: o ? o.color : p.nextColor, startFen: START_FEN, uci: [],
     rating: p.rating, botElo: botRating(p.rating), maiaMs: [], startedAt: Date.now(),
+    ...(o ? { openingId: o.id } : {}),
   };
   await setCurrent(g);
   return g;
@@ -47,8 +50,11 @@ export async function finishGame(cur: CurrentGame, result: Game['result'], termi
       source: 'app', date: Date.now(), myColor: cur.myColor, startFen: cur.startFen,
       uci: cur.uci, san, result, score, termination,
       ratingBefore: cur.rating, ratingAfter, botElo: cur.botElo, maiaMs: cur.maiaMs,
+      ...(cur.openingId ? { openingId: cur.openingId } : {}),
     });
-    await setProfile({ rating: ratingAfter, gamesPlayed: p.gamesPlayed + 1, nextColor: cur.myColor === 'w' ? 'b' : 'w' });
+    // Les parties à thème comptent pour le niveau mais ne changent pas l'alternance des couleurs.
+    const nextColor = cur.openingId ? p.nextColor : cur.myColor === 'w' ? 'b' : 'w';
+    await setProfile({ rating: ratingAfter, gamesPlayed: p.gamesPlayed + 1, nextColor });
     await setCurrent(null);
     return id;
   });

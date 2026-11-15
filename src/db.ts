@@ -1,5 +1,6 @@
 import Dexie, { type Table } from 'dexie';
 import type { Severity } from './lib/winpct';
+import type { BookExit } from './lib/repertoire';
 import { RATING_START, type Score } from './lib/rating';
 
 /** Origine d'une partie — prévu pour l'import Chess.com (V2). */
@@ -36,11 +37,18 @@ export interface Game {
   maiaMs?: number[];
   analysis?: MoveAnalysis[];
   counts?: { inaccuracy: number; mistake: number; blunder: number };
+  /** Partie à thème : ouverture choisie et première sortie du répertoire. */
+  openingId?: string;
+  bookExit?: BookExit | null;
 }
+
+export type CardKind = 'mistake' | 'drill';
 
 export interface Card {
   id?: number;
-  gameId: number;
+  /** 'mistake' = erreur d'une partie ; 'drill' = position du répertoire. */
+  kind?: CardKind;
+  gameId: number;       // 0 pour une carte de drill
   source: GameSource;
   fen: string;
   myColor: Color;
@@ -55,6 +63,45 @@ export interface Card {
   due: string;
   createdAt: number;
   attempts: { date: number; uci: string; ok: boolean }[];
+  // --- cartes de drill ---
+  openingId?: string;
+  key?: string;          // clé de position (fenKey)
+  accept?: string[];     // coups du répertoire acceptés (UCI)
+  acceptSan?: string[];
+  path?: string[];       // coups menant à la position (SAN)
+  order?: number;        // ordre d'apprentissage
+}
+
+/** Statut « nouvelle carte » (pas encore introduite) : trié après toute date. */
+export const DUE_NEW = 'new';
+
+export interface MoveCheck { loss: number; bestSan: string; depth: number }
+
+export interface Opening {
+  id: string;
+  name: string;
+  color: Color;
+  forced: string[];
+  pgn: string;
+  builtin: boolean;
+  /** Vérif Stockfish de mes coups : clé = fenKey + ' ' + uci. */
+  checks: Record<string, MoveCheck>;
+  updatedAt: number;
+}
+
+/** Position où l'adversaire a quitté mon répertoire. */
+export interface Hole {
+  id?: number;
+  openingId: string;
+  key: string;
+  fen: string;           // position (à moi de jouer)
+  path: string[];        // coups depuis le départ (SAN), coup adverse inclus
+  oppSan: string;
+  bestUci: string | null;
+  bestSan: string | null;
+  gameId: number;
+  count: number;
+  createdAt: number;
 }
 
 export interface Meta { key: string; value: unknown }
@@ -74,12 +121,15 @@ export interface CurrentGame {
   botElo: number;
   maiaMs: number[];
   startedAt: number;
+  openingId?: string;
 }
 
 class SparringDB extends Dexie {
   games!: Table<Game, number>;
   cards!: Table<Card, number>;
   meta!: Table<Meta, string>;
+  openings!: Table<Opening, string>;
+  holes!: Table<Hole, number>;
   constructor() {
     super('sparring-echecs');
     this.version(1).stores({
@@ -87,6 +137,13 @@ class SparringDB extends Dexie {
       cards: '++id, due, gameId, source',
       meta: 'key',
     });
+    this.version(2).stores({
+      games: '++id, date, source, externalId, openingId',
+      cards: '++id, due, gameId, source, kind, openingId, [openingId+key]',
+      meta: 'key',
+      openings: 'id',
+      holes: '++id, openingId, [openingId+key]',
+    }).upgrade((tx) => tx.table('cards').toCollection().modify((c: Card) => { c.kind ??= 'mistake'; }));
   }
 }
 
@@ -105,12 +162,13 @@ export const setCurrent = (g: CurrentGame | null) =>
   g ? db.meta.put({ key: 'current', value: g }) : db.meta.delete('current');
 
 // ---------- Export / import JSON ----------
-export interface Backup { app: 'sparring-echecs'; version: 1; exportedAt: string; games: Game[]; cards: Card[]; meta: Meta[] }
+export interface Backup { app: 'sparring-echecs'; version: 1 | 2; exportedAt: string; games: Game[]; cards: Card[]; meta: Meta[]; openings?: Opening[]; holes?: Hole[] }
 
 export async function exportAll(): Promise<Backup> {
   return {
-    app: 'sparring-echecs', version: 1, exportedAt: new Date().toISOString(),
+    app: 'sparring-echecs', version: 2, exportedAt: new Date().toISOString(),
     games: await db.games.toArray(), cards: await db.cards.toArray(), meta: await db.meta.toArray(),
+    openings: await db.openings.toArray(), holes: await db.holes.toArray(),
   };
 }
 
@@ -118,10 +176,12 @@ export async function importAll(data: Backup) {
   if (data?.app !== 'sparring-echecs' || !Array.isArray(data.games) || !Array.isArray(data.cards)) {
     throw new Error('Fichier de sauvegarde invalide');
   }
-  await db.transaction('rw', db.games, db.cards, db.meta, async () => {
-    await Promise.all([db.games.clear(), db.cards.clear(), db.meta.clear()]);
+  await db.transaction('rw', [db.games, db.cards, db.meta, db.openings, db.holes], async () => {
+    await Promise.all([db.games.clear(), db.cards.clear(), db.meta.clear(), db.holes.clear()]);
     await db.games.bulkPut(data.games);
-    await db.cards.bulkPut(data.cards);
+    await db.cards.bulkPut(data.cards.map((c) => ({ ...c, kind: c.kind ?? 'mistake' })));
     await db.meta.bulkPut(data.meta ?? []);
+    if (data.openings) { await db.openings.clear(); await db.openings.bulkPut(data.openings); }
+    await db.holes.bulkPut(data.holes ?? []);
   });
 }

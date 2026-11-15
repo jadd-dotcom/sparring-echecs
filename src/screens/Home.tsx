@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { db, getCurrent, getProfile, type Profile } from '../db';
-import { dayKey } from '../lib/srs';
 import { botRating, CALIBRATION_GAMES } from '../lib/rating';
 import { go } from '../router';
+import { reviewQueue } from '../openings';
 import { isOfflineReady, waitOfflineReady } from '../offline';
 
 export default function Home() {
@@ -14,7 +14,7 @@ export default function Home() {
   useEffect(() => {
     (async () => {
       setP(await getProfile());
-      setDue(await db.cards.where('due').belowOrEqual(dayKey()).count());
+      setDue((await reviewQueue()).length);
       setTotal(await db.cards.count());
       setInProgress(!!(await getCurrent()));
       if (!isOfflineReady()) {
@@ -42,6 +42,7 @@ export default function Home() {
           ? total === 0 ? 'Aucune position à revoir pour l’instant' : 'Rien à revoir aujourd’hui 🎉'
           : `${due} position${due > 1 ? 's' : ''} à revoir aujourd’hui`}
       </button>
+      <button className="huge" onClick={() => go({ name: 'openings' })}>📖 Ouvertures : parties à thème et drill</button>
       <div className="row">
         <button onClick={() => go({ name: 'stats' })}>Statistiques et parties</button>
         <button onClick={() => go({ name: 'settings' })}>Sauvegarde</button>

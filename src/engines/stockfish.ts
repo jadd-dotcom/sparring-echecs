@@ -52,8 +52,9 @@ class StockfishClient {
     return this.ready;
   }
 
-  /** Analyse une position (FEN) pendant `ms` millisecondes. Appels sérialisés. */
-  analyse(fen: string, ms = 500): Promise<SearchResult> {
+  /** Analyse une position (FEN) pendant `ms` millisecondes. Appels sérialisés.
+   *  `searchmoves` restreint la recherche à ce coup (pour mesurer sa perte). */
+  analyse(fen: string, ms = 500, searchmoves?: string): Promise<SearchResult> {
     const run = async (): Promise<SearchResult> => {
       await this.init();
       let ev: Eval = { cp: 0 };
@@ -72,7 +73,7 @@ class StockfishClient {
         },
       );
       this.send('position fen ' + fen);
-      this.send('go movetime ' + ms);
+      this.send('go movetime ' + ms + (searchmoves ? ' searchmoves ' + searchmoves : ''));
       const line = await done;
       const bm = line.split(' ')[1];
       return { eval: ev, bestMove: bm && bm !== '(none)' ? bm : null, depth };

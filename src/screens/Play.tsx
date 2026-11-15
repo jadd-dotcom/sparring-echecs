@@ -1,17 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Board from '../Board';
 import { maia } from '../engines/maia';
-import { getCurrent, setCurrent, db, type CurrentGame, type Game } from '../db';
+import { getCurrent, setCurrent, db, type CurrentGame, type Game, type Opening } from '../db';
 import { autoResult, chessFrom, finishGame, newCurrentGame } from '../game';
 import { go } from '../router';
 import { replay } from '../analysis';
 import { waitOfflineReady } from '../offline';
+import { forcedMove } from '../lib/repertoire';
+import { recordBookExit } from '../openings';
 
 const MIN_THINK_MS = 450; // pour que la réponse ne soit pas instantanée
 /** Maia accepte la nulle si sa probabilité de gain est ≤ 55 %. */
 const DRAW_ACCEPT = 0.55;
 
-export default function Play() {
+export default function Play({ opening }: { opening?: string }) {
   const [cur, setCur] = useState<CurrentGame | null>(null);
   const [loadPct, setLoadPct] = useState<number | null>(0);
   const [prep, setPrep] = useState<string | null>(null);
@@ -21,10 +23,17 @@ export default function Play() {
   const [confirmResign, setConfirmResign] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const busy = useRef(false);
+  const [op, setOp] = useState<Opening | null>(null);
 
   useEffect(() => {
     (async () => {
-      setCur((await getCurrent()) ?? (await newCurrentGame()));
+      const existing = await getCurrent();
+      if (existing && opening && existing.openingId !== opening) {
+        setMsg('Une partie est déjà en cours : termine-la avant d’en commencer une autre.');
+      }
+      const g = existing ?? (await newCurrentGame(opening));
+      if (g.openingId) setOp((await db.openings.get(g.openingId)) ?? null);
+      setCur(g);
       // 1er lancement : on laisse le service worker tout mettre en cache (une seule fois).
       await waitOfflineReady((b, t) => {
         setPrep(`${(b / 1e6).toFixed(0)} / ${(t / 1e6).toFixed(0)} Mo`);
@@ -36,11 +45,13 @@ export default function Play() {
       setLoadPct(null);
       maia.onProgress(null);
     })();
-  }, []);
+  }, [opening]);
 
   const end = useCallback(async (g: CurrentGame, result: Game['result'], termination: string) => {
     const id = await finishGame(g, result, termination);
     setEnded((await db.games.get(id))!);
+    // Partie à thème : sortie du répertoire + trou éventuel (Stockfish), en arrière-plan.
+    if (g.openingId) recordBookExit(id).catch(console.error);
   }, []);
 
   const apply = useCallback(async (g: CurrentGame, uci: string, ms?: number) => {
@@ -62,10 +73,18 @@ export default function Play() {
     (async () => {
       try {
         const t0 = performance.now();
-        const { uci, prediction } = await maia.chooseMove(c.fen(), cur.uci, cur.botElo, cur.rating);
+        // Partie à thème : coups adverses qui définissent l'ouverture (ex. 1.d4 et 2.c4), ensuite Maia libre.
+        const forced = op ? forcedMove(c.fen(), cur.uci.length, cur.myColor, op.forced) : null;
+        let uci: string;
+        let ms: number | undefined;
+        if (forced) uci = forced;
+        else {
+          const r = await maia.chooseMove(c.fen(), cur.uci, cur.botElo, cur.rating);
+          uci = r.uci; ms = r.prediction.ms;
+        }
         const wait = MIN_THINK_MS - (performance.now() - t0);
         if (wait > 0) await new Promise((r) => setTimeout(r, wait));
-        await apply(cur, uci, prediction.ms);
+        await apply(cur, uci, ms);
       } catch (e) {
         setError('Erreur de Maia : ' + (e as Error).message);
       } finally {
@@ -73,7 +92,7 @@ export default function Play() {
         setThinking(false);
       }
     })();
-  }, [cur, ended, error, apply]);
+  }, [cur, ended, error, apply, op]);
 
   if (error) return <div className="card error">{error} <button onClick={() => location.reload()}>Recharger</button></div>;
   if (!cur) return null;
@@ -115,6 +134,7 @@ export default function Play() {
   return (
     <div className="play">
       <div className="board-col">
+        {op && <div className="theme-line">📖 Partie à thème : <b>{op.name}</b></div>}
         <div className="player-line">
           <span>🤖 Maia · {Math.round(cur.botElo)}</span>
           {thinking && loadPct === null && <span className="muted pulse">réfléchit…</span>}
@@ -160,7 +180,9 @@ export default function Play() {
             ({ended.ratingAfter! - ended.ratingBefore! >= 0 ? '+' : ''}{Math.round(ended.ratingAfter! - ended.ratingBefore!)})</p>
           <div className="col">
             <button className="primary" onClick={() => go({ name: 'review', id: ended.id! })}>Analyser mes coups</button>
-            <button onClick={async () => { busy.current = false; setEnded(null); setMsg(null); setCur(await newCurrentGame()); }}>Nouvelle partie</button>
+            <button onClick={async () => { busy.current = false; setEnded(null); setMsg(null); setCur(await newCurrentGame(op?.id)); }}>
+              {op ? `Rejouer : ${op.name}` : 'Nouvelle partie'}
+            </button>
           </div>
         </div></div>
       )}
