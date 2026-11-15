@@ -42,7 +42,10 @@ export default function Home() {
           ? total === 0 ? 'Aucune position à revoir pour l’instant' : 'Rien à revoir aujourd’hui 🎉'
           : `${due} position${due > 1 ? 's' : ''} à revoir aujourd’hui`}
       </button>
-      <button className="huge" onClick={() => go({ name: 'openings' })}>📖 Ouvertures : parties à thème et drill</button>
+      <div className="row">
+        <button className="huge" onClick={() => go({ name: 'openings' })}>📖 Ouvertures</button>
+        <button className="huge" onClick={() => go({ name: 'mates' })}>♚ Mats élémentaires</button>
+      </div>
       <div className="row">
         <button onClick={() => go({ name: 'stats' })}>Statistiques et parties</button>
         <button onClick={() => go({ name: 'report' })}>Rapport pour Claude</button>

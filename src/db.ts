@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie';
 import type { Severity } from './lib/winpct';
 import type { BookExit } from './lib/repertoire';
 import type { ErrorDetail } from './lib/report/motifs';
+import type { MateLevelId, MateOutcome, MoveFlag } from './lib/mates';
 import { RATING_START, type Score } from './lib/rating';
 
 /** Origine d'une partie — prévu pour l'import Chess.com (V2). */
@@ -47,7 +48,7 @@ export interface Game {
   thoughts?: Record<number, string>;
 }
 
-export type CardKind = 'mistake' | 'drill';
+export type CardKind = 'mistake' | 'drill' | 'mate';
 
 export interface Card {
   id?: number;
@@ -75,6 +76,23 @@ export interface Card {
   acceptSan?: string[];
   path?: string[];       // coups menant à la position (SAN)
   order?: number;        // ordre d'apprentissage
+  // --- cartes de mat élémentaire (position ratée à rejouer jusqu'au mat) ---
+  mateLevel?: MateLevelId;
+  minMoves?: number;
+}
+
+/** Un exercice de mat élémentaire. */
+export interface MateRun {
+  id?: number;
+  level: MateLevelId;
+  fen: string;
+  minMoves: number;
+  myMoves: number;
+  outcome: MateOutcome;
+  flags: MoveFlag[];
+  moves: string[];       // SAN, les deux camps
+  date: number;
+  review?: boolean;      // rejouée depuis le paquet de révision (ne compte pas pour la validation)
 }
 
 /** Statut « nouvelle carte » (pas encore introduite) : trié après toute date. */
@@ -135,6 +153,7 @@ class SparringDB extends Dexie {
   meta!: Table<Meta, string>;
   openings!: Table<Opening, string>;
   holes!: Table<Hole, number>;
+  mateRuns!: Table<MateRun, number>;
   constructor() {
     super('sparring-echecs');
     this.version(1).stores({
@@ -149,6 +168,7 @@ class SparringDB extends Dexie {
       openings: 'id',
       holes: '++id, openingId, [openingId+key]',
     }).upgrade((tx) => tx.table('cards').toCollection().modify((c: Card) => { c.kind ??= 'mistake'; }));
+    this.version(3).stores({ mateRuns: '++id, level, date' });
   }
 }
 
@@ -167,13 +187,13 @@ export const setCurrent = (g: CurrentGame | null) =>
   g ? db.meta.put({ key: 'current', value: g }) : db.meta.delete('current');
 
 // ---------- Export / import JSON ----------
-export interface Backup { app: 'sparring-echecs'; version: 1 | 2; exportedAt: string; games: Game[]; cards: Card[]; meta: Meta[]; openings?: Opening[]; holes?: Hole[] }
+export interface Backup { app: 'sparring-echecs'; version: 1 | 2 | 3; exportedAt: string; games: Game[]; cards: Card[]; meta: Meta[]; openings?: Opening[]; holes?: Hole[]; mateRuns?: MateRun[] }
 
 export async function exportAll(): Promise<Backup> {
   return {
-    app: 'sparring-echecs', version: 2, exportedAt: new Date().toISOString(),
+    app: 'sparring-echecs', version: 3, exportedAt: new Date().toISOString(),
     games: await db.games.toArray(), cards: await db.cards.toArray(), meta: await db.meta.toArray(),
-    openings: await db.openings.toArray(), holes: await db.holes.toArray(),
+    openings: await db.openings.toArray(), holes: await db.holes.toArray(), mateRuns: await db.mateRuns.toArray(),
   };
 }
 
@@ -181,12 +201,14 @@ export async function importAll(data: Backup) {
   if (data?.app !== 'sparring-echecs' || !Array.isArray(data.games) || !Array.isArray(data.cards)) {
     throw new Error('Fichier de sauvegarde invalide');
   }
-  await db.transaction('rw', [db.games, db.cards, db.meta, db.openings, db.holes], async () => {
+  await db.transaction('rw', [db.games, db.cards, db.meta, db.openings, db.holes, db.mateRuns], async () => {
     await Promise.all([db.games.clear(), db.cards.clear(), db.meta.clear(), db.holes.clear()]);
     await db.games.bulkPut(data.games);
     await db.cards.bulkPut(data.cards.map((c) => ({ ...c, kind: c.kind ?? 'mistake' })));
     await db.meta.bulkPut(data.meta ?? []);
     if (data.openings) { await db.openings.clear(); await db.openings.bulkPut(data.openings); }
     await db.holes.bulkPut(data.holes ?? []);
+    await db.mateRuns.clear();
+    await db.mateRuns.bulkPut(data.mateRuns ?? []);
   });
 }

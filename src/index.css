@@ -104,3 +104,10 @@ textarea { font-family: ui-monospace, monospace; font-size: .9rem; }
 .radio.on { border-color: var(--accent); }
 .radio input { width: 22px; height: 22px; margin: 0; flex: none; }
 .md-preview { white-space: pre-wrap; word-break: break-word; font-size: .82rem; max-height: 60dvh; overflow: auto; background: var(--bg); padding: 12px; border-radius: 10px; }
+.mates { max-width: 860px; margin: 0 auto; }
+.mate-level.locked { opacity: .6; }
+.steps { padding-left: 1.3em; }
+.steps li { margin: 6px 0; padding: 4px 6px; border-radius: 8px; }
+.steps li.on { background: rgba(60,122,60,.15); font-weight: 600; }
+.big-count { font-size: 1.3rem; margin: .3em 0; }
+.mate-next { max-width: 860px; margin: 12px auto; }

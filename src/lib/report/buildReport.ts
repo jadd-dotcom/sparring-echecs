@@ -235,8 +235,8 @@ export function buildReport({ now, period, games, allGames, cards }: ReportInput
   else {
     push('| FEN | Trait | Bon coup | Échecs / tentatives | Origine |', '|---|---|---|---|---|');
     for (const { c, fails } of failed) {
-      const good = c.kind === 'drill' ? (c.acceptSan ?? [c.bestSan]).join(' ou ') : c.bestSan;
-      push(`| \`${c.fen}\` | ${colorName(c.myColor)} | ${good} | ${fails} / ${c.attempts.length} | ${c.kind === 'drill' ? 'drill d’ouverture' : `erreur (j’avais joué ${c.playedSan})`} |`);
+      const good = c.kind === 'drill' ? (c.acceptSan ?? [c.bestSan]).join(' ou ') : c.kind === 'mate' ? `mater (mat en ${c.minMoves})` : c.bestSan;
+      push(`| \`${c.fen}\` | ${colorName(c.myColor)} | ${good} | ${fails} / ${c.attempts.length} | ${c.kind === 'drill' ? 'drill d’ouverture' : c.kind === 'mate' ? 'mat élémentaire raté' : `erreur (j’avais joué ${c.playedSan})`} |`);
     }
     push('');
   }

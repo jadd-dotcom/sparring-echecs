@@ -65,7 +65,8 @@ class StockfishClient {
     return this.go(fen, 'depth ' + depth);
   }
 
-  private go(fen: string, goArgs: string): Promise<SearchResult> {
+  /** Recherche avec des arguments UCI « go » libres (ex. « mate 30 »). */
+  go(fen: string, goArgs: string): Promise<SearchResult> {
     const run = async (): Promise<SearchResult> => {
       await this.init();
       let ev: Eval = { cp: 0 };

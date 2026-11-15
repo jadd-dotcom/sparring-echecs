@@ -7,6 +7,7 @@ import Stats from './screens/Stats';
 import Settings from './screens/Settings';
 import Openings from './screens/Openings';
 import Report from './screens/Report';
+import Mates from './screens/Mates';
 import RepertoireEditor from './screens/RepertoireEditor';
 import { ensureOpenings } from './openings';
 import './selftest';
@@ -38,6 +39,7 @@ export default function App() {
         {route.name === 'stats' && <Stats />}
         {route.name === 'settings' && <Settings />}
         {route.name === 'report' && <Report />}
+        {route.name === 'mates' && <Mates key={`${route.level}-${route.mode}`} level={route.level} mode={route.mode} />}
       </>}</main>
     </div>
   );

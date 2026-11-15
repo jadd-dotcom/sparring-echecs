@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint .",
-    "validate-repertoire": "sh scripts/validate-repertoire.sh"
+    "validate-repertoire": "sh scripts/validate-repertoire.sh",
+    "verify-mates": "sh scripts/verify-mates.sh"
   },
   "dependencies": {
     "chess.js": "^1.4.0",

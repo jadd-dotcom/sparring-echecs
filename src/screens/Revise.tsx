@@ -8,6 +8,8 @@ import { evaluate, uciToSan } from '../analysis';
 import { isReviewMoveOk, winPercent } from '../lib/winpct';
 import { Chess } from 'chess.js';
 import { go } from '../router';
+import MateExercise from '../MateExercise';
+import { MATE_LEVELS } from '../lib/mates';
 
 type Outcome = { ok: boolean; uci: string; san: string; drop: number };
 
@@ -32,6 +34,23 @@ export default function Revise({ opening }: { opening?: string }) {
         <p>{stats.ok} juste{stats.ok > 1 ? 's' : ''} · {stats.ko} à retravailler</p>
         <button className="primary" onClick={() => go({ name: 'home' })}>Retour à l’accueil</button>
       </div>
+    );
+  }
+
+  if (card.kind === 'mate') {
+    const level = MATE_LEVELS.find((l) => l.id === card.mateLevel)!;
+    return (
+      <>
+        <p className="muted center-text">♚ Révision : position de mat ratée ({queue.length} restante{queue.length > 1 ? 's' : ''}) — mate le roi noir.</p>
+        <MateExercise key={card.id} level={level} fen={card.fen} minMoves={card.minMoves} review
+          onDone={async (run) => {
+            const ok = run.outcome === 'mate';
+            await db.cards.update(card.id!, { ...schedule(card, ok, dayKey()), attempts: [...card.attempts, { date: Date.now(), uci: run.moves.join(' '), ok }] });
+            setStats((st) => ({ ok: st.ok + (ok ? 1 : 0), ko: st.ko + (ok ? 0 : 1) }));
+            setOutcome({ ok, uci: '', san: '', drop: 0 });
+          }} />
+        {outcome && <div className="row mate-next"><button className="primary" onClick={() => { setOutcome(null); setQueue(queue.slice(1)); }}>Suivante</button></div>}
+      </>
     );
   }
 
