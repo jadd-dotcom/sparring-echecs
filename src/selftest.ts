@@ -3,6 +3,7 @@ import { Chess } from 'chess.js';
 import { maia } from './engines/maia';
 import { stockfish } from './engines/stockfish';
 import { db } from './db';
+import { buildIndex, fenKey, parsePgn } from './lib/repertoire';
 
 export interface SelfTestReport {
   games: number; crashes: number; illegal: number; plies: number[]; results: string[];
@@ -57,4 +58,12 @@ async function sfBench(fen = 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1
   return { ...r, ms: performance.now() - t0 };
 }
 
-Object.assign(globalThis, { __selftest: selftest, __sfBench: sfBench, __db: db });
+/** Coup du répertoire depuis une position (pour les tests automatiques), sinon null. */
+async function repMove(openingId: string, fen: string): Promise<string | null> {
+  const o = await db.openings.get(openingId);
+  if (!o) return null;
+  const e = buildIndex(parsePgn(o.pgn).root).get(fenKey(fen));
+  return e ? [...e.moves.keys()][0] : null;
+}
+
+Object.assign(globalThis, { __selftest: selftest, __sfBench: sfBench, __db: db, __repMove: repMove });

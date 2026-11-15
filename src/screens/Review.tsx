@@ -3,6 +3,8 @@ import Board, { type BoardArrow } from '../Board';
 import { db, type Game } from '../db';
 import { analyseGame, replay } from '../analysis';
 import { SEVERITY_LABEL, type Severity } from '../lib/winpct';
+import { recordBookExit } from '../openings';
+import { Chess } from 'chess.js';
 
 const SEV_CLASS: Record<Severity, string> = { ok: '', inaccuracy: 'sev-inacc', mistake: 'sev-mist', blunder: 'sev-blund' };
 const SEV_ICON: Record<Severity, string> = { ok: '', inaccuracy: '?!', mistake: '?', blunder: '??' };
@@ -19,10 +21,14 @@ export default function Review({ id }: { id: number }) {
       const g = await db.games.get(id);
       if (!g) { setErr('Partie introuvable'); return; }
       setGame(g);
+      if (g.openingId && g.bookExit === undefined) {
+        const withExit = await recordBookExit(id);
+        if (!cancelled && withExit) setGame((cur) => ({ ...(cur ?? withExit), bookExit: withExit.bookExit }));
+      }
       if (!g.analysis) {
         try {
           const a = await analyseGame(id, (d, t) => !cancelled && setProgress([d, t]));
-          if (!cancelled) { setGame(a); setProgress(null); }
+          if (!cancelled) { setGame((cur) => ({ ...a, bookExit: a.bookExit ?? cur?.bookExit })); setProgress(null); }
         } catch (e) { setErr('Analyse impossible : ' + (e as Error).message); }
       }
     })();
@@ -46,10 +52,20 @@ export default function Review({ id }: { id: number }) {
   const byPly = new Map(game.analysis.map((a) => [a.ply, a]));
   const a = ply >= 0 ? byPly.get(ply) : undefined;
   const isMistake = a && a.severity !== 'ok';
-  // Sur une erreur : position AVANT le coup, flèche rouge = mon coup, verte = meilleur coup.
-  const fen = isMistake ? fens[ply] : fens[ply + 1];
+  const exit = game.bookExit ?? null;
+  const isMyExit = exit?.by === 'me' && ply === exit.ply;
+  // Sur une erreur ou une sortie du répertoire : position AVANT le coup, flèche rouge = mon coup,
+  // verte = meilleur coup Stockfish, bleue = coup prévu par le répertoire.
+  const fen = isMistake || isMyExit ? fens[ply] : fens[ply + 1];
   const arrows: BoardArrow[] = [];
   const highlight: Record<string, string> = {};
+  if (isMyExit) {
+    for (const sanExp of exit!.expectedSan) {
+      const m = new Chess(fens[ply]).move(sanExp);
+      arrows.push({ from: m.from, to: m.to, color: 'rgba(40,110,230,.85)' });
+    }
+    if (!isMistake) arrows.push({ from: game.uci[ply].slice(0, 2), to: game.uci[ply].slice(2, 4), color: 'rgba(220,40,40,.85)' });
+  }
   if (isMistake) {
     arrows.push({ from: a.uci.slice(0, 2), to: a.uci.slice(2, 4), color: 'rgba(220,40,40,.85)' });
     if (a.bestUci) arrows.push({ from: a.bestUci.slice(0, 2), to: a.bestUci.slice(2, 4), color: 'rgba(30,160,60,.9)' });
@@ -85,9 +101,25 @@ export default function Review({ id }: { id: number }) {
             <span className="sev-blund">?? {c.blunder} gaffe{c.blunder > 1 ? 's' : ''}</span>
           </div>
         </div>
+        {game.openingId && (
+          <div className="card book">
+            {exit === null && <span>📖 Partie entièrement dans ton répertoire.</span>}
+            {exit?.by === 'end' && <span>📖 Tu as suivi ton répertoire jusqu’au bout de la ligne (coup {Math.floor(exit.ply / 2) + 1}).</span>}
+            {exit?.by === 'me' && (
+              <span>📖 <b>Sortie du répertoire</b> au coup {Math.floor(exit.ply / 2) + 1}{exit.ply % 2 ? '…' : '.'} : tu as joué <b>{exit.playedSan}</b>,
+                {' '}ton répertoire prévoit <b>{exit.expectedSan.join(' ou ')}</b> (flèche bleue).{' '}
+                <button className="small" onClick={() => setPly(exit.ply)}>Voir</button></span>
+            )}
+            {exit?.by === 'opponent' && (
+              <span>📖 L’adversaire a quitté ton répertoire avec <b>{exit.playedSan}</b> (coup {Math.floor(exit.ply / 2) + 1}).
+                {' '}Position ajoutée aux <b>trous du répertoire</b> avec le meilleur coup Stockfish.</span>
+            )}
+          </div>
+        )}
         <div className="card explain">
           {ply < 0 && <span className="muted">Touche un coup ou utilise les flèches.</span>}
           {ply >= 0 && !a && <span>Coup de Maia : <b>{san[ply]}</b></span>}
+          {isMyExit && <><span>📖 Répertoire : <b>{exit!.expectedSan.join(' ou ')}</b> (flèche bleue) au lieu de {exit!.playedSan}.</span><br /></>}
           {a && a.severity === 'ok' && (
             <span>Tu as joué <b>{a.san}</b> — bon coup{a.bestSan && a.bestSan !== a.san ? ` (Stockfish préférait ${a.bestSan})` : ''}.
               {' '}Gain estimé : {Math.round(a.wpAfter)} %</span>
@@ -104,8 +136,8 @@ export default function Review({ id }: { id: number }) {
           {san.map((s, i) => {
             const an = byPly.get(i);
             return (
-              <button key={i} className={`mv ${i === ply ? 'active' : ''} ${an ? SEV_CLASS[an.severity] : 'theirs'}`} onClick={() => setPly(i)}>
-                {i % 2 === 0 ? `${i / 2 + 1}.` : ''}{s}{an ? SEV_ICON[an.severity] : ''}
+              <button key={i} className={`mv ${i === ply ? 'active' : ''} ${an ? SEV_CLASS[an.severity] : 'theirs'} ${exit && exit.by !== 'end' && exit.ply === i ? 'book-exit' : ''}`} onClick={() => setPly(i)}>
+                {i % 2 === 0 ? `${i / 2 + 1}.` : ''}{s}{an ? SEV_ICON[an.severity] : ''}{exit && exit.by !== 'end' && exit.ply === i ? ' 📖' : ''}
               </button>
             );
           })}

@@ -86,3 +86,14 @@ label { display: block; }
 .openings { max-width: 860px; margin: 0 auto; }
 .tag { background: var(--accent); color: var(--accent-ink); border-radius: 6px; padding: 1px 6px; font-size: .8rem; }
 .line-text { font-variant-numeric: tabular-nums; }
+.card.book { border-color: rgba(40,110,230,.6); }
+.mv.book-exit { border-color: rgba(40,110,230,.9); border-width: 2px; }
+.row.wrap > * { flex: 1 1 auto; }
+.good-text { color: var(--accent); }
+.lines { max-height: 60dvh; overflow: auto; }
+.line-row { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--line); padding: 2px 0; }
+.line-row .status { width: 1.4em; text-align: center; font-weight: 700; }
+.line-btn { flex: 1; justify-content: flex-start; text-align: left; min-height: 40px; font-size: .92rem; padding: 4px; }
+.hole { border-bottom: 1px solid var(--line); padding: 6px 0 10px; }
+.hole .row { margin-top: 6px; }
+textarea { font-family: ui-monospace, monospace; font-size: .9rem; }
