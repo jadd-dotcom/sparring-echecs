@@ -9,6 +9,8 @@ Appli web (PWA) d'entraînement aux échecs pour tablette, 100 % dans le navigat
 - **Stats** : courbe de niveau, V/N/D, gaffes par partie. Export/import JSON.
 - **Rapport pour Claude (V1.5)** : rapport Markdown (résumé, phases, motifs d'erreur, 10 pires erreurs avec FEN/ASCII/suites
   Stockfish, PGN annotés, cartes ratées) à copier ou partager. Exemple : `docs/exemple-rapport.md`.
+- **Mats élémentaires** : D+R, deux tours (échelle), T+R (boîte), deux fous — leçon en 5 étapes puis exercices contre
+  Stockfish en défense maximale, validation par niveau, positions ratées dans le paquet de révision.
 - **Ouvertures (V2)** : répertoire en PGN à variantes (Londres, GDR, Française pré-chargés, vérifiés par Stockfish),
   parties à thème, sorties signalées en revue, trous du répertoire, drill en répétition espacée, stats par ouverture.
 
@@ -25,6 +27,8 @@ node tests/e2e.cjs <dossier-captures>   # parcours tactile complet sur iPad ému
 node tests/offline.cjs <url>            # mesures + test hors ligne
 node tests/v2.cjs <dossier-captures>    # parcours Ouvertures (V2)
 node tests/report.cjs <dossier-captures> # 3 parties de test → docs/exemple-rapport.md (V1.5)
+node tests/mates.cjs <dossier-captures>  # onglet Mats élémentaires
+npm run verify-mates                    # 20 positions/niveau, Stockfish joue mon camp → docs/MATS.md
 npm run validate-repertoire             # vérif Stockfish du répertoire pré-chargé → docs/REPERTOIRE.md
 ```
 

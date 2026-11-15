@@ -94,3 +94,33 @@
 - Les règles de motifs s'appuient sur des suites de 5 demi-coups à profondeur 12 : une tactique plus longue tombe en « Autre ».
 - La vérification Stockfish du navigateur (800 ms) est moins précise qu'en Node : une ligne d'ouverture à la limite des 0,5 pion
   (ex. 3…Bb4 Winawer, −52 cp mesuré une fois) peut être refusée.
+
+---
+
+# Onglet « Mats élémentaires »
+
+## Ce qui a été ajouté
+- **Niveaux débloqués dans l'ordre** : 1. Dame + roi, 2. deux tours (l'échelle), 3. tour + roi (la boîte), 4. deux fous + roi ;
+  5. fou + cavalier affiché « plus tard » (le moteur le gère déjà, il manque la leçon et la vérification).
+- **Leçons** (`src/data/mateLessons.ts`) : la méthode en 5 étapes, sur une position rejouée coup par coup (⏮ ◀ ▶ ⏭), l'étape du
+  coup courant est surlignée. Lignes calculées par Stockfish pour les deux camps (mat le plus court contre la meilleure défense)
+  puis annotées ; l'échelle est écrite à la main pour montrer la tour qui s'éloigne quand le roi l'approche.
+- **Exercices** : position aléatoire légale (roi noir au centre dans 80 % des cas, aucune pièce en prise, roi noir avec au
+  moins 2 cases, fous de couleurs opposées), « mat en N » calculé au départ par Stockfish (plus court de « go mate 30 » et
+  d'une recherche de 2,5 s ; positions en mat en ≤ 2 écartées), roi seul joué par Stockfish (500 ms, il retarde le mat au
+  maximum). Pas de retour en arrière. Affichage « Coups : X / minimum N ».
+- **Issue** : réussite = mat ; échec = pat, pièce perdue, règle des 50 coups (et triple répétition, ajoutée car c'est aussi une nulle).
+- **Après l'exercice** : « pat frôlé » (après un de mes coups sans échec, le roi noir n'avait plus qu'un seul coup) et « pièce
+  sans protection » (une de mes pièces attaquée par le roi noir et non défendue), avec les coups concernés.
+- **Validation** : 3 mats d'affilée en au plus minimum + 10 coups (les rejouées du paquet ne comptent pas) → niveau suivant.
+- **Positions ratées → paquet de révision** (carte « mat », mêmes intervalles) : on rejoue la position jusqu'au mat.
+- Sauvegarde JSON et rapport pour Claude étendus aux exercices de mat.
+
+## Tests
+- Unitaires : 200 positions générées par niveau, toutes légales et conformes (roi noir pas en échec, rois non adjacents,
+  aucune pièce en prise, fous de couleurs opposées, roi noir central dans > 65 % des cas), refus de positions illégales,
+  détection du mat, du pat, de la pièce perdue et des 50 coups, alertes, validation (série de 3, limite +10), déblocage.
+  Leçons : chaque ligne est légale, finit par un mat, chaque coup blanc est rattaché à une étape et chaque étape est utilisée.
+- Navigateur (`tests/mates.cjs`) : seul le niveau 1 ouvert au départ, leçon rejouée jusqu'au mat, 3 exercices matés
+  (mat en 7/7, 6/6, 5/5) → niveau validé et niveau 2 débloqué, dame laissée en prise → « pièce perdue » + alerte + carte,
+  carte rejouée depuis la révision jusqu'au mat.
