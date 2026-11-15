@@ -59,3 +59,38 @@
   partie Française jusqu'à une sortie de l'adversaire → trou enregistré avec coup Stockfish → comblé en un geste → carte de drill créée ;
   ajout d'une ligne sur l'échiquier (acceptée), ligne 3…Qg5?? refusée (−858 cp), suppression, import PGN à variante, PGN illégal refusé,
   drill juste puis faux, stats par ouverture. V1 (`tests/e2e.cjs`), 20 parties Maia et hors ligne : toujours verts.
+
+---
+
+# V1.5 — Rapport pour Claude
+
+## Ce qui a été ajouté
+- **Revue** : sur chaque erreur et gaffe, champ facultatif « Ce que je pensais » (enregistré automatiquement), motif et réfutation affichés.
+- **Analyse** : pour chaque erreur/gaffe, calcul et stockage des suites Stockfish (profondeur 12, 5 demi-coups) — meilleur coup
+  et réfutation —, bilans matériels au bout des suites, menace « si l'adversaire rejouait », motif. Les parties analysées avant
+  la V1.5 sont complétées à la génération du rapport.
+- **Motifs** (règles déterministes, `src/lib/report/motifs.ts`) : mat raté (mat en ≤ 3 non joué), mat ouvert (mat contre moi
+  en ≤ 3 après mon coup), menace ignorée (trait inversé sauf échec : gain ≥ 2 pts en 2 demi-coups ou mat, toujours possible après
+  mon coup), pièce en prise (réfutation : gain ≥ 2 pts en 2 demi-coups), autre. Un motif principal (ordre de priorité ci-dessus),
+  les autres motifs applicables sont listés en « aussi ».
+- **Rapport Markdown** (`src/lib/report/buildReport.ts`, fonction pure) : définitions, résumé (niveau début → fin et après chaque
+  partie, V/N/D, imprécisions/erreurs/gaffes par partie, par phase avec taux pour 10 coups, motifs, révision), 10 pires erreurs
+  (FEN, plateau ASCII ma couleur en bas, dernier coup adverse, win% avant/après, meilleur coup + suite, réfutation, bilans
+  matériels, menace, motif, « ce que je pensais »), 3 dernières parties perdues en PGN annoté, cartes ratées ≥ 2 fois.
+- **Export** : période « depuis le dernier rapport » (défaut), « 7 derniers jours » ou « 20 dernières parties » ; boutons Copier,
+  Partager (Web Share API avec fichier .md, sinon texte) et Télécharger .md. La date du rapport est mémorisée dès qu'il est
+  copié, partagé ou téléchargé.
+
+## Tests V1.5
+- Unitaires : matériel, **phases** (coups 1-10, seuil 13 pts exact), plateau ASCII des deux côtés, gain en 2 demi-coups, règles des
+  motifs (faits donnés), **tri des erreurs**, période, PGN annoté relisible, rapport complet.
+- **Chaque motif sur une position connue avec le vrai Stockfish** (Node) : 2.Qg4?? (pièce en prise), 4.a3?? face à Nc6 attaquant
+  la dame en d4 (menace ignorée), 4.d3 au lieu de Qxf7# (mat raté), 2.g4?? (mat ouvert, Qh4#), 2.Ke2 (autre), 3…Qh4?? côté Noirs.
+- Navigateur (`tests/report.cjs`) : 3 parties de test jouées au toucher (mes coups choisis par Maia réglée à 600 pour imiter un
+  débutant), analyse, saisie de « ce que je pensais », une carte ratée 2 fois, génération → `docs/exemple-rapport.md`,
+  date mémorisée (période par défaut ensuite vide).
+
+## Limites connues
+- Les règles de motifs s'appuient sur des suites de 5 demi-coups à profondeur 12 : une tactique plus longue tombe en « Autre ».
+- La vérification Stockfish du navigateur (800 ms) est moins précise qu'en Node : une ligne d'ouverture à la limite des 0,5 pion
+  (ex. 3…Bb4 Winawer, −52 cp mesuré une fois) peut être refusée.

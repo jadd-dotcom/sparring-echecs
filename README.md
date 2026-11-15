@@ -7,6 +7,8 @@ Appli web (PWA) d'entraînement aux échecs pour tablette, 100 % dans le navigat
 - **Analyse d'après-partie** par Stockfish 19 lite (single-thread) : imprécisions / erreurs / gaffes selon la chute de % de gain.
 - **Paquet de révision** (J+1, J+3, J+7, J+14, J+30 ; raté → J+1).
 - **Stats** : courbe de niveau, V/N/D, gaffes par partie. Export/import JSON.
+- **Rapport pour Claude (V1.5)** : rapport Markdown (résumé, phases, motifs d'erreur, 10 pires erreurs avec FEN/ASCII/suites
+  Stockfish, PGN annotés, cartes ratées) à copier ou partager. Exemple : `docs/exemple-rapport.md`.
 - **Ouvertures (V2)** : répertoire en PGN à variantes (Londres, GDR, Française pré-chargés, vérifiés par Stockfish),
   parties à thème, sorties signalées en revue, trous du répertoire, drill en répétition espacée, stats par ouverture.
 
@@ -22,6 +24,7 @@ node tests/selftest20.cjs   # 20 parties Maia vs aléatoire dans Chromium (Playw
 node tests/e2e.cjs <dossier-captures>   # parcours tactile complet sur iPad émulé
 node tests/offline.cjs <url>            # mesures + test hors ligne
 node tests/v2.cjs <dossier-captures>    # parcours Ouvertures (V2)
+node tests/report.cjs <dossier-captures> # 3 parties de test → docs/exemple-rapport.md (V1.5)
 npm run validate-repertoire             # vérif Stockfish du répertoire pré-chargé → docs/REPERTOIRE.md
 ```
 

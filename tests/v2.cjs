@@ -118,7 +118,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
 
   // --- Import PGN (variantes) + PGN illégal
   await p.getByRole('button', { name: 'Importer PGN' }).tap();
-  await p.locator('textarea').fill('[Event "Étude"]\n\n1. e4 e6 2. d4 d5 3. Nc3 Bb4 (3... dxe4 4. Nxe4 Nd7) 4. e5 c5 *');
+  await p.locator('textarea').fill('[Event "Étude"]\n\n1. e4 e6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Nd7 5. Nf3 (5. Bd3 Ngf6) 5... Ngf6 *');
   await p.getByRole('button', { name: 'Importer', exact: true }).tap();
   await p.getByText(/Import \(1 chapitre\)/).waitFor({ timeout: 60000 });
   const m2 = await p.getByText(/Import \(1 chapitre\)/).innerText();
