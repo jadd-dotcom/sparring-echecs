@@ -72,4 +72,9 @@ async function maiaPick(fen: string, priorMoves: string[], selfElo: number, oppo
   return (await maia.chooseMove(fen, priorMoves, selfElo, oppoElo)).uci;
 }
 
-Object.assign(globalThis, { __selftest: selftest, __sfBench: sfBench, __db: db, __repMove: repMove, __maiaPick: maiaPick });
+/** Meilleur coup Stockfish (pour jouer « mon » camp dans les tests automatiques). */
+async function sfBest(fen: string, ms = 300) {
+  return (await stockfish.analyse(fen, ms)).bestMove;
+}
+
+Object.assign(globalThis, { __selftest: selftest, __sfBench: sfBench, __db: db, __repMove: repMove, __maiaPick: maiaPick, __sfBest: sfBest });

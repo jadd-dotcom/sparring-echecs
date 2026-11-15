@@ -97,7 +97,7 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
   const run = { outcome: outcome ?? 'mate', myMoves, minMoves: start.minMoves };
 
   return (
-    <div className="play">
+    <div className="play" data-start-fen={start.fen}>
       <div className="board-col">
         <Board fen={chess.fen()} orientation="w" movable={!outcome && !thinking && chess.turn() === 'w' ? 'w' : null}
           onMove={onMove} highlight={highlight} />
