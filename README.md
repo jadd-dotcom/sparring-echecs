@@ -7,6 +7,8 @@ Appli web (PWA) d'entraînement aux échecs pour tablette, 100 % dans le navigat
 - **Analyse d'après-partie** par Stockfish 19 lite (single-thread) : imprécisions / erreurs / gaffes selon la chute de % de gain.
 - **Paquet de révision** (J+1, J+3, J+7, J+14, J+30 ; raté → J+1).
 - **Stats** : courbe de niveau, V/N/D, gaffes par partie. Export/import JSON.
+- **Ouvertures (V2)** : répertoire en PGN à variantes (Londres, GDR, Française pré-chargés, vérifiés par Stockfish),
+  parties à thème, sorties signalées en revue, trous du répertoire, drill en répétition espacée, stats par ouverture.
 
 ## Développement
 
@@ -19,6 +21,8 @@ npx vite preview --port 4173
 node tests/selftest20.cjs   # 20 parties Maia vs aléatoire dans Chromium (Playwright)
 node tests/e2e.cjs <dossier-captures>   # parcours tactile complet sur iPad émulé
 node tests/offline.cjs <url>            # mesures + test hors ligne
+node tests/v2.cjs <dossier-captures>    # parcours Ouvertures (V2)
+npm run validate-repertoire             # vérif Stockfish du répertoire pré-chargé → docs/REPERTOIRE.md
 ```
 
 Déploiement : GitHub Actions → GitHub Pages (`.github/workflows/deploy.yml`).
