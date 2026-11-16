@@ -48,6 +48,32 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.locator('.counts').waitFor({ timeout: 300000 });
   assert(true, `analyse Stockfish en ligne : ${((Date.now() - ta) / 1000).toFixed(1)} s`);
 
+  // Mats élémentaires en ligne : leçon (figurines) + exercice joué jusqu'au mat (mon camp : Stockfish via le plateau)
+  await p.goto(URL + '#/mates/kq/lesson');
+  for (let i = 0; i < 12; i++) await p.getByRole('button', { name: /Coup suivant/ }).tap();
+  await p.getByText(/Piège du pat : ♕c7/).first().waitFor();
+  assert(true, 'leçon Dame : piège du pat affiché en figurines (♕c7)');
+  await p.goto(URL); await p.goto(URL + '#/mates/kq/play');
+  await p.getByText(/Coups : /).waitFor({ timeout: 60000 });
+  const n0 = await p.evaluate(() => window.__db.mateRuns.count());
+  for (let k = 0; k < 40 && (await p.evaluate(() => window.__db.mateRuns.count())) === n0; k++) {
+    await p.getByText('À toi : mate le roi noir.').waitFor({ timeout: 30000 }).catch(() => {});
+    if ((await p.evaluate(() => window.__db.mateRuns.count())) > n0) break;
+    const fen0 = await p.locator('[data-start-fen]').getAttribute('data-start-fen');
+    const shown = await p.locator('.moves').innerText();
+    const c = new Chess(fen0);
+    const FIG = { '♔': 'K', '♕': 'Q', '♖': 'R', '♗': 'B', '♘': 'N' };
+    if (!shown.includes('Aucun')) for (const t of shown.replace(/[♔♕♖♗♘]/g, (x) => FIG[x]).split(/\s+/)) if (!/^\d+\.$/.test(t)) c.move(t);
+    if (c.turn() !== 'w') { await p.waitForTimeout(150); continue; }
+    const u = await p.evaluate((f) => window.__sfBest(f, 300), c.fen());
+    await sq(u.slice(0, 2)).tap(); await sq(u.slice(2, 4)).tap();
+    await p.waitForTimeout(150);
+  }
+  const run = await p.evaluate(() => window.__db.mateRuns.toArray().then((a) => a[a.length - 1]));
+  assert(run.outcome === 'mate', `exercice D+R en ligne : mat en ${run.myMoves} coups (minimum exact ${run.minMoves})`);
+  const movesShown = await p.locator('.moves').innerText();
+  assert(/[♔♕]/.test(movesShown) && !/[KQRBN][a-h]?x?[a-h][1-8]/.test(movesShown), 'liste des coups en figurines : ' + movesShown.slice(0, 60));
+
   // Hors ligne
   await ctx.setOffline(true);
   await p.goto(URL);

@@ -159,3 +159,8 @@
   avant le mat final où 16 coups sur 17 feraient pat).
 - **Limite de validation** = max(minimum + 10, 2 × minimum), plafonnée à 50 (ex. minimum 16 → 32 coups ; 19 → 38).
   Vérification Stockfish refaite : 80/80 dans la limite (`docs/MATS.md`).
+
+## Notation à figurines (16/11)
+- Partout où un coup s'affiche dans l'interface (liste des coups, revue, messages de pat et de coup correct, leçons, drill,
+  éditeur de répertoire, trous) : ♔ ♕ ♖ ♗ ♘, rien pour les pions (`src/lib/notation.ts`, fonction `fig`, appliquée seulement
+  à l'affichage). Le PGN, l'export JSON et le rapport pour Claude restent en notation anglaise standard.

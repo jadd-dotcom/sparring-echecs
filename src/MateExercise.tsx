@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { fig } from './lib/notation';
 import { Chess } from 'chess.js';
 import Board, { type BoardArrow } from './Board';
 import { db, type MateRun } from './db';
@@ -118,7 +119,7 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
 
   const limit = moveLimit(start.minMoves);
   const unprotected = flags.filter((f) => f.kind === 'unprotected');
-  const label = (f: MoveFlag) => `${Math.floor(f.ply / 2) + 1}. ${f.san}`;
+  const label = (f: MoveFlag) => fig(`${Math.floor(f.ply / 2) + 1}. ${f.san}`);
   const run = { outcome: outcome ?? 'mate', myMoves, minMoves: start.minMoves };
 
   // Après un pat : position avant mon coup, flèche rouge = mon coup, verte = coup correct.
@@ -160,8 +161,8 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
                   : `Au-delà de la limite (${limit}) : réussite qui ne compte pas pour la validation.`}</p>
               : <p>Échec de l’exercice{review ? '.' : ' : la position va dans ton paquet de révision.'}</p>}
             {outcome === 'stalemate' && (pat ? (
-              <p className="pat-explain">Ton coup <b>{pat.mySan}</b> (flèche rouge) a fait pat : le roi noir n’avait plus aucune case et
-                {' '}n’était pas en échec.{pat.goodSan && <> Coup correct : <b>{pat.goodSan}</b> (flèche verte)
+              <p className="pat-explain">Ton coup <b>{fig(pat.mySan)}</b> (flèche rouge) a fait pat : le roi noir n’avait plus aucune case et
+                {' '}n’était pas en échec.{pat.goodSan && <> Coup correct : <b>{fig(pat.goodSan)}</b> (flèche verte)
                 {pat.mateIn ? ` — mat en ${pat.mateIn} ${pat.exact ? '(distance exacte)' : '(selon Stockfish)'}` : ''}.</>}</p>
             ) : <p className="pulse muted">Recherche d’un coup correct…</p>)}
             {unprotected.length > 0 && <p>⚠ Pièce sans protection à portée du roi noir après {unprotected.map(label).join(', ')}.</p>}
@@ -169,7 +170,7 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
         )}
         <div className="card moves">
           {moves.length === 0 ? <span className="muted">Aucun coup joué</span>
-            : moves.map((m, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${m}` : m)).join(' ')}
+            : fig(moves.map((m, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${m}` : m)).join(' '))}
         </div>
       </aside>
     </div>

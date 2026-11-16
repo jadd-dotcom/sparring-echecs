@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { fig } from '../lib/notation';
 import { db, DUE_NEW, type Opening } from '../db';
 import { go } from '../router';
 import { lines, parsePgn } from '../lib/repertoire';
@@ -50,7 +51,7 @@ export default function Openings() {
           <div className="opening-head">
             <h3>{o.name}</h3>
             <span className="muted">{o.color === 'w' ? 'Blancs' : 'Noirs'} · {n} ligne{n > 1 ? 's' : ''}
-              {o.forced.length > 0 && <> · l’adversaire joue {o.forced.join(', ')}</>}</span>
+              {o.forced.length > 0 && <> · l’adversaire joue {fig(o.forced.join(', '))}</>}</span>
           </div>
           <div className="row">
             <button className="primary" disabled={n === 0} onClick={() => go({ name: 'play', opening: o.id })}>Partie à thème</button>

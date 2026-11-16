@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { fig } from '../lib/notation';
 import { Chess } from 'chess.js';
 import Board, { type BoardArrow } from '../Board';
 import MateExercise from '../MateExercise';
@@ -71,13 +72,13 @@ function Lesson({ level }: { level: MateLevelId }) {
           <h3>Leçon : {def.name}</h3>
           <p>{lesson.intro}</p>
           <ol className="steps">
-            {lesson.steps.map((t, i) => <li key={i} className={step === i + 1 ? 'on' : ''}>{t}</li>)}
+            {lesson.steps.map((t, i) => <li key={i} className={step === i + 1 ? 'on' : ''}>{fig(t)}</li>)}
           </ol>
           {trap && (
-            <p className="trap">⚠ Piège du pat : <b>{trap.san}</b> (flèche rouge) ferait pat — le roi noir n’aurait plus aucune case
-              {' '}sans être en échec{trapCount > 1 ? ` (${trapCount} coups font pat ici)` : ''}. Le bon coup : <b>{lesson.moves[k].san}</b> (▶).</p>
+            <p className="trap">⚠ Piège du pat : <b>{fig(trap.san)}</b> (flèche rouge) ferait pat — le roi noir n’aurait plus aucune case
+              {' '}sans être en échec{trapCount > 1 ? ` (${trapCount} coups font pat ici)` : ''}. Le bon coup : <b>{fig(lesson.moves[k].san)}</b> (▶).</p>
           )}
-          <p className="muted small">{k === 0 ? 'Avance coup par coup avec ▶.' : `Coup ${Math.ceil(k / 2)} : ${lesson.moves.slice(0, k).map((m, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${m.san}` : m.san)).slice(-2).join(' ')}`}
+          <p className="muted small">{k === 0 ? 'Avance coup par coup avec ▶.' : `Coup ${Math.ceil(k / 2)} : ${fig(lesson.moves.slice(0, k).map((m, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${m.san}` : m.san)).slice(-2).join(' '))}`}
             {c.isCheckmate() && ' — échec et mat !'}</p>
           {c.isCheckmate() && <button className="primary" onClick={() => go({ name: 'mates', level, mode: 'play' })}>À toi : exercice</button>}
         </div>

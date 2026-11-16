@@ -3,6 +3,8 @@ const { chromium, devices } = require('playwright');
 const OUT = process.argv[2];
 const URL = process.argv[3] || 'http://localhost:4173/sparring-echecs/';
 const ONLY = process.argv[4] || 'all';
+const FIGS = { K: '♔', Q: '♕', R: '♖', B: '♗', N: '♘' };
+const fig = (t) => t.replace(/(^|[^A-Za-z0-9])([KQRBN])(?=[a-h]?[1-8]?x?[a-h][1-8])/g, (_, b, p) => b + FIGS[p]).replace(/([a-h][18])=([QRBN])/g, (_, q, p) => q + '=' + FIGS[p]);
 const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log('ok -', m); };
 
 (async () => {
@@ -87,7 +89,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByText(/Trous du répertoire/).waitFor();
   await p.screenshot({ path: OUT + '/v2-4-trous.png' });
   const linesBefore = await p.locator('.line-row').count();
-  await p.getByRole('button', { name: `Ajouter ${hole.bestSan} au répertoire` }).tap();
+  await p.getByRole('button', { name: `Ajouter ${fig(hole.bestSan)} au répertoire` }).tap();
   await p.getByText(/Trou comblé : 1 ligne ajoutée/).waitFor({ timeout: 60000 });
   assert(await p.locator('.line-row').count() === linesBefore + 1, 'trou comblé : +1 ligne, trou supprimé');
   const holeCard = await p.evaluate((k) => window.__db.cards.where('[openingId+key]').equals(['french', k]).first(), hole.key);
@@ -105,14 +107,14 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(/1 ligne ajoutée\./.test(m1), 'ligne 3...dxe4 ajoutée et validée par Stockfish (' + m1 + ')');
   await playLine(['e2e4', 'e7e6', 'd2d4', 'd7d5', 'b1c3', 'd8g5']); // 3...Qg5?? perd la dame
   await p.getByText(/Nouvelle ligne : 0/).waitFor({ timeout: 60000 });
-  assert(/Refusée.*Qg5/.test(await p.getByText(/Nouvelle ligne : 0/).innerText()), 'message de refus');
+  assert(/Refusée.*♕g5/.test(await p.getByText(/Nouvelle ligne : 0/).innerText()), 'message de refus (figurines)');
   await p.screenshot({ path: OUT + '/v2-5-ligne-refusee.png' });
   assert(true, 'ligne 3...Qg5?? refusée (perte > 0,5 pion)');
 
   // --- Suppression
   p.once('dialog', (d) => d.accept());
   const n0 = await p.locator('.line-row').count();
-  await p.locator('.line-row', { has: p.locator('.line-text', { hasText: /3\. Nc3 dxe4$/ }) }).getByTitle('Supprimer').tap();
+  await p.locator('.line-row', { has: p.locator('.line-text', { hasText: /3\. ♘c3 dxe4$/ }) }).getByTitle('Supprimer').tap();
   await p.getByText('Ligne supprimée.').waitFor();
   assert(await p.locator('.line-row').count() === n0 - 1, 'ligne supprimée');
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { fig } from '../lib/notation';
 import Board, { type BoardArrow } from '../Board';
 import { db, DUE_NEW, type Card } from '../db';
 import { addDays, dayKey, INTERVALS, schedule } from '../lib/srs';
@@ -112,12 +113,12 @@ export default function Revise({ opening }: { opening?: string }) {
             <>
               <h2>📖 {openingName[card.openingId!] ?? 'Répertoire'}</h2>
               <p>Joue le coup de ton répertoire ({card.myColor === 'w' ? 'Blancs' : 'Noirs'}).{card.due === DUE_NEW && <> <span className="tag">nouvelle</span></>}</p>
-              <p className="muted line-text">{formatLine(card.path ?? []) || 'Position de départ'}</p>
+              <p className="muted line-text">{fig(formatLine(card.path ?? [])) || 'Position de départ'}</p>
             </>
           ) : (
             <>
               <h2>Trouve le bon coup</h2>
-              <p>Tu joues les {card.myColor === 'w' ? 'Blancs' : 'Noirs'}. Dans cette partie, tu avais joué <b>{card.playedSan}</b>
+              <p>Tu joues les {card.myColor === 'w' ? 'Blancs' : 'Noirs'}. Dans cette partie, tu avais joué <b>{fig(card.playedSan)}</b>
                 {' '}({card.severity === 'blunder' ? 'gaffe' : 'erreur'}).</p>
             </>
           )}
@@ -126,11 +127,11 @@ export default function Revise({ opening }: { opening?: string }) {
         {outcome && (
           <div className={`card ${outcome.ok ? 'good' : 'bad'}`}>
             {isDrill ? (outcome.ok
-              ? <p>✅ Juste ! <b>{outcome.san}</b> est bien dans ton répertoire.</p>
-              : <p>❌ <b>{outcome.san}</b> n’est pas ton coup de répertoire. Prévu : <b>{card.acceptSan?.join(' ou ')}</b> (flèche verte). Tu la reverras demain.</p>)
+              ? <p>✅ Juste ! <b>{fig(outcome.san)}</b> est bien dans ton répertoire.</p>
+              : <p>❌ <b>{fig(outcome.san)}</b> n’est pas ton coup de répertoire. Prévu : <b>{fig(card.acceptSan?.join(' ou ') ?? '')}</b> (flèche verte). Tu la reverras demain.</p>)
             : outcome.ok
-              ? <p>✅ Juste ! <b>{outcome.san}</b>{outcome.uci === card.bestUci ? ' est le meilleur coup.' : ` est presque aussi bon que ${card.bestSan} (−${outcome.drop.toFixed(1)} pts).`}</p>
-              : <p>❌ <b>{outcome.san}</b> perd {Math.round(outcome.drop)} pts. Le bon coup était <b>{card.bestSan}</b> (flèche verte). Tu la reverras demain.</p>}
+              ? <p>✅ Juste ! <b>{fig(outcome.san)}</b>{outcome.uci === card.bestUci ? ' est le meilleur coup.' : ` est presque aussi bon que ${fig(card.bestSan)} (−${outcome.drop.toFixed(1)} pts).`}</p>
+              : <p>❌ <b>{fig(outcome.san)}</b> perd {Math.round(outcome.drop)} pts. Le bon coup était <b>{fig(card.bestSan)}</b> (flèche verte). Tu la reverras demain.</p>}
             <button className="primary" onClick={() => { setOutcome(null); setQueue(queue.slice(1)); }}>Suivante</button>
           </div>
         )}

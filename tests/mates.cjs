@@ -4,6 +4,8 @@ const { chromium, devices } = require('playwright');
 const { Chess } = require('chess.js');
 const OUT = process.argv[2];
 const URL = process.argv[3] || 'http://localhost:4173/sparring-echecs/';
+const FIG = { '♔': 'K', '♕': 'Q', '♖': 'R', '♗': 'B', '♘': 'N' };
+const unfig = (t) => t.replace(/[♔♕♖♗♘]/g, (c) => FIG[c]);
 const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log('ok -', m); };
 
 (async () => {
@@ -23,7 +25,9 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
       if ((await runs()).length > n0) break;
       await p.getByText('À toi : mate le roi noir.').waitFor({ timeout: 30000 }).catch(() => {});
       if ((await runs()).length > n0) break;
-      const moves = await p.locator('.moves').innerText();
+      const shown = await p.locator('.moves').innerText();
+      if (k === 0 && !shown.includes('Aucun') && /[KQRBN][a-h]?x?[a-h][1-8]/.test(shown)) throw new Error('lettres anglaises affichées : ' + shown);
+      const moves = unfig(shown);
       const fen0 = await p.locator('[data-start-fen]').getAttribute('data-start-fen');
       const c = new Chess(fen0);
       if (!moves.includes('Aucun')) for (const t of moves.split(/\s+/)) if (!/^\d+\.$/.test(t)) c.move(t);
@@ -67,15 +71,25 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(await p.locator('section.locked').count() === 3, 'niveau 1 validé → niveau 2 (échelle) débloqué');
 
   // Exercice raté par pat : dès qu'un coup fait pat, on le joue
-  await p.goto(URL); await p.goto(URL + '#/mates/kq/play');
-  const patRun = await playExercise(async (fen, c) => {
-    for (const m of c.moves({ verbose: true })) { const d = new Chess(fen); d.move(m); if (d.isStalemate()) return m.from + m.to; }
-    return sfPick(fen);
-  });
+  let patRun = null;
+  for (let attempt = 0; attempt < 3 && patRun?.outcome !== 'stalemate'; attempt++) {
+    await p.goto(URL); await p.goto(URL + '#/mates/kq/play');
+    patRun = await playExercise(async (fen, c) => {
+      const legal = c.moves({ verbose: true });
+      const after = (m) => { const d = new Chess(fen); d.move(m); return d; };
+      const pat = legal.find((m) => after(m).isStalemate());
+      if (pat) return pat.from + pat.to;
+      const best = await sfPick(fen);
+      if (!after({ from: best.slice(0, 2), to: best.slice(2, 4) }).isCheckmate()) return best;
+      // Ne pas mater tant qu'aucun coup pat n'est apparu : un coup sûr qui ne mate pas.
+      const safe = legal.find((m) => { const d = after(m); return !d.isCheckmate() && !d.isStalemate() && !d.moves({ verbose: true }).some((x) => x.captured); });
+      return safe ? safe.from + safe.to : best;
+    });
+  }
   assert(patRun.outcome === 'stalemate', `exercice terminé par pat après ${patRun.myMoves} coups`);
   await p.getByText(/n’avait plus aucune case et/).waitFor({ timeout: 30000 });
   const expl = await p.locator('.pat-explain').innerText();
-  assert(/Coup correct : .+ — mat en \d+ \(distance exacte\)/.test(expl), 'explication : ' + expl.replace(/\s+/g, ' '));
+  assert(/Coup correct : .+ — mat en \d+ \(distance exacte\)/.test(expl) && !/[KQRBN][a-h]?x?[a-h][1-8]/.test(expl), 'explication (figurines) : ' + expl.replace(/\s+/g, ' '));
   await p.screenshot({ path: OUT + '/m-5-pat.png' });
   await p.getByRole('button', { name: 'Position de pat' }).tap();
   await p.getByRole('button', { name: 'Avant mon coup' }).tap();
@@ -83,10 +97,10 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   // Leçon : étape « piège du pat »
   await p.goto(URL); await p.goto(URL + '#/mates/kq/lesson');
   for (let i = 0; i < 12; i++) await p.getByRole('button', { name: /Coup suivant/ }).tap();
-  await p.getByText(/Piège du pat : Qc7/).first().waitFor();
+  await p.getByText(/Piège du pat : ♕c7/).first().waitFor();
   await p.waitForTimeout(500);
   await p.screenshot({ path: OUT + '/m-6-lecon-pat.png' });
-  assert(true, 'leçon Dame : étape « piège du pat » avec le coup Qc7 en flèche rouge');
+  assert(true, 'leçon Dame : étape « piège du pat » avec le coup ♕c7 en flèche rouge (figurines)');
 
   // Exercice raté : la dame se met à côté du roi noir sans protection
   await p.goto(URL); await p.goto(URL + '#/mates/kq/play');
