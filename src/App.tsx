@@ -8,6 +8,7 @@ import Settings from './screens/Settings';
 import Openings from './screens/Openings';
 import Report from './screens/Report';
 import Mates from './screens/Mates';
+import OpeningLessonScreen from './screens/OpeningLesson';
 import RepertoireEditor from './screens/RepertoireEditor';
 import { ensureOpenings } from './openings';
 import './selftest';
@@ -31,7 +32,7 @@ export default function App() {
       )}
       <main>{ready && <>
         {route.name === 'home' && <Home />}
-        {route.name === 'play' && <Play key={route.opening ?? ''} opening={route.opening} />}
+        {route.name === 'play' && <Play key={`${route.opening ?? ''}-${route.unrated ? 'nc' : ''}`} opening={route.opening} unrated={route.unrated} />}
         {route.name === 'review' && <Review key={route.id} id={route.id} />}
         {route.name === 'revise' && <Revise key={route.opening ?? ''} opening={route.opening} />}
         {route.name === 'openings' && <Openings />}
@@ -39,6 +40,7 @@ export default function App() {
         {route.name === 'stats' && <Stats />}
         {route.name === 'settings' && <Settings />}
         {route.name === 'report' && <Report />}
+        {route.name === 'lesson' && <OpeningLessonScreen key={route.id} id={route.id} />}
         {route.name === 'mates' && <Mates key={`${route.level}-${route.mode}`} level={route.level} mode={route.mode} />}
       </>}</main>
     </div>

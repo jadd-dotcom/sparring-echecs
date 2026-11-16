@@ -52,7 +52,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByRole('button', { name: /Abandonner/ }).tap();
   await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
   await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
-  await p.locator('.counts').waitFor({ timeout: 60000 });
+  await p.locator('table.classes').waitFor({ timeout: 60000 });
   assert(true, 'analyse Stockfish hors ligne');
   assert(errors.length === 0, 'aucune erreur JS ' + errors.join(' | '));
   await b.close();

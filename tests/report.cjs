@@ -62,7 +62,7 @@ const THOUGHTS = [
     console.log(`   partie ${n + 1} : ${last.myColor === 'w' ? 'Blancs' : 'Noirs'}, ${last.result} (${last.termination}), ${last.uci.length} demi-coups`);
     const t0 = Date.now();
     await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
-    await p.locator('.counts').waitFor({ timeout: 600000 });
+    await p.locator('table.classes').waitFor({ timeout: 600000 });
     const ga = await p.evaluate((id) => window.__db.games.get(id), last.id);
     const errs = ga.analysis.filter((a) => a.severity === 'mistake' || a.severity === 'blunder');
     assert(errs.every((a) => a.detail && a.detail.motif), `partie ${n + 1} analysée en ${((Date.now() - t0) / 1000).toFixed(0)} s : ${errs.length} erreurs/gaffes, motifs ${errs.map((a) => a.detail.motif).join(', ')}`);

@@ -99,7 +99,7 @@ export default function Stats() {
         <div className="card tile"><div className="big">{w} / {dr} / {l}</div><div className="muted">victoires / nulles / défaites</div></div>
         <div className="card tile"><div className="big">{avgBl === null ? '–' : avgBl.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</div><div className="muted">gaffes par partie (moy.)</div></div>
       </div>
-      <section className="card"><h3>Mon niveau</h3><RatingChart games={games} /></section>
+      <section className="card"><h3>Mon niveau</h3><RatingChart games={games.filter((g) => !g.unrated)} /></section>
       <section className="card"><h3>Gaffes par partie <span className="muted">(30 dernières analysées)</span></h3><BlunderChart games={games} /></section>
       <section className="card">
         <h3>Par ouverture <span className="muted">(parties à thème)</span></h3>
@@ -131,7 +131,7 @@ export default function Stats() {
               <tr key={g.id}>
                 <td>{new Date(g.date).toLocaleDateString('fr-FR')}</td>
                 <td>{g.myColor === 'w' ? 'Blancs' : 'Noirs'}{g.openingId && <div className="muted small">📖 {openings.find((o) => o.id === g.openingId)?.name}</div>}</td>
-                <td>{g.score === 1 ? 'Victoire' : g.score === 0 ? 'Défaite' : 'Nulle'} <span className="muted">({g.termination})</span></td>
+                <td>{g.score === 1 ? 'Victoire' : g.score === 0 ? 'Défaite' : 'Nulle'} <span className="muted">({g.termination}{g.unrated ? ', non comptée' : ''})</span></td>
                 <td>{Math.round(g.ratingAfter ?? 0)}</td>
                 <td>{g.counts ? g.counts.blunder : '–'}</td>
                 <td><button className="small" onClick={() => go({ name: 'review', id: g.id! })}>{g.analysis ? 'Revoir' : 'Analyser'}</button></td>

@@ -31,6 +31,9 @@ node tests/report.cjs <dossier-captures> # 3 parties de test → docs/exemple-ra
 node tests/mates.cjs <dossier-captures>  # onglet Mats élémentaires
 npm run verify-mates                    # 20 positions/niveau, Stockfish joue mon camp → docs/MATS.md
 node tests/settings.cjs <dossier-captures> # réglages : niveau, couleur, alternance
+node tests/cancel.cjs <dossier-captures>   # annulation et partie non comptée
+node tests/lessons.cjs <dossier-captures>  # mode Leçon (Londres)
+npm run lessons-doc                     # docs/LECONS-OUVERTURES.md depuis les données
 node tests/public.cjs <url>             # test de l'URL publique (chargement, Maia, analyse, hors ligne)
 npm run validate-repertoire             # vérif Stockfish du répertoire pré-chargé → docs/REPERTOIRE.md
 ```

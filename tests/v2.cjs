@@ -55,7 +55,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
 
   // Revue : la sortie est signalée avec le coup prévu
   await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
-  await p.locator('.counts').waitFor({ timeout: 120000 });
+  await p.locator('table.classes').waitFor({ timeout: 120000 });
   await p.getByText(/Sortie du répertoire/).waitFor();
   await p.screenshot({ path: OUT + '/v2-3-revue-sortie.png' });
   assert(true, 'revue : sortie du répertoire signalée');

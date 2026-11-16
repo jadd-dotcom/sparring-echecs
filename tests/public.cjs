@@ -11,11 +11,12 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   let bytes = 0;
   ctx.on('requestfinished', async (r) => { try { const s = await r.sizes(); bytes += s.responseBodySize + s.responseHeadersSize; } catch {} });
   const p = await ctx.newPage();
+  globalThis.__page = p;
   const errors = [];
   p.on('pageerror', (e) => errors.push(e.message));
   const sq = (s) => p.locator(`[data-square="${s}"]`);
   const cur = () => p.evaluate(() => window.__db.meta.get('current').then((m) => m?.value ?? null));
-  const waitPlies = async (n) => { const end = Date.now() + 60000; for (;;) { const g = await cur(); if (g && g.uci.length >= n) return g; if (Date.now() > end) throw new Error('Maia ne répond pas'); await p.waitForTimeout(100); } };
+  const waitPlies = async (n) => { const end = Date.now() + 60000; for (;;) { const g = await cur(); if (g && g.uci.length >= n) return g; if (Date.now() > end) throw new Error(`Maia ne répond pas (attendu ${n} demi-coups, partie : ${g ? g.uci.join(' ') + ' / ' + g.myColor : 'aucune'})`); await p.waitForTimeout(100); } };
 
   const t0 = Date.now();
   const resp = await p.goto(URL);
@@ -45,8 +46,15 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
   const ta = Date.now();
   await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
-  await p.locator('.counts').waitFor({ timeout: 300000 });
+  await p.locator('table.classes').waitFor({ timeout: 300000 });
   assert(true, `analyse Stockfish en ligne : ${((Date.now() - ta) / 1000).toFixed(1)} s`);
+
+  // Revue façon Chess.com et leçon d'ouverture
+  assert(await p.locator('table.classes').count() === 1 && await p.locator('.mv .ic').count() >= 10, 'revue : bilan par catégorie et icônes sur les coups');
+  await p.goto(URL + '#/lesson/london');
+  await p.getByRole('button', { name: /Coup suivant/ }).tap();
+  await p.getByText(/Mot nouveau — centre/).waitFor();
+  assert(true, 'leçon Londres : 1er coup expliqué, « centre » défini');
 
   // Mats élémentaires en ligne : leçon (figurines) + exercice joué jusqu'au mat (mon camp : Stockfish via le plateau)
   await p.goto(URL + '#/mates/kq/lesson');
@@ -92,7 +100,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByRole('button', { name: /Abandonner/ }).tap();
   await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
   await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
-  await p.locator('.counts').waitFor({ timeout: 120000 });
+  await p.locator('table.classes').waitFor({ timeout: 120000 });
   assert(true, 'analyse Stockfish hors ligne');
   await p.goto(URL + '#/mates');
   await p.getByRole('heading', { name: /1\. Dame/ }).waitFor();
@@ -101,4 +109,4 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(true, 'exercice de mat prêt hors ligne (position précalculée)');
   assert(errors.length === 0, 'aucune erreur JS ' + errors.join(' | '));
   await b.close();
-})().catch((e) => { console.error(e); process.exit(1); });
+})().catch(async (e) => { console.error(e); try { await globalThis.__page?.screenshot({ path: process.env.SHOT ?? '/tmp/public-fail.png' }); console.error('capture :', process.env.SHOT); } catch {} process.exit(1); });

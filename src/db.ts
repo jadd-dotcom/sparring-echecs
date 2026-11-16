@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie';
 import type { Severity } from './lib/winpct';
 import type { BookExit } from './lib/repertoire';
 import type { ErrorDetail } from './lib/report/motifs';
+import type { MoveClass } from './lib/moveClass';
 import type { MateLevelId, MateOutcome, MoveFlag } from './lib/mates';
 import { RATING_START, type Score } from './lib/rating';
 import type { ProfileData } from './lib/profile';
@@ -24,6 +25,22 @@ export interface MoveAnalysis {
   detail?: ErrorDetail;
 }
 
+/** Un coup (des deux camps) classé façon Chess.com. Le « Livre » est ajouté à l'affichage. */
+export interface PlyEval {
+  ply: number;
+  san: string;
+  uci: string;
+  bestUci: string | null;
+  bestSan: string | null;
+  wpBefore: number;   // % de gain du joueur qui joue, avec le meilleur coup
+  wpAfter: number;    // après le coup joué
+  drop: number;
+  cls: MoveClass;
+}
+
+/** Barre d'évaluation d'une position : % de gain des Blancs et libellé (+1.2, M3…). */
+export interface EvalBarPoint { wpWhite: number; label: string }
+
 export interface Game {
   id?: number;
   source: GameSource;
@@ -42,9 +59,14 @@ export interface Game {
   maiaMs?: number[];
   analysis?: MoveAnalysis[];
   counts?: { inaccuracy: number; mistake: number; blunder: number };
+  /** Tous les coups classés (les miens et ceux de Maia) et barre d'évaluation (fens[0..n]). */
+  plies?: PlyEval[];
+  bars?: EvalBarPoint[];
   /** Partie à thème : ouverture choisie et première sortie du répertoire. */
   openingId?: string;
   bookExit?: BookExit | null;
+  /** Partie non comptée (sans effet sur le niveau). */
+  unrated?: boolean;
   /** « Ce que je pensais », saisi pendant la revue : demi-coup → texte. */
   thoughts?: Record<number, string>;
 }
@@ -142,6 +164,8 @@ export interface CurrentGame {
   maiaMs: number[];
   startedAt: number;
   openingId?: string;
+  /** Partie non comptée : analysée normalement, sans effet sur le niveau. */
+  unrated?: boolean;
 }
 
 class SparringDB extends Dexie {

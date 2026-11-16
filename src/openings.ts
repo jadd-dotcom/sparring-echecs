@@ -8,7 +8,7 @@ import {
 } from './lib/repertoire';
 import { stockfish } from './engines/stockfish';
 import { evalToCp, type Eval } from './lib/winpct';
-import { dayKey } from './lib/srs';
+import { addDays, dayKey, INTERVALS } from './lib/srs';
 
 export const MAX_LOSS_CP = 50;         // 0,5 pion
 export const NEW_DRILL_PER_DAY = 10;   // nouvelles positions de répertoire introduites par jour
@@ -176,4 +176,33 @@ export function lineLoss(o: Pick<Opening, 'color' | 'checks'>, sans: string[], s
     max = Math.max(max, r.loss);
   }
   return { max, bad };
+}
+
+// ---------------------------------------------------------------- mode Leçon
+
+export interface LessonProgress { blocksDone: number; done: boolean; at: number }
+
+export async function getLessonProgress(): Promise<Record<string, LessonProgress>> {
+  return ((await db.meta.get('openingLessons'))?.value as Record<string, LessonProgress>) ?? {};
+}
+
+export async function saveLessonProgress(id: string, p: LessonProgress) {
+  const all = await getLessonProgress();
+  const prev = all[id];
+  all[id] = { blocksDone: Math.max(prev?.blocksDone ?? 0, p.blocksDone), done: !!(prev?.done || p.done), at: p.at };
+  await db.meta.put({ key: 'openingLessons', value: all });
+}
+
+/**
+ * Les coups appris en leçon entrent dans le drill : leurs cartes « nouvelles » sont programmées pour demain
+ * (sans compter dans le quota de nouvelles positions du jour). Renvoie le nombre de cartes introduites.
+ */
+export async function introduceDrillCards(openingId: string, fens: string[]): Promise<number> {
+  const due = addDays(dayKey(), INTERVALS[0]);
+  let n = 0;
+  for (const fen of fens) {
+    const card = await db.cards.where('[openingId+key]').equals([openingId, fenKey(fen)]).first();
+    if (card && card.due === DUE_NEW) { await db.cards.update(card.id!, { due, step: 0 }); n++; }
+  }
+  return n;
 }

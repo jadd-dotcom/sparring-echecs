@@ -3,7 +3,8 @@ import { fig } from '../lib/notation';
 import Board from '../Board';
 import { maia } from '../engines/maia';
 import { getCurrent, setCurrent, db, type CurrentGame, type Game, type Opening } from '../db';
-import { autoResult, chessFrom, finishGame, newCurrentGame } from '../game';
+import { autoResult, cancelCurrentGame, chessFrom, finishGame, newCurrentGame } from '../game';
+import { canCancel, CANCEL_MAX_MY_MOVES } from '../lib/gameRules';
 import { go } from '../router';
 import { replay } from '../analysis';
 import { waitOfflineReady } from '../offline';
@@ -14,7 +15,7 @@ const MIN_THINK_MS = 450; // pour que la réponse ne soit pas instantanée
 /** Maia accepte la nulle si sa probabilité de gain est ≤ 55 %. */
 const DRAW_ACCEPT = 0.55;
 
-export default function Play({ opening }: { opening?: string }) {
+export default function Play({ opening, unrated }: { opening?: string; unrated?: boolean }) {
   const [cur, setCur] = useState<CurrentGame | null>(null);
   const [loadPct, setLoadPct] = useState<number | null>(0);
   const [prep, setPrep] = useState<string | null>(null);
@@ -22,6 +23,7 @@ export default function Play({ opening }: { opening?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [ended, setEnded] = useState<Game | null>(null);
   const [confirmResign, setConfirmResign] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const busy = useRef(false);
   const [op, setOp] = useState<Opening | null>(null);
@@ -32,7 +34,7 @@ export default function Play({ opening }: { opening?: string }) {
       if (existing && opening && existing.openingId !== opening) {
         setMsg('Une partie est déjà en cours : termine-la avant d’en commencer une autre.');
       }
-      const g = existing ?? (await newCurrentGame(opening));
+      const g = existing ?? (await newCurrentGame(opening, { unrated }));
       if (g.openingId) setOp((await db.openings.get(g.openingId)) ?? null);
       setCur(g);
       // 1er lancement : on laisse le service worker tout mettre en cache (une seule fois).
@@ -46,7 +48,7 @@ export default function Play({ opening }: { opening?: string }) {
       setLoadPct(null);
       maia.onProgress(null);
     })();
-  }, [opening]);
+  }, [opening, unrated]);
 
   const end = useCallback(async (g: CurrentGame, result: Game['result'], termination: string) => {
     const id = await finishGame(g, result, termination);
@@ -56,6 +58,9 @@ export default function Play({ opening }: { opening?: string }) {
   }, []);
 
   const apply = useCallback(async (g: CurrentGame, uci: string, ms?: number) => {
+    // Partie annulée ou terminée entre-temps (ex. annulation pendant que Maia réfléchit) : on n'écrit rien.
+    const live = await getCurrent();
+    if (!live || live.startedAt !== g.startedAt) return g;
     const next: CurrentGame = { ...g, uci: [...g.uci, uci], maiaMs: ms !== undefined ? [...g.maiaMs, ms] : g.maiaMs };
     await setCurrent(next);
     setCur(next);
@@ -123,6 +128,14 @@ export default function Play({ opening }: { opening?: string }) {
     } finally { busy.current = false; }
   }
 
+  async function cancelGame() {
+    setConfirmCancel(false);
+    try {
+      await cancelCurrentGame();
+      go({ name: 'home' });
+    } catch (e) { setMsg((e as Error).message); }
+  }
+
   async function resign() {
     if (!cur) return;
     setConfirmResign(false);
@@ -136,6 +149,7 @@ export default function Play({ opening }: { opening?: string }) {
     <div className="play">
       <div className="board-col">
         {op && <div className="theme-line">📖 Partie à thème : <b>{op.name}</b></div>}
+        {cur.unrated && <div className="theme-line">⚪ Partie non comptée : sans effet sur ton niveau</div>}
         <div className="player-line">
           <span>🤖 Maia · {Math.round(cur.botElo)}</span>
           {thinking && loadPct === null && <span className="muted pulse">réfléchit…</span>}
@@ -157,11 +171,25 @@ export default function Play({ opening }: { opening?: string }) {
         <div className="moves card">{moveRows.length ? moveRows.map((r, i) => <div key={i}>{r}</div>) : <span className="muted">Aucun coup joué</span>}</div>
         {!ended && (
           <div className="row">
+            {canCancel(cur) && (
+              <button onClick={() => setConfirmCancel(true)} title={`Possible pendant tes ${CANCEL_MAX_MY_MOVES} premiers coups`}>✕ Annuler la partie</button>
+            )}
             <button disabled={!myTurn} onClick={offerDraw}>½ Proposer nulle</button>
             <button className="danger" onClick={() => setConfirmResign(true)}>🏳 Abandonner</button>
           </div>
         )}
+        {!ended && canCancel(cur) && <p className="muted small">Annulation possible pendant tes {CANCEL_MAX_MY_MOVES} premiers coups ; ensuite, seulement nulle ou abandon.</p>}
       </aside>
+
+      {confirmCancel && (
+        <div className="modal"><div className="modal-box">
+          <p>Annuler la partie ? Elle sera supprimée, sans aucun effet sur ton niveau.</p>
+          <div className="row">
+            <button onClick={() => setConfirmCancel(false)}>Continuer à jouer</button>
+            <button className="primary" onClick={cancelGame}>Annuler la partie</button>
+          </div>
+        </div></div>
+      )}
 
       {confirmResign && (
         <div className="modal"><div className="modal-box">
@@ -177,11 +205,13 @@ export default function Play({ opening }: { opening?: string }) {
         <div className="modal"><div className="modal-box">
           <h2>{ended.score === 1 ? 'Victoire !' : ended.score === 0 ? 'Défaite' : 'Partie nulle'}</h2>
           <p>{ended.termination} · {ended.result}</p>
-          <p>Niveau : {Math.round(ended.ratingBefore!)} → <b>{Math.round(ended.ratingAfter!)}</b>{' '}
-            ({ended.ratingAfter! - ended.ratingBefore! >= 0 ? '+' : ''}{Math.round(ended.ratingAfter! - ended.ratingBefore!)})</p>
+          {ended.unrated
+            ? <p>Partie non comptée : ton niveau reste à <b>{Math.round(ended.ratingBefore!)}</b>.</p>
+            : <p>Niveau : {Math.round(ended.ratingBefore!)} → <b>{Math.round(ended.ratingAfter!)}</b>{' '}
+              ({ended.ratingAfter! - ended.ratingBefore! >= 0 ? '+' : ''}{Math.round(ended.ratingAfter! - ended.ratingBefore!)})</p>}
           <div className="col">
             <button className="primary" onClick={() => go({ name: 'review', id: ended.id! })}>Analyser mes coups</button>
-            <button onClick={async () => { busy.current = false; setEnded(null); setMsg(null); setCur(await newCurrentGame(op?.id)); }}>
+            <button onClick={async () => { busy.current = false; setEnded(null); setMsg(null); setCur(await newCurrentGame(op?.id, { unrated: cur.unrated })); }}>
               {op ? `Rejouer : ${op.name}` : 'Nouvelle partie'}
             </button>
           </div>
