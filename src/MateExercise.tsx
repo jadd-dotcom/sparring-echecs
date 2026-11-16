@@ -3,7 +3,7 @@ import { Chess } from 'chess.js';
 import Board from './Board';
 import { db, type MateRun } from './db';
 import {
-  countsForStreak, EXTRA_MOVES_ALLOWED, exerciseOutcome, flagsAfterMyMove, OUTCOME_LABEL,
+  countsForStreak, EXTRA_MOVES_ALLOWED, exerciseOutcome, flagsAfterMyMove, OUTCOME_LABEL, pickNearStalemate, stalemateTraps,
   type MateLevel, type MateOutcome, type MoveFlag,
 } from './lib/mates';
 import { addFailedCard, defenderMove, prepareExercise } from './matesService';
@@ -26,6 +26,8 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
   );
   const [moves, setMoves] = useState<string[]>([]);
   const [flags, setFlags] = useState<MoveFlag[]>([]);
+  // Coups pièges (pat) de chaque position où c'était à moi de jouer.
+  const traps = useRef<{ ply: number; traps: string[] }[]>([]);
   const [outcome, setOutcome] = useState<MateOutcome | null>(null);
   const [thinking, setThinking] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -48,7 +50,10 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
   const myMoves = Math.ceil(moves.length / 2);
   const last = chess.history({ verbose: true }).slice(-1)[0];
 
-  async function finish(result: MateOutcome, allMoves: string[], allFlags: MoveFlag[]) {
+  async function finish(result: MateOutcome, allMoves: string[], unprotectedFlags: MoveFlag[]) {
+    const near = pickNearStalemate(traps.current, result);
+    const allFlags = near ? [...unprotectedFlags, near] : unprotectedFlags;
+    setFlags(allFlags);
     setOutcome(result);
     const run: MateRun = {
       level: level.id, fen: start!.fen, minMoves: start!.minMoves, myMoves: Math.ceil(allMoves.length / 2),
@@ -66,6 +71,7 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
       const c = new Chess(start!.fen);
       for (const m of moves) c.move(m);
       const ply = moves.length;
+      traps.current.push({ ply, traps: stalemateTraps(c.fen()) });
       const mv = c.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
       const next = [...moves, mv.san];
       const nextFlags = [...flags, ...flagsAfterMyMove(c.fen(), ply, mv.san)];
@@ -118,7 +124,10 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
                   ? 'Dans la limite : la réussite compte pour la validation.'
                   : `Au-delà de la limite (${limit}) : réussite qui ne compte pas pour la validation.`}</p>
               : <p>Échec de l’exercice{review ? '.' : ' : la position va dans ton paquet de révision.'}</p>}
-            {nearStalemate.length > 0 && <p>⚠ Pat frôlé : le roi noir n’avait plus qu’une seule case après {nearStalemate.map(label).join(', ')}.</p>}
+            {nearStalemate.map((f) => (
+              <p key="pat">⚠ Pat frôlé : au coup {Math.floor(f.ply / 2) + 1}, jouer <b>{f.san}</b> aurait fait pat
+                {f.traps && f.traps > 1 ? ` (${f.traps} coups pièges dans cette position)` : ''}.</p>
+            ))}
             {unprotected.length > 0 && <p>⚠ Pièce sans protection à portée du roi noir après {unprotected.map(label).join(', ')}.</p>}
             {nearStalemate.length === 0 && unprotected.length === 0 && <p className="muted">Ni pat frôlé, ni pièce laissée sans protection. 👍</p>}
           </div>

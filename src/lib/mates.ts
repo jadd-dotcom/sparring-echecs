@@ -152,20 +152,42 @@ export function exerciseOutcome(c: Chess, pieceCount: number): MateOutcome | nul
   return null;
 }
 
-export interface MoveFlag { ply: number; san: string; kind: 'near-stalemate' | 'unprotected' }
-
 /**
- * Alertes après un de mes coups (position après le coup, roi noir au trait) :
- * - pat frôlé : le roi noir n'avait plus qu'un seul coup légal sans être en échec ;
- * - pièce sans protection : une de mes pièces attaquée par le roi noir et non défendue.
+ * Alerte d'un exercice.
+ * - 'unprotected' : après mon coup `san` (demi-coup `ply`), une de mes pièces était attaquée par le roi noir et non défendue ;
+ * - 'near-stalemate' : dans la position du demi-coup `ply` (à moi de jouer), le coup piège `san` aurait fait pat
+ *   (`traps` = nombre de coups pat possibles dans cette position).
  */
+export interface MoveFlag { ply: number; san: string; kind: 'near-stalemate' | 'unprotected'; traps?: number }
+
+/** Pièce sans protection après un de mes coups (position après le coup, roi noir au trait). */
 export function flagsAfterMyMove(fenAfter: string, ply: number, san: string): MoveFlag[] {
   const c = new Chess(fenAfter);
-  const out: MoveFlag[] = [];
-  if (c.isGameOver()) return out;
-  if (!c.inCheck() && c.moves().length === 1) out.push({ ply, san, kind: 'near-stalemate' });
-  if (hangingPieces(fenAfter, 'w').length) out.push({ ply, san, kind: 'unprotected' });
+  if (c.isGameOver()) return [];
+  return hangingPieces(fenAfter, 'w').length ? [{ ply, san, kind: 'unprotected' }] : [];
+}
+
+/** Mes coups légaux qui feraient pat dans cette position (à moi de jouer), en SAN. */
+export function stalemateTraps(fen: string): string[] {
+  const c = new Chess(fen);
+  const out: string[] = [];
+  for (const m of c.moves({ verbose: true })) {
+    c.move(m);
+    if (c.isStalemate()) out.push(m.san);
+    c.undo();
+  }
   return out;
+}
+
+/**
+ * « Pat frôlé » : au plus une alerte par exercice, sur la position où le plus de coups faisaient pat
+ * (à égalité, la première). Aucune alerte si aucun coup n'aurait fait pat, ou si l'exercice a fini en pat.
+ */
+export function pickNearStalemate(positions: { ply: number; traps: string[] }[], outcome?: MateOutcome | null): MoveFlag | null {
+  if (outcome === 'stalemate') return null;
+  let best: { ply: number; traps: string[] } | null = null;
+  for (const p of positions) if (p.traps.length && (!best || p.traps.length > best.traps.length)) best = p;
+  return best ? { ply: best.ply, san: best.traps[0], kind: 'near-stalemate', traps: best.traps.length } : null;
 }
 
 export interface MateRunLike { outcome: MateOutcome; myMoves: number; minMoves: number }

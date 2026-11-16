@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Chess } from 'chess.js';
 import {
-  exerciseOutcome, flagsAfterMyMove, generatePosition, hangingPieces, isValidExercise, levelProgress,
+  exerciseOutcome, flagsAfterMyMove, pickNearStalemate, stalemateTraps, generatePosition, hangingPieces, isValidExercise, levelProgress,
   MATE_LEVELS, mulberry32, unlockedLevels,
 } from './mates';
 
@@ -66,11 +66,20 @@ describe('issue de l’exercice', () => {
 });
 
 describe('alertes', () => {
-  it('pat frôlé : le roi n’a plus qu’une case', () => {
-    // Roi h8, Rg6 contrôle g7/h7 ? Dame g6 : le roi h8 n'a que g8.
-    const c = play('7k/8/5K2/8/8/8/8/1Q6 w - - 0 1', ['Qb7']);
-    expect(c.moves().length).toBe(1);
-    expect(flagsAfterMyMove(c.fen(), 0, 'Qb7').map((f) => f.kind)).toEqual(['near-stalemate']);
+  it('coups pièges : coups légaux qui feraient pat', () => {
+    // Roi noir h8, roi blanc f6, dame g1 : Qg6 fait pat (Qg7# mate, la plupart des autres coups sont neutres).
+    const traps = stalemateTraps('7k/8/5K2/8/8/8/8/6Q1 w - - 0 1');
+    expect(traps).toContain('Qg6');
+    expect(traps).not.toContain('Qg7#');
+    expect(stalemateTraps('8/8/8/3k4/8/2R5/8/6K1 w - - 0 1')).toEqual([]); // roi au centre : aucun pat possible
+  });
+  it('aucune position avec un coup pat → pas d’alerte (même si le roi noir n’avait qu’une case)', () => {
+    expect(pickNearStalemate([{ ply: 0, traps: [] }, { ply: 2, traps: [] }])).toBeNull();
+  });
+  it('au plus une alerte : la position avec le plus de coups pat', () => {
+    const f = pickNearStalemate([{ ply: 4, traps: ['Qg6'] }, { ply: 8, traps: ['Qf7', 'Qg6', 'Kg6'] }, { ply: 10, traps: ['Qb8'] }]);
+    expect(f).toEqual({ ply: 8, san: 'Qf7', kind: 'near-stalemate', traps: 3 });
+    expect(pickNearStalemate([{ ply: 8, traps: ['Qf7'] }], 'stalemate')).toBeNull(); // déjà pat : l'issue le dit
   });
   it('pièce sans protection', () => {
     const c = play('8/8/8/3k4/8/2R5/8/6K1 w - - 0 1', ['Rc4']);
