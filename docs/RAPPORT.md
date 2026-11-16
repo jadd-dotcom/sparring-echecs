@@ -172,3 +172,15 @@
 - **Ma couleur** : Blancs / Noirs / Alterner (défaut). En mode Alterner, la couleur change à chaque partie libre terminée
   (abandon compris) ; une partie interrompue (rechargement) reprend avec la même couleur ; les parties à thème ne comptent pas.
 - Tests : unitaires (bornes, calibration après réglage, alternance, couleur fixe) et navigateur (`tests/settings.cjs`).
+
+## Premiers essais : annulation, mode Leçon, analyse façon Chess.com (16/11)
+- **Annuler la partie** : bouton pendant mes 5 premiers coups (partie supprimée, aucun effet sur le niveau ni sur la couleur
+  suivante) ; après le 5e coup, seulement nulle ou abandon. **Partie non comptée** (case à cocher à l'accueil) : analysée
+  normalement, sans effet sur le niveau ni sur la calibration ; la couleur alterne quand même.
+- **Mode Leçon** des ouvertures (Londres, puis GDR, puis Française) : ligne principale par blocs de 3 coups avec une phrase
+  par coup (mots techniques expliqués à leur 1re apparition), rejeu de chaque bloc (case surlignée puis solution), le plan en
+  3 phrases, partie type jouée par Stockfish depuis la ligne principale avec moments clés commentés ; les coups appris entrent
+  dans le drill. Contenu complet : `docs/LECONS-OUVERTURES.md`.
+- **Revue façon Chess.com** : chaque coup (le mien et ceux de Maia) classé Meilleur / Excellent (≤ 3) / Bon (< 10) /
+  Imprécision / Erreur / Gaffe / Livre ; pastille sur la case d'arrivée, icône dans la liste, barre d'évaluation, phrase
+  « ♔d2 est une gaffe. Meilleur : ♕h5+ » avec flèche, bilan par catégorie pour moi et pour Maia. Le rapport pour Claude ne change pas.
