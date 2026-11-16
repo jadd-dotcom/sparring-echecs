@@ -3,6 +3,7 @@ import { Chess } from 'chess.js';
 import { maia } from './engines/maia';
 import { stockfish } from './engines/stockfish';
 import { db } from './db';
+import { soundLog } from './sound';
 import { buildIndex, fenKey, parsePgn } from './lib/repertoire';
 
 export interface SelfTestReport {
@@ -77,4 +78,4 @@ async function sfBest(fen: string, ms = 300) {
   return (await stockfish.analyse(fen, ms)).bestMove;
 }
 
-Object.assign(globalThis, { __selftest: selftest, __sfBench: sfBench, __db: db, __repMove: repMove, __maiaPick: maiaPick, __sfBest: sfBest });
+Object.assign(globalThis, { __selftest: selftest, __sfBench: sfBench, __db: db, __repMove: repMove, __maiaPick: maiaPick, __sfBest: sfBest, __soundLog: soundLog });

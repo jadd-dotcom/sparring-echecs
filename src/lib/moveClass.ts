@@ -32,13 +32,17 @@ export function classifyMove(o: { isBest: boolean; drop: number; isBook?: boolea
   return 'blunder';
 }
 
-/** Phrase sous l'échiquier, ex. « ♔d2 est une gaffe. Meilleur : ♕h5+ ». (`san` et `best` déjà mis en forme.) */
-export function moveSentence(san: string, cls: MoveClass, best?: string | null): string {
+/**
+ * Phrase sous l'échiquier, ex. « ♔d2 est une gaffe : le ♗e7 menaçait de prendre ta ♕h4 (menace ignorée). Meilleur : ♕h5+ ».
+ * (`san`, `best` et `reason` déjà mis en forme ; `motif` = libellé du motif.)
+ */
+export function moveSentence(san: string, cls: MoveClass, best?: string | null, reason?: string | null, motif?: string | null): string {
   const what: Record<MoveClass, string> = {
     best: 'le meilleur coup', excellent: 'excellent', good: 'un bon coup', book: 'un coup du livre (ton répertoire)',
     inaccuracy: 'une imprécision', mistake: 'une erreur', blunder: 'une gaffe',
   };
-  const s = `${san} est ${what[cls]}.`;
+  const why = reason ? ` : ${reason}${motif ? ` (${motif.toLowerCase()})` : ''}` : '';
+  const s = `${san} est ${what[cls]}${why}.`;
   return best && cls !== 'best' && cls !== 'book' ? `${s} Meilleur : ${best}` : s;
 }
 

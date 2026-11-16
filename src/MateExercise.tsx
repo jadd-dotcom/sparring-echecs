@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { fig } from './lib/notation';
 import { Chess } from 'chess.js';
 import Board, { type BoardArrow } from './Board';
+import { MoveList, NavBanner, NavBar } from './MoveNav';
+import { useMoveNav } from './useMoveNav';
+import { loadSoundSetting, soundForMove } from './sound';
 import { db, type MateRun } from './db';
 import {
   countsForStreak, exerciseOutcome, flagsAfterMyMove, moveLimit, OUTCOME_LABEL,
@@ -53,6 +56,8 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
   const [thinking, setThinking] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const busy = useRef(false);
+  const nav = useMoveNav(moves.length, (i) => soundForMove(moves[i] ?? ''));
+  useEffect(() => { loadSoundSetting(); }, []);
 
   useEffect(() => {
     if (start) return;
@@ -99,6 +104,7 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
       const nextFlags = [...flags, ...flagsAfterMyMove(c.fen(), ply, mv.san)];
       setMoves(next); setFlags(nextFlags);
       const o = exerciseOutcome(c, level.pieces.length);
+      soundForMove(mv.san, !!o);
       if (o) { await finish(o, next, nextFlags, { fen: fenBefore, uci: mv.from + mv.to + (mv.promotion ?? ''), san: mv.san }); return; }
       setThinking(true);
       const t0 = performance.now();
@@ -110,6 +116,7 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
       setMoves(next2);
       setThinking(false);
       const o2 = exerciseOutcome(c, level.pieces.length);
+      soundForMove(rm.san, !!o2);
       if (o2) await finish(o2, next2, nextFlags);
     } finally {
       busy.current = false;
@@ -122,21 +129,27 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
   const label = (f: MoveFlag) => fig(`${Math.floor(f.ply / 2) + 1}. ${f.san}`);
   const run = { outcome: outcome ?? 'mate', myMoves, minMoves: start.minMoves };
 
+  // Navigation (lecture seule) dans les coups de l'exercice.
+  const navChess = new Chess(start.fen);
+  moves.slice(0, nav.at).forEach((m) => navChess.move(m));
+  const shownLast = nav.live ? last : navChess.history({ verbose: true }).slice(-1)[0];
   // Après un pat : position avant mon coup, flèche rouge = mon coup, verte = coup correct.
   const patView = outcome === 'stalemate' && pat && showBefore;
-  const boardFen = patView ? pat.fenBefore : chess.fen();
+  const lastMove = !patView && shownLast ? { from: shownLast.from, to: shownLast.to } : null;
+  const boardFen = patView ? pat.fenBefore : nav.live ? chess.fen() : navChess.fen();
   const arrows: BoardArrow[] = [];
   if (patView) {
     arrows.push({ from: pat.myUci.slice(0, 2), to: pat.myUci.slice(2, 4), color: 'rgba(220,40,40,.85)' });
     if (pat.goodUci) arrows.push({ from: pat.goodUci.slice(0, 2), to: pat.goodUci.slice(2, 4), color: 'rgba(30,160,60,.9)' });
   }
-  const highlight: Record<string, string> = !patView && last ? { [last.from]: 'rgba(255,255,0,.35)', [last.to]: 'rgba(255,255,0,.45)' } : {};
 
   return (
     <div className="play" data-start-fen={start.fen}>
       <div className="board-col">
-        <Board fen={boardFen} orientation="w" movable={!outcome && !thinking && chess.turn() === 'w' ? 'w' : null}
-          onMove={onMove} highlight={highlight} arrows={arrows} />
+        <NavBanner nav={nav} />
+        <Board fen={boardFen} orientation="w" movable={nav.live && !outcome && !thinking && chess.turn() === 'w' ? 'w' : null}
+          onMove={onMove} lastMove={lastMove} arrows={arrows} onTap={nav.live ? undefined : nav.toLive} />
+        {!patView && <NavBar nav={nav} label="Le roi noir a joué" />}
         {outcome === 'stalemate' && pat && (
           <div className="row nav">
             <button className={showBefore ? 'primary' : ''} onClick={() => setShowBefore(true)}>Avant mon coup</button>
@@ -168,10 +181,7 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
             {unprotected.length > 0 && <p>⚠ Pièce sans protection à portée du roi noir après {unprotected.map(label).join(', ')}.</p>}
           </div>
         )}
-        <div className="card moves">
-          {moves.length === 0 ? <span className="muted">Aucun coup joué</span>
-            : fig(moves.map((m, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${m}` : m)).join(' '))}
-        </div>
+        <MoveList san={moves} at={nav.at} onPick={nav.goTo} />
       </aside>
     </div>
   );

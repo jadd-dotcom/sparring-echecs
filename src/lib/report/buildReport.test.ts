@@ -71,6 +71,8 @@ describe('rapport complet', () => {
   it('contient les 4 sections et les faits clés', () => {
     expect(md).toContain('## 1. Résumé de la période');
     expect(md).toContain('bornes 550–2600');
+    expect(md).toContain('| Partie | Mes coups | Précision | Imprécisions | Erreurs | Gaffes |');
+    expect(md).toContain('- **Précision** : précision de mes coups');
     expect(md).toContain('Début : **901** → fin : **913** (+12)');
     expect(md).toContain('Victoires / nulles / défaites : **1 / 0 / 2**');
     expect(md).toContain('| Pièce laissée en prise | 4 |');

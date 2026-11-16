@@ -5,6 +5,7 @@ import { asciiBoard, moveLabel, phaseOf, type Phase } from './facts';
 import { MOTIF_LABEL, MOTIF_ORDER, DETAIL_DEPTH, LINE_PLIES, type Motif } from './motifs';
 import { SEVERITY_LABEL, THRESHOLDS } from '../winpct';
 import { RATING_MAX, RATING_MIN, RATING_START } from '../rating';
+import { accuracyOfGame } from '../accuracy';
 
 export type PeriodKind = 'since-last' | '7-days' | '20-games';
 
@@ -113,6 +114,7 @@ export function buildReport({ now, period, games, allGames, cards }: ReportInput
     '',
     `- **Niveau** : estimation de type Elo, échelle de l’appli proche de Lichess (bornes ${RATING_MIN}–${RATING_MAX}), mise à jour après chaque partie. Mon adversaire est Maia-3, une IA qui imite le jeu humain, réglée 50 points au-dessus de mon niveau.`,
     '- **win%** : mes chances de gain estimées depuis l’évaluation de Stockfish (formule Lichess), de mon point de vue.',
+    '- **Précision** : précision de mes coups sur une partie, en %, avec la formule publique de Lichess (100 = aucun coup ne baisse mes chances de gain).',
     `- **Imprécision / erreur / gaffe** : un de mes coups qui fait chuter mon win% d’au moins ${THRESHOLDS.inaccuracy} / ${THRESHOLDS.mistake} / ${THRESHOLDS.blunder} points par rapport au meilleur coup.`,
     '- **Phases** : ouverture = coups 1 à 10 ; finale = chaque camp a au plus 13 points de pièces hors pions (cavalier/fou 3, tour 5, dame 9) ; milieu de partie = le reste.',
     `- **Suites Stockfish** : ${LINE_PLIES} demi-coups, profondeur ${DETAIL_DEPTH}. **Bilan matériel** = mes points − ceux de l’adversaire (pion 1, cavalier 3, fou 3, tour 5, dame 9) au bout de la suite.`,
@@ -144,16 +146,18 @@ export function buildReport({ now, period, games, allGames, cards }: ReportInput
   const Lo = games.filter((g) => g.score === 0).length;
   push('### Résultats', '', `Victoires / nulles / défaites : **${W} / ${D} / ${Lo}**.`, '');
 
-  push('### Imprécisions, erreurs, gaffes par partie', '', '| Partie | Mes coups | Imprécisions | Erreurs | Gaffes |', '|---|---|---|---|---|');
-  const tot = { moves: 0, inaccuracy: 0, mistake: 0, blunder: 0 };
+  push('### Imprécisions, erreurs, gaffes par partie', '', '| Partie | Mes coups | Précision | Imprécisions | Erreurs | Gaffes |', '|---|---|---|---|---|---|');
+  const tot = { moves: 0, inaccuracy: 0, mistake: 0, blunder: 0, acc: 0, accN: 0 };
   for (const g of games) {
     const an = g.analysis ?? [];
     const c = { inaccuracy: 0, mistake: 0, blunder: 0 };
     for (const a of an) if (a.severity !== 'ok') c[a.severity]++;
     tot.moves += an.length; tot.inaccuracy += c.inaccuracy; tot.mistake += c.mistake; tot.blunder += c.blunder;
-    push(`| n°${numberOf(g)} | ${an.length} | ${c.inaccuracy} | ${c.mistake} | ${c.blunder} |`);
+    const acc = accuracyOfGame(g)?.me;
+    if (acc != null) { tot.acc += acc; tot.accN++; }
+    push(`| n°${numberOf(g)} | ${an.length} | ${acc != null ? `${acc.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %` : '–'} | ${c.inaccuracy} | ${c.mistake} | ${c.blunder} |`);
   }
-  push(`| **Moyenne par partie** | ${avg(tot.moves, games.length)} | ${avg(tot.inaccuracy, games.length)} | ${avg(tot.mistake, games.length)} | ${avg(tot.blunder, games.length)} |`, '');
+  push(`| **Moyenne par partie** | ${avg(tot.moves, games.length)} | ${tot.accN ? `${(tot.acc / tot.accN).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %` : '–'} | ${avg(tot.inaccuracy, games.length)} | ${avg(tot.mistake, games.length)} | ${avg(tot.blunder, games.length)} |`, '');
 
   // Par phase
   const phases: Phase[] = ['ouverture', 'milieu', 'finale'];

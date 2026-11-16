@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { db, getProfile, type Game, type Opening } from '../db';
 import { openingStats } from '../lib/openingStats';
+import { accuracyOfGame } from '../lib/accuracy';
 import { RATING_START } from '../lib/rating';
 import { go } from '../router';
 
@@ -75,6 +76,37 @@ function BlunderChart({ games }: { games: Game[] }) {
   );
 }
 
+/** Ma précision (formule Lichess), partie après partie (parties analysées). */
+function AccuracyChart({ games }: { games: Game[] }) {
+  const [hover, setHover] = useState<number | null>(null);
+  const pts = games.map((g) => ({ g, v: accuracyOfGame(g)?.me })).filter((p): p is { g: Game; v: number } => typeof p.v === 'number');
+  if (!pts.length) return <p className="muted">Analyse une partie pour voir ta précision.</p>;
+  const x = (i: number) => PAD.l + (i * (W - PAD.l - PAD.r)) / Math.max(1, pts.length - 1);
+  const y = (v: number) => PAD.t + ((100 - v) * (H - PAD.t - PAD.b)) / 100;
+  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join('');
+  const last = pts[pts.length - 1];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="chart" role="img" aria-label="Ma précision partie après partie">
+      {[0, 50, 100].map((t) => (
+        <g key={t}><line x1={PAD.l} x2={W - PAD.r} y1={y(t)} y2={y(t)} className="grid" /><text x={PAD.l - 6} y={y(t) + 4} textAnchor="end" className="axis">{t} %</text></g>
+      ))}
+      <path d={d} className="line" />
+      {pts.map((p, i) => (
+        <g key={p.g.id} onPointerEnter={() => setHover(i)} onPointerDown={() => setHover(i)}>
+          <rect x={x(i) - 12} y={PAD.t} width={24} height={H - PAD.t - PAD.b} fill="transparent" />
+          {(i === pts.length - 1 || i === hover || pts.length < 25) && <circle cx={x(i)} cy={y(p.v)} r={i === hover ? 6 : 4} className="dot" />}
+        </g>
+      ))}
+      {hover !== null && (
+        <text x={Math.min(Math.max(x(hover), PAD.l + 60), W - 70)} y={PAD.t + 10} textAnchor="middle" className="tip">
+          {new Date(pts[hover].g.date).toLocaleDateString('fr-FR')} : {pts[hover].v.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %
+        </text>
+      )}
+      <text x={x(pts.length - 1)} y={y(last.v) - 10} textAnchor="end" className="label">{Math.round(last.v)} %</text>
+    </svg>
+  );
+}
+
 export default function Stats() {
   const [games, setGames] = useState<Game[] | null>(null);
   const [rating, setRating] = useState(RATING_START);
@@ -100,6 +132,7 @@ export default function Stats() {
         <div className="card tile"><div className="big">{avgBl === null ? '–' : avgBl.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</div><div className="muted">gaffes par partie (moy.)</div></div>
       </div>
       <section className="card"><h3>Mon niveau</h3><RatingChart games={games.filter((g) => !g.unrated)} /></section>
+      <section className="card"><h3>Ma précision <span className="muted">(formule Lichess, parties analysées)</span></h3><AccuracyChart games={games} /></section>
       <section className="card"><h3>Gaffes par partie <span className="muted">(30 dernières analysées)</span></h3><BlunderChart games={games} /></section>
       <section className="card">
         <h3>Par ouverture <span className="muted">(parties à thème)</span></h3>

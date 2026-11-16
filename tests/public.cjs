@@ -73,7 +73,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
     const shown = await p.locator('.moves').innerText();
     const c = new Chess(fen0);
     const FIG = { '♔': 'K', '♕': 'Q', '♖': 'R', '♗': 'B', '♘': 'N' };
-    if (!shown.includes('Aucun')) for (const t of shown.replace(/[♔♕♖♗♘]/g, (x) => FIG[x]).split(/\s+/)) if (!/^\d+\.$/.test(t)) c.move(t);
+    if (!shown.includes('Aucun')) for (const t of shown.replace(/[♔♕♖♗♘]/g, (x) => FIG[x]).split(/\s+/)) { const mv = t.replace(/^\d+(\.|…)/, ''); if (mv) c.move(mv); }
     if (c.turn() !== 'w') { await p.waitForTimeout(150); continue; }
     const u = await p.evaluate((f) => window.__sfBest(f, 300), c.fen());
     await sq(u.slice(0, 2)).tap(); await sq(u.slice(2, 4)).tap();

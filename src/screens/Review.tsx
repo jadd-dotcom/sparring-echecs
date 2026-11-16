@@ -2,12 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { fig } from '../lib/notation';
 import Board, { type BoardArrow } from '../Board';
 import { db, type Game } from '../db';
-import { analyseGame, analysePlies, replay } from '../analysis';
+import { analyseGame, analysePlies, evaluate, replay } from '../analysis';
+import { errorReason } from '../lib/reason';
+import { accuracyOfGame } from '../lib/accuracy';
+import { winPercent } from '../lib/winpct';
+import EvalCurve from '../EvalCurve';
 import { recordBookExit, treeOf } from '../openings';
 import { MOTIF_LABEL } from '../lib/report/motifs';
 import { buildIndex } from '../lib/repertoire';
 import {
-  bookLength, CLASS_COLOR, CLASS_ICON, CLASS_LABEL, CLASS_ORDER, classSummary, mergeIndexes, moveSentence, type MoveClass,
+  bookLength, CLASS_COLOR, CLASS_ICON, CLASS_LABEL, CLASS_ORDER, classifyMove, classSummary, mergeIndexes, moveSentence, type MoveClass,
 } from '../lib/moveClass';
 import { Chess } from 'chess.js';
 
@@ -44,6 +48,8 @@ export default function Review({ id }: { id: number }) {
   const [progress, setProgress] = useState<{ d: number; t: number; label: string } | null>(null);
   const [ply, setPly] = useState(-1); // -1 = position de départ
   const [bookLen, setBookLen] = useState(0);
+  // « Réessayer » : je cherche un meilleur coup dans la position d'une de mes erreurs.
+  const [retry, setRetry] = useState<{ ply: number; tries: number; checking: boolean; result: null | { ok: boolean; text: string }; solution: boolean } | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -115,7 +121,39 @@ export default function Review({ id }: { id: number }) {
       arrows.push({ from: m.from, to: m.to, color: 'rgba(40,110,230,.85)' });
     }
   }
+  // Réessayer : position AVANT mon coup, à moi de jouer.
+  const retryOn = retry !== null && retry.ply === ply;
+  if (retryOn) {
+    arrows.length = 0;
+    for (const k of Object.keys(highlight)) delete highlight[k];
+    for (const k of Object.keys(badges)) delete badges[k];
+    if (retry!.solution && pe?.bestUci) arrows.push({ from: pe.bestUci.slice(0, 2), to: pe.bestUci.slice(2, 4), color: 'rgba(30,160,60,.9)' });
+  }
   const bar = bars[ply + 1] ?? bars[0];
+  const acc = accuracyOfGame(game);
+  const fmtAcc = (v: number | null | undefined) => (v == null ? '–' : `${v.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`);
+  const reason = a?.detail && pe ? errorReason(a.detail, fens[ply], pe.uci) : null;
+
+  async function onRetryMove(uci: string) {
+    if (!retry || retry.checking || !pe) return;
+    setRetry({ ...retry, checking: true, result: null });
+    const fenBefore = fens[ply];
+    const c = new Chess(fenBefore);
+    const m = c.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
+    const before = await evaluate(fenBefore, 700);
+    const after = await evaluate(c.fen(), 700);
+    const isBest = uci === pe.bestUci || uci === before.bestMove;
+    const drop = isBest ? 0 : Math.max(0, winPercent(before.eval) - (100 - winPercent(after.eval)));
+    const k = classifyMove({ isBest, drop });
+    const ok = k === 'best' || k === 'excellent' || k === 'good';
+    const tries = retry.tries + 1;
+    setRetry({
+      ply: retry.ply, tries, checking: false, solution: !ok && tries >= 2,
+      result: ok
+        ? { ok, text: `✅ Bien vu : ${fig(m.san)} est ${k === 'best' ? 'le meilleur coup' : k === 'excellent' ? 'excellent' : 'un bon coup'}.` }
+        : { ok, text: `${fig(m.san)} est ${{ inaccuracy: 'une imprécision', mistake: 'une erreur', blunder: 'une gaffe' }[k as 'inaccuracy' | 'mistake' | 'blunder']}. ${tries >= 2 ? `Solution : ${fig(pe.bestSan ?? '')} (flèche verte).` : 'Essaie encore.'}` },
+    });
+  }
   const whiteBottom = game.myColor === 'w';
   const summary = classSummary(plies, game.myColor, bookLen, game.startFen.split(' ')[1] === 'w');
   const errorsPlies = game.analysis.filter((x) => x.severity !== 'ok').map((x) => x.ply);
@@ -129,25 +167,29 @@ export default function Review({ id }: { id: number }) {
             <div className="white" style={{ height: `${bar.wpWhite}%`, marginTop: whiteBottom ? 'auto' : 0, marginBottom: whiteBottom ? 0 : 'auto' }} />
             <span className="lbl" style={{ [bar.wpWhite >= 50 === whiteBottom ? 'bottom' : 'top']: 2, color: bar.wpWhite >= 50 ? '#333' : '#eee' }}>{bar.label}</span>
           </div>
-          <Board fen={fen} orientation={game.myColor} movable={null} arrows={arrows} highlight={highlight} badges={badges} />
+          <Board fen={retryOn ? fens[ply] : fen} orientation={game.myColor} movable={retryOn && !retry!.checking && !retry!.result?.ok ? game.myColor : null}
+            onMove={onRetryMove} arrows={arrows} highlight={highlight} badges={badges} lastMove={retryOn ? null : pe ? { from: pe.uci.slice(0, 2), to: pe.uci.slice(2, 4) } : null} />
         </div>
         <p className="move-sentence">
           {pe && cls ? <><span className="ic-inline" style={{ background: CLASS_COLOR[cls] }}>{CLASS_ICON[cls]}</span>{' '}
-            {moveSentence(fig(pe.san), cls, pe.bestSan ? fig(pe.bestSan) : null)}{' '}
+            {moveSentence(fig(pe.san), cls, pe.bestSan ? fig(pe.bestSan) : null, mine(ply) ? reason : null, mine(ply) && reason && a?.detail ? MOTIF_LABEL[a.detail.motif] : null)}{' '}
             <span className="muted small">({mine(ply) ? 'ton coup' : 'Maia'})</span></>
             : <span className="muted">Touche un coup ou utilise les flèches.</span>}
         </p>
         <div className="nav row">
-          <button onClick={() => setPly(-1)}>⏮</button>
-          <button onClick={() => setPly(Math.max(-1, ply - 1))}>◀</button>
-          <button onClick={() => setPly(Math.min(game.uci.length - 1, ply + 1))}>▶</button>
-          <button onClick={() => setPly(game.uci.length - 1)}>⏭</button>
-          <button onClick={() => { const n = errorsPlies.find((p) => p > ply); if (n !== undefined) setPly(n); }}>Erreur suivante</button>
+          <button onClick={() => { setRetry(null); setPly(-1); }}>⏮</button>
+          <button onClick={() => { setRetry(null); setPly(Math.max(-1, ply - 1)); }}>◀</button>
+          <button onClick={() => { setRetry(null); setPly(Math.min(game.uci.length - 1, ply + 1)); }}>▶</button>
+          <button onClick={() => { setRetry(null); setPly(game.uci.length - 1); }}>⏭</button>
+          <button onClick={() => { const n = errorsPlies.find((p) => p > ply); if (n !== undefined) { setRetry(null); setPly(n); } }}>Erreur suivante</button>
         </div>
       </div>
       <aside className="side-col">
         <div className="card">
           <b>{game.result}</b> · {game.termination} · tu avais les {game.myColor === 'w' ? 'Blancs' : 'Noirs'}{game.unrated ? ' · non comptée' : ''}
+          <div className="accuracy" aria-label="Précision (formule Lichess)">
+            <span>Précision : <b>toi {fmtAcc(acc?.me)}</b></span><span>Maia {fmtAcc(acc?.maia)}</span>
+          </div>
           <table className="classes">
             <thead><tr><th></th><th>Moi</th><th>Maia</th></tr></thead>
             <tbody>
@@ -159,6 +201,9 @@ export default function Review({ id }: { id: number }) {
               ))}
             </tbody>
           </table>
+        </div>
+        <div className="card">
+          <EvalCurve wpWhite={bars.map((b) => b.wpWhite)} current={ply + 1} onPick={(i) => { setRetry(null); setPly(i - 1); }} />
         </div>
         {game.openingId && (
           <div className="card book">
@@ -183,6 +228,17 @@ export default function Review({ id }: { id: number }) {
               <br />Motif : <b>{MOTIF_LABEL[a.detail.motif]}</b>
               <br /><span className="muted small">Réfutation : {fig(a.detail.refutation) || '—'}</span>
             </>}
+            {a && a.severity !== 'ok' && !retryOn && (
+              <div><button className="primary" onClick={() => setRetry({ ply, tries: 0, checking: false, result: null, solution: false })}>↻ Réessayer</button></div>
+            )}
+            {retryOn && (
+              <div className={`retry-card ${retry!.result ? (retry!.result.ok ? 'good' : 'bad') : ''}`}>
+                <p><b>Réessayer :</b> trouve un meilleur coup que {fig(pe!.san)}.</p>
+                {retry!.checking && <p className="pulse muted">Vérification par Stockfish…</p>}
+                {retry!.result && <p>{retry!.result.text}</p>}
+                <button onClick={() => setRetry(null)}>Fermer</button>
+              </div>
+            )}
             {a && (a.severity === 'mistake' || a.severity === 'blunder') && (
               <ThoughtBox key={ply} game={game} ply={ply} onSaved={(thoughts) => setGame((g) => (g ? { ...g, thoughts } : g))} />
             )}
@@ -193,7 +249,7 @@ export default function Review({ id }: { id: number }) {
             const c = clsOf(i);
             return (
               <button key={i} className={`mv ${i === ply ? 'active' : ''} ${mine(i) ? '' : 'theirs'} ${exit && exit.by !== 'end' && exit.ply === i ? 'book-exit' : ''}`}
-                onClick={() => setPly(i)} aria-label={`${s} : ${CLASS_LABEL[c]}`}>
+                onClick={() => { setRetry(null); setPly(i); }} aria-label={`${s} : ${CLASS_LABEL[c]}`}>
                 {i % 2 === 0 ? `${i / 2 + 1}.` : ''}{fig(s)}<span className="ic" style={{ background: CLASS_COLOR[c] }}>{CLASS_ICON[c]}</span>
               </button>
             );

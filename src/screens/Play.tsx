@@ -1,10 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Chess } from 'chess.js';
 import { fig } from '../lib/notation';
-import Board from '../Board';
+import Board, { type BoardArrow } from '../Board';
+import { MoveList, NavBanner, NavBar } from '../MoveNav';
+import { useMoveNav } from '../useMoveNav';
+import { loadSoundSetting, soundForMove } from '../sound';
+import { stockfish } from '../engines/stockfish';
+import { threatsAgainst } from '../lib/threats';
 import { maia } from '../engines/maia';
 import { getCurrent, setCurrent, db, type CurrentGame, type Game, type Opening } from '../db';
 import { autoResult, cancelCurrentGame, chessFrom, finishGame, newCurrentGame } from '../game';
-import { canCancel, CANCEL_MAX_MY_MOVES } from '../lib/gameRules';
+import { canCancel, CANCEL_MAX_MY_MOVES, myMovesPlayed } from '../lib/gameRules';
 import { go } from '../router';
 import { replay } from '../analysis';
 import { waitOfflineReady } from '../offline';
@@ -27,6 +33,11 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
   const [msg, setMsg] = useState<string | null>(null);
   const busy = useRef(false);
   const [op, setOp] = useState<Opening | null>(null);
+  // Assistance (partie non comptée uniquement)
+  const [hint, setHint] = useState<{ fen: string; uci: string; level: 1 | 2 } | null>(null);
+  const [hintBusy, setHintBusy] = useState(false);
+  const [showThreats, setShowThreats] = useState(false);
+  useEffect(() => { loadSoundSetting(); }, []);
 
   useEffect(() => {
     (async () => {
@@ -64,7 +75,9 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
     const next: CurrentGame = { ...g, uci: [...g.uci, uci], maiaMs: ms !== undefined ? [...g.maiaMs, ms] : g.maiaMs };
     await setCurrent(next);
     setCur(next);
-    const r = autoResult(chessFrom(next));
+    const c = chessFrom(next);
+    const r = autoResult(c);
+    soundForMove(c.history().slice(-1)[0] ?? '', !!r);
     if (r) await end(next, r.result, r.termination);
     return next;
   }, [end]);
@@ -100,20 +113,69 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
     })();
   }, [cur, ended, error, apply, op]);
 
+  const navTotal = cur?.uci.length ?? 0;
+  const sanAll = cur ? replay(cur.startFen, cur.uci).san : [];
+  const nav = useMoveNav(navTotal, (i) => soundForMove(sanAll[i] ?? ''));
+
   if (error) return <div className="card error">{error} <button onClick={() => location.reload()}>Recharger</button></div>;
   if (!cur) return null;
 
   const chess = chessFrom(cur);
   const myTurn = chess.turn() === cur.myColor && !ended;
-  const { san } = replay(cur.startFen, cur.uci);
-  const last = cur.uci[cur.uci.length - 1];
-  const highlight: Record<string, string> = last
-    ? { [last.slice(0, 2)]: 'rgba(255,255,0,.35)', [last.slice(2, 4)]: 'rgba(255,255,0,.45)' } : {};
+  const san = sanAll;
+  const live = nav.live;
+  // Position affichée : actuelle, ou celle revue (lecture seule, aucun effet sur la partie).
+  const shown = live ? chess : (() => { const c = new Chess(cur.startFen); cur.uci.slice(0, nav.at).forEach((u) => c.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] })); return c; })();
+  const lastUci = nav.at > 0 ? cur.uci[nav.at - 1] : null;
+  const lastMove = lastUci ? { from: lastUci.slice(0, 2), to: lastUci.slice(2, 4) } : null;
+  const canPlay = live && myTurn && loadPct === null;
+  // Dernier coup de Maia (au-dessus de l'échiquier)
+  const lastIsMaia = cur.uci.length > 0 && chess.turn() === cur.myColor;   // le dernier coup a été joué par l'autre camp
+  const lastMaiaSan = lastIsMaia ? san[san.length - 1] : null;
+
+  // Assistance (non comptée)
+  const assist = !!cur.unrated && !ended;
+  const arrows: BoardArrow[] = [];
+  const highlight: Record<string, string> = {};
+  if (assist && live) {
+    if (hint && hint.fen === chess.fen()) {
+      highlight[hint.uci.slice(0, 2)] = 'rgba(30,160,60,.55)';
+      if (hint.level === 2) arrows.push({ from: hint.uci.slice(0, 2), to: hint.uci.slice(2, 4), color: 'rgba(30,160,60,.9)' });
+    }
+    if (showThreats) for (const t of threatsAgainst(chess.fen(), cur.myColor)) arrows.push({ from: t.from, to: t.to, color: 'rgba(220,40,40,.85)' });
+  }
+  const threatCount = assist && showThreats ? threatsAgainst(chess.fen(), cur.myColor).length : 0;
+  const myMovesCount = myMovesPlayed(cur);
 
   async function onMove(uci: string) {
-    if (!cur || !myTurn || busy.current) return;
+    if (!cur || !canPlay || busy.current) return;
     setMsg(null);
+    setHint(null);
     await apply(cur, uci);
+  }
+
+  async function askHint() {
+    if (!cur || !canPlay || hintBusy) return;
+    const fen = chess.fen();
+    if (hint && hint.fen === fen) { setHint({ ...hint, level: 2 }); return; }
+    setHintBusy(true);
+    try {
+      const r = await stockfish.analyse(fen, 700);
+      if (r.bestMove) setHint({ fen, uci: r.bestMove, level: 1 });
+    } finally { setHintBusy(false); }
+  }
+
+  async function takeBack() {
+    if (!cur || !assist || !live || !myTurn || busy.current || myMovesCount === 0) return;
+    busy.current = true;
+    try {
+      // C'est à moi : on retire la réponse de Maia et mon dernier coup.
+      const next: CurrentGame = { ...cur, uci: cur.uci.slice(0, -2), maiaMs: cur.maiaMs.slice(0, -1) };
+      await setCurrent(next);
+      setCur(next);
+      setHint(null);
+      setMsg('Coup repris (partie non comptée).');
+    } finally { busy.current = false; }
   }
 
   async function offerDraw() {
@@ -142,9 +204,6 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
     await end(cur, cur.myColor === 'w' ? '0-1' : '1-0', 'Abandon');
   }
 
-  const moveRows: string[] = [];
-  for (let i = 0; i < san.length; i += 2) moveRows.push(fig(`${i / 2 + 1}. ${san[i]} ${san[i + 1] ?? ''}`));
-
   return (
     <div className="play">
       <div className="board-col">
@@ -154,11 +213,15 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
           <span>🤖 Maia · {Math.round(cur.botElo)}</span>
           {thinking && loadPct === null && <span className="muted pulse">réfléchit…</span>}
         </div>
-        <Board fen={chess.fen()} orientation={cur.myColor} movable={myTurn && loadPct === null ? cur.myColor : null}
-          onMove={onMove} highlight={highlight} />
+        {live
+          ? <div className="last-move">{lastMaiaSan ? <>Maia a joué : <b>{fig(lastMaiaSan)}</b></> : ''}</div>
+          : <NavBanner nav={nav} />}
+        <Board fen={shown.fen()} orientation={cur.myColor} movable={canPlay ? cur.myColor : null}
+          onMove={onMove} lastMove={lastMove} arrows={arrows} highlight={highlight} onTap={live ? undefined : nav.toLive} />
+        <NavBar nav={nav} />
         <div className="player-line">
           <span>🙂 Toi · {Math.round(cur.rating)} ({cur.myColor === 'w' ? 'Blancs' : 'Noirs'})</span>
-          {myTurn && loadPct === null && <span className="muted">à toi de jouer</span>}
+          {myTurn && live && loadPct === null && <span className="muted">à toi de jouer</span>}
         </div>
       </div>
       <aside className="side-col">
@@ -168,7 +231,18 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
           </div>
         )}
         {msg && <div className="card notice">{msg}</div>}
-        <div className="moves card">{moveRows.length ? moveRows.map((r, i) => <div key={i}>{r}</div>) : <span className="muted">Aucun coup joué</span>}</div>
+        <MoveList san={san} at={nav.at} onPick={nav.goTo} />
+        {assist && (
+          <div className="card assist">
+            <p className="muted small">Assistance (partie non comptée)</p>
+            <div className="row">
+              <button disabled={!canPlay || hintBusy} onClick={askHint}>💡 {hint && hint.fen === chess.fen() ? 'Montrer le coup' : 'Indice'}</button>
+              <button className={showThreats ? 'on' : ''} onClick={() => setShowThreats(!showThreats)}>⚠ {showThreats ? 'Masquer' : 'Afficher'} les menaces</button>
+              <button disabled={!live || !myTurn || thinking || myMovesCount === 0} onClick={takeBack}>↶ Reprendre mon coup</button>
+            </div>
+            {showThreats && <p className="muted small">{threatCount ? `${threatCount} menace${threatCount > 1 ? 's' : ''} (flèches rouges).` : 'Aucune pièce menacée.'}</p>}
+          </div>
+        )}
         {!ended && (
           <div className="row">
             {canCancel(cur) && (

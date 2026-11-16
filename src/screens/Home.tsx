@@ -15,10 +15,12 @@ export default function Home() {
   const [offline, setOffline] = useState<string>(isOfflineReady() ? 'ready' : '');
   useEffect(() => {
     (async () => {
-      setP(await getProfile());
-      setDue((await reviewQueue()).length);
-      setTotal(await db.cards.count());
-      setInProgress(!!(await getCurrent()));
+      // Tout charger avant le premier affichage (pas de « Jouer » qui devient « Reprendre la partie »).
+      const [prof, queue, nCards, current] = await Promise.all([getProfile(), reviewQueue(), db.cards.count(), getCurrent()]);
+      setDue(queue.length);
+      setTotal(nCards);
+      setInProgress(!!current);
+      setP(prof);
       if (!isOfflineReady()) {
         const ok = await waitOfflineReady((b, t) => setOffline(`${Math.round((100 * b) / t)} %`));
         setOffline(ok ? 'ready' : '');
