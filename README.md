@@ -33,6 +33,8 @@ npm run verify-mates                    # 20 positions/niveau, Stockfish joue mo
 node tests/settings.cjs <dossier-captures> # réglages : niveau, couleur, alternance
 node tests/cancel.cjs <dossier-captures>   # annulation et partie non comptée
 node tests/lessons.cjs <dossier-captures>  # mode Leçon (Londres)
+node tests/ingame.cjs <dossier-captures>   # navigation en partie, sons, assistance (non comptée)
+node tests/review2.cjs <dossier-captures>  # revue : raison, Réessayer, courbe, précision
 npm run lessons-doc                     # docs/LECONS-OUVERTURES.md depuis les données
 node tests/public.cjs <url>             # test de l'URL publique (chargement, Maia, analyse, hors ligne)
 npm run validate-repertoire             # vérif Stockfish du répertoire pré-chargé → docs/REPERTOIRE.md

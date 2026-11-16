@@ -184,3 +184,16 @@
 - **Revue façon Chess.com** : chaque coup (le mien et ceux de Maia) classé Meilleur / Excellent (≤ 3) / Bon (< 10) /
   Imprécision / Erreur / Gaffe / Livre ; pastille sur la case d'arrivée, icône dans la liste, barre d'évaluation, phrase
   « ♔d2 est une gaffe. Meilleur : ♕h5+ » avec flèche, bilan par catégorie pour moi et pour Maia. Le rapport pour Claude ne change pas.
+
+## Façon Chess.com : en partie et dans la revue (16/11)
+- **En partie** : navigation en lecture seule (⏮ ◀ ▶ ⏭, tap sur un coup de la liste), échiquier bloqué avec le bandeau
+  « Tu revois le coup n — ⏭ pour revenir », retour par ⏭ ou un tap sur l'échiquier ; si Maia joue pendant la navigation,
+  on reste sur place et ⏭ clignote (« Maia a joué »). Aucune annulation possible par ce biais. Même navigation dans les Mats.
+- **Dernier coup** : « Maia a joué : ♘g4 » au-dessus de l'échiquier ; surlignage plus contrasté.
+- **Sons** générés par Web Audio (aucun fichier, hors ligne, libres de droits) : coup, prise, échec, roque, fin ; réglage Sons.
+- **Assistance, seulement en partie non comptée** : Indice (pièce surlignée, puis flèche), Afficher les menaces (flèches rouges :
+  prises adverses gagnantes), Reprendre mon coup. Absente en partie comptée.
+- **Revue** : raison dans la phrase (tirée des motifs), ex. « ♕g4 est une gaffe : le ♗c8 peut prendre ta ♕g4 (pièce laissée en
+  prise). Meilleur : exd5 » ; bouton Réessayer sur mes imprécisions, erreurs et gaffes (réussi si le coup est Bon ou mieux,
+  solution au 2e essai) ; courbe d'évaluation cliquable ; précision des deux camps (formule publique de Lichess) ; courbe de
+  ma précision dans les Stats ; colonne Précision par partie dans le rapport pour Claude.
