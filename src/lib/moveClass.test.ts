@@ -23,6 +23,8 @@ describe('classement des coups', () => {
     expect(moveSentence('♔d2', 'blunder', '♕h5+')).toBe('♔d2 est une gaffe. Meilleur : ♕h5+');
     expect(moveSentence('♘f3', 'best', '♘f3')).toBe('♘f3 est le meilleur coup.');
     expect(moveSentence('e4', 'book', 'd4')).toBe('e4 est un coup du livre (ton répertoire).');
+    expect(moveSentence('♔d2', 'blunder', '♕h5+', 'le ♗e7 menaçait de prendre ta ♕h4', 'Menace ignorée'))
+      .toBe('♔d2 est une gaffe : le ♗e7 menaçait de prendre ta ♕h4 (menace ignorée). Meilleur : ♕h5+');
   });
 });
 

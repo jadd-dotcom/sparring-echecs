@@ -140,3 +140,13 @@ table.classes td:first-child, table.classes th:first-child { text-align: left; }
 @keyframes blink { 50% { opacity: .45; } }
 .blink { animation: blink .9s infinite; }
 .assist .row > button.on { outline: 3px solid var(--accent); }
+.evalcurve { width: 100%; height: auto; display: block; cursor: pointer; touch-action: pan-y; border-radius: 8px; }
+.evalcurve .bg { fill: #3a3a35; }
+.evalcurve .white { fill: #f1f0ea; }
+.evalcurve .mid { stroke: #8a8a80; stroke-width: 1; stroke-dasharray: 4 4; }
+.evalcurve .line { fill: none; stroke: var(--chart); stroke-width: 2; }
+.evalcurve .cursor { stroke: var(--accent); stroke-width: 2; }
+.evalcurve .dot { fill: var(--chart); stroke: #fff; stroke-width: 2; }
+.evalcurve .tip { fill: #222; font-size: 13px; font-weight: 700; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+.accuracy { display: flex; gap: 16px; margin: 6px 0; font-size: 1.05rem; }
+.retry-card.good { border-color: var(--accent); } .retry-card.bad { border-color: var(--danger); }

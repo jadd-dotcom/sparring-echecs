@@ -44,3 +44,10 @@ export function gameAccuracy(winWhite: number[], whiteStarts = true): { w: numbe
   };
   return { w: colorAcc(per.w), b: colorAcc(per.b) };
 }
+
+/** Précision de chaque camp d'une partie analysée (barre d'évaluation : % des Blancs, départ compris). */
+export function accuracyOfGame(g: { bars?: { wpWhite: number }[]; startFen: string; myColor: 'w' | 'b' }) {
+  if (!g.bars || g.bars.length < 2) return null;
+  const r = gameAccuracy(g.bars.slice(1).map((b) => b.wpWhite), g.startFen.split(' ')[1] === 'w');
+  return { me: g.myColor === 'w' ? r.w : r.b, maia: g.myColor === 'w' ? r.b : r.w };
+}
