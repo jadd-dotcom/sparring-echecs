@@ -3,7 +3,8 @@ import { Chess } from 'chess.js';
 import { stockfish } from './engines/stockfish';
 import { db, type Card, type MateRun } from './db';
 import {
-  generatePosition, levelProgress, MATE_LEVELS, mulberry32, unlockedLevels, type MateLevel, type MateLevelId,
+  generatePosition, isValidExercise, levelProgress, MATE_LEVELS, mulberry32, pickPrecomputed, unlockedLevels,
+  type MateLevel, type MateLevelId, type PrecomputedPosition,
 } from './lib/mates';
 import { dayKey, newCard } from './lib/srs';
 
@@ -19,9 +20,23 @@ export async function mateDistance(fen: string): Promise<number | null> {
   return found.length ? Math.min(...found) : null;
 }
 
-/** Nouvelle position d'exercice (roi adverse plutôt au centre, pas de mat en ≤ 2). */
+/** Positions précalculées (Stockfish natif, 5 s par position), chargées à la demande. */
+let precomputed: Promise<Partial<Record<MateLevelId, PrecomputedPosition[]>>> | null = null;
+function loadPrecomputed() {
+  precomputed ??= import('./data/matePositions.json')
+    .then((m) => (m.default as { levels: Partial<Record<MateLevelId, PrecomputedPosition[]>> }).levels)
+    .catch(() => ({}));
+  return precomputed;
+}
+
+/**
+ * Nouvelle position d'exercice : une des 150 positions précalculées du niveau, avec une des 8 symétries
+ * au hasard ; en secours, le générateur aléatoire + calcul du mat par Stockfish dans le navigateur.
+ */
 export async function prepareExercise(level: MateLevel, seed = Math.floor(Math.random() * 2 ** 31)) {
   const rand = mulberry32(seed);
+  const pick = pickPrecomputed((await loadPrecomputed())[level.id] ?? [], rand);
+  if (pick && isValidExercise(pick.fen, level)) return { fen: pick.fen, minMoves: pick.minMoves };
   for (let i = 0; i < 6; i++) {
     const fen = generatePosition(level, rand);
     const min = await mateDistance(fen);

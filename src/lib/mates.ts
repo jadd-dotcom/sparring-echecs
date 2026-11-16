@@ -216,3 +216,47 @@ export function unlockedLevels(validated: Set<MateLevelId>): Set<MateLevelId> {
   }
   return out;
 }
+
+// ---------------------------------------------------------------- symétries du plateau
+
+/**
+ * Les 8 symétries du carré (rotations et miroirs). Sans pions ni roque, elles conservent les règles,
+ * la légalité et la distance au mat ; deux fous de couleurs opposées le restent.
+ */
+export const SYMMETRIES: ((f: number, r: number) => [number, number])[] = [
+  (f, r) => [f, r],           // identité
+  (f, r) => [7 - f, r],       // miroir gauche-droite
+  (f, r) => [f, 7 - r],       // miroir haut-bas
+  (f, r) => [7 - f, 7 - r],   // rotation 180°
+  (f, r) => [r, f],           // diagonale a1-h8
+  (f, r) => [7 - r, 7 - f],   // diagonale a8-h1
+  (f, r) => [r, 7 - f],       // rotation 90°
+  (f, r) => [7 - r, f],       // rotation 270°
+];
+
+/** Applique la symétrie n° k (0-7) à une position sans pions ; trait et compteurs inchangés. */
+export function applySymmetry(fen: string, k: number): string {
+  const [board, ...rest] = fen.split(' ');
+  const pl: Record<string, string> = {};
+  board.split('/').forEach((row, i) => {
+    let f = 0;
+    for (const ch of row) {
+      if (/\d/.test(ch)) { f += Number(ch); continue; }
+      const [nf, nr] = SYMMETRIES[k](f, 7 - i);
+      pl[sqName(nf, nr)] = ch;
+      f++;
+    }
+  });
+  const placed = fenFromPlacement(pl, rest[0] as 'w' | 'b').split(' ')[0];
+  return [placed, rest[0], '-', '-', ...rest.slice(3)].join(' ');
+}
+
+export interface PrecomputedPosition { fen: string; mate: number }
+
+/** Tire une position précalculée et lui applique une symétrie au hasard. */
+export function pickPrecomputed(list: PrecomputedPosition[], rand: () => number): { fen: string; minMoves: number; index: number; symmetry: number } | null {
+  if (!list.length) return null;
+  const index = Math.floor(rand() * list.length);
+  const symmetry = Math.floor(rand() * 8);
+  return { fen: applySymmetry(list[index].fen, symmetry), minMoves: list[index].mate, index, symmetry };
+}

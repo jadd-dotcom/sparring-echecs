@@ -2,8 +2,10 @@
 // (minimum + 10 coups), contre Stockfish en défense maximale. Résultats → docs/MATS.md
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { spawn } from 'node:child_process';
+import positions from '../src/data/matePositions.json';
 import { Chess } from 'chess.js';
-import { exerciseOutcome, generatePosition, isValidExercise, MATE_LEVELS, mulberry32, EXTRA_MOVES_ALLOWED } from '../src/lib/mates';
+import { applySymmetry, exerciseOutcome, generatePosition, isValidExercise, MATE_LEVELS, mulberry32, EXTRA_MOVES_ALLOWED } from '../src/lib/mates';
 
 const require = createRequire(import.meta.url);
 const N = Number(process.env.N ?? 20);
@@ -11,10 +13,23 @@ const MY_MS = Number(process.env.MY_MS ?? 300);
 const DEF_MS = Number(process.env.DEF_MS ?? 300);
 const RETRY_MS = Number(process.env.RETRY_MS ?? 1000);
 const LEVELS = process.env.LEVELS?.split(',');  // ex. LEVELS=kbb : ne refait que ce niveau dans docs/MATS.md
+// SOURCE=precomputed (défaut) : positions de src/data/matePositions.json (symétrie au hasard), minimum = mat exact.
+// SOURCE=generator : générateur aléatoire, minimum calculé par Stockfish comme dans l'appli (secours).
+const SOURCE = process.env.SOURCE ?? 'precomputed';
+// ENGINE=lite (Stockfish 19 lite wasm, défaut) ou chemin d'un Stockfish natif (ex. /usr/games/stockfish).
+const ENGINE = process.env.ENGINE ?? 'lite';
+const OUT = process.env.OUT ?? 'docs/MATS.md';
 
 let onLine: (l: string) => void = () => {};
-const sf = require('stockfish')('lite-single', (l: string) => onLine(l));
+const sf: { processCommand(c: string): void; terminate?: () => void } = (() => {
+  if (ENGINE === 'lite') return require('stockfish')('lite-single', (l: string) => onLine(l));
+  const p = spawn(ENGINE, [], { stdio: ['pipe', 'pipe', 'inherit'] });
+  let buf = '';
+  p.stdout.on('data', (d) => { buf += d.toString(); let i; while ((i = buf.indexOf('\n')) >= 0) { const l = buf.slice(0, i).trim(); buf = buf.slice(i + 1); onLine(l); } });
+  return { processCommand: (c: string) => p.stdin.write(c + '\n'), terminate: () => p.kill() };
+})();
 sf.processCommand('uci'); sf.processCommand('setoption name Hash value 64');
+const engineName = ENGINE === 'lite' ? 'Stockfish 19 lite (wasm)' : 'Stockfish natif (' + ENGINE + ')';
 function go(fen: string, args: string): Promise<{ best: string; mate: number | null }> {
   return new Promise((resolve) => {
     let mate: number | null = null;
@@ -56,9 +71,12 @@ async function playOut(fen: string, pieces: number, myMs: number) {
 }
 
 async function main() {
-  let md = `# Mats élémentaires — vérification Stockfish\n\nPour chaque niveau, ${N} positions générées (graine fixe), toutes légales. ` +
-    `Stockfish 19 lite joue mon camp (${MY_MS} ms/coup) contre Stockfish en défense maximale (${DEF_MS} ms/coup). ` +
-    `Réussite = mat en au plus « minimum + ${EXTRA_MOVES_ALLOWED} » coups (minimum = mat en N calculé au départ, comme dans l'appli). ` +
+  let md = `# Mats élémentaires — vérification Stockfish\n\nPour chaque niveau, ${N} positions ` +
+    (SOURCE === 'precomputed'
+      ? `précalculées (src/data/matePositions.json, symétrie tirée au hasard, graine fixe) ; minimum = distance exacte au mat (analyse rétrograde). `
+      : `générées (graine fixe) ; minimum = mat en N calculé par Stockfish au départ, comme dans l'appli. `) +
+    `${engineName} joue mon camp (${MY_MS} ms/coup) contre lui-même en défense maximale (${DEF_MS} ms/coup). ` +
+    `Réussite = position légale et mat en au plus « minimum + ${EXTRA_MOVES_ALLOWED} » coups. ` +
     `Une position qui échoue est rejouée une fois à ${RETRY_MS} ms par coup (les deux essais sont notés).\n\n`;
   let allOk = true;
   const sections: Record<string, string> = {};
@@ -69,9 +87,18 @@ async function main() {
     let retried = 0;
     const t0 = Date.now();
     for (let i = 0; i < N; i++) {
-      const fen = generatePosition(level, rand);
+      let fen: string;
+      let min: number | null;
+      if (SOURCE === 'precomputed') {
+        const list = (positions.levels as Record<string, { fen: string; mate: number }[]>)[level.id];
+        const p = list[i % list.length];
+        fen = applySymmetry(p.fen, Math.floor(rand() * 8));
+        min = p.mate;
+      } else {
+        fen = generatePosition(level, rand);
+        min = await mateDistance(fen);
+      }
       const legal = isValidExercise(fen, level);
-      const min = await mateDistance(fen);
       let { outcome, my } = await playOut(fen, level.pieces.length, MY_MS);
       const within = (o: string | null, n: number) => o === 'mate' && min !== null && n <= min + EXTRA_MOVES_ALLOWED;
       let note = '';
@@ -90,7 +117,7 @@ async function main() {
     console.log(`${level.name} : ${ok}/${N}`);
   }
   // Avec LEVELS, on garde les sections déjà présentes des autres niveaux.
-  const previous = LEVELS && existsSync('docs/MATS.md') ? readFileSync('docs/MATS.md', 'utf8') : '';
+  const previous = LEVELS && existsSync(OUT) ? readFileSync(OUT, 'utf8') : '';
   for (const level of MATE_LEVELS.filter((l) => l.available)) {
     if (sections[level.id]) md += sections[level.id];
     else {
@@ -100,7 +127,7 @@ async function main() {
   }
   const failed = (md.match(/❌ \|/g) ?? []).length;
   md += failed === 0 ? '**Toutes les positions sont matées dans la limite.**\n' : `**${failed} position(s) ne sont pas matées dans la limite (voir ❌).**\n`;
-  writeFileSync('docs/MATS.md', md);
+  writeFileSync(OUT, md);
   sf.terminate?.();
   process.exit(allOk ? 0 : 1);
 }

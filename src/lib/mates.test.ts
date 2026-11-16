@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Chess } from 'chess.js';
 import {
-  exerciseOutcome, flagsAfterMyMove, pickNearStalemate, stalemateTraps, generatePosition, hangingPieces, isValidExercise, levelProgress,
+  applySymmetry, pickPrecomputed, exerciseOutcome, flagsAfterMyMove, pickNearStalemate, stalemateTraps, generatePosition, hangingPieces, isValidExercise, levelProgress,
   MATE_LEVELS, mulberry32, unlockedLevels,
 } from './mates';
 
@@ -43,7 +43,7 @@ describe('positions générées', () => {
 
 describe('issue de l’exercice', () => {
   it('mat détecté', () => {
-    const c = play('7k/8/6K1/8/8/8/8/Q7 w - - 0 1', ['Qa8#']);
+    const c = play('7k/8/6K1/8/8/8/Q7/8 w - - 0 1', ['Qa8#']);
     expect(exerciseOutcome(c, 1)).toBe('mate');
   });
   it('pat détecté', () => {
@@ -106,5 +106,35 @@ describe('validation et déblocage', () => {
     expect([...unlockedLevels(new Set())]).toEqual(['kq']);
     expect([...unlockedLevels(new Set(['kq']))]).toEqual(['kq', 'krr']);
     expect([...unlockedLevels(new Set(['kq', 'krr', 'kr', 'kbb']))]).toEqual(['kq', 'krr', 'kr', 'kbb']);
+  });
+});
+
+describe('symétries du plateau', () => {
+  const fen = '1B6/8/K7/3B1k2/8/8/8/8 w - - 0 1';
+  it('les 8 symétries donnent 8 positions distinctes, légales et conformes', () => {
+    const kbb = MATE_LEVELS.find((l) => l.id === 'kbb')!;
+    const out = [0, 1, 2, 3, 4, 5, 6, 7].map((k) => applySymmetry(fen, k));
+    expect(new Set(out).size).toBe(8);
+    for (const f of out) expect(isValidExercise(f, kbb), f).toBe(true);
+    expect(out[0]).toBe(fen);
+    expect(applySymmetry(fen, 1)).toBe('6B1/8/7K/2k1B3/8/8/8/8 w - - 0 1'); // miroir gauche-droite : d5→e5, f5→c5
+  });
+  it('appliquer deux fois un miroir revient au départ', () => {
+    for (const k of [1, 2, 3, 4, 5]) expect(applySymmetry(applySymmetry(fen, k), k)).toBe(fen);
+    expect(applySymmetry(applySymmetry(fen, 6), 7)).toBe(fen); // 90° puis 270°
+  });
+  it('le mat en 1 reste un mat en 1 après symétrie', () => {
+    const m1 = '7k/8/6K1/8/8/8/Q7/8 w - - 0 1'; // Qa8#
+    for (let k = 0; k < 8; k++) {
+      const c = new Chess(applySymmetry(m1, k));
+      const mates = c.moves({ verbose: true }).filter((m) => { c.move(m); const ok = c.isCheckmate(); c.undo(); return ok; });
+      expect(mates.length, `symétrie ${k}`).toBeGreaterThan(0);
+    }
+  });
+  it('tirage : position, symétrie et mat en N', () => {
+    const r = pickPrecomputed([{ fen, mate: 16 }], mulberry32(3))!;
+    expect(r.minMoves).toBe(16);
+    expect(r.fen).toBe(applySymmetry(fen, r.symmetry));
+    expect(pickPrecomputed([], Math.random)).toBeNull();
   });
 });

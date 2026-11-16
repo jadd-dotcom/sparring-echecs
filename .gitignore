@@ -151,3 +151,4 @@ public/vendor/
 scripts/.validate.tmp.mjs
 scripts/.verify-mates.tmp.mjs
 scripts/.precompute.mjs
+scripts/.annotate.mjs
