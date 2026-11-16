@@ -10,7 +10,8 @@
     "test": "vitest run",
     "lint": "eslint .",
     "validate-repertoire": "sh scripts/validate-repertoire.sh",
-    "verify-mates": "sh scripts/verify-mates.sh"
+    "verify-mates": "sh scripts/verify-mates.sh",
+    "lessons-doc": "npx esbuild scripts/lessons-doc.ts --bundle --platform=node --format=esm --packages=external --outfile=scripts/.lessons-doc.mjs --log-level=warning && node scripts/.lessons-doc.mjs && rm scripts/.lessons-doc.mjs"
   },
   "dependencies": {
     "chess.js": "^1.4.0",

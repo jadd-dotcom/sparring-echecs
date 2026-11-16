@@ -129,3 +129,9 @@ table.classes { width: 100%; border-collapse: collapse; font-size: .9rem; margin
 table.classes td, table.classes th { padding: 2px 4px; text-align: center; }
 table.classes td:first-child, table.classes th:first-child { text-align: left; }
 .ic-inline { display: inline-block; min-width: 1.6em; padding: 0 5px; border-radius: 999px; color: #fff; font-size: .8rem; font-weight: 800; text-align: center; }
+.lesson-steps { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.lesson-steps span { padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); font-size: .85rem; }
+.lesson-steps span.on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.lesson-steps span.past { color: var(--muted); }
+.why { font-size: 1.05rem; line-height: 1.5; }
+.term { background: rgba(60,122,60,.12); border-radius: 8px; padding: 8px; font-size: .95rem; }

@@ -4,9 +4,11 @@ import { db, DUE_NEW, type Opening } from '../db';
 import { go } from '../router';
 import { lines, parsePgn } from '../lib/repertoire';
 import { dayKey } from '../lib/srs';
-import { syncDrillCards } from '../openings';
+import { getLessonProgress, syncDrillCards, type LessonProgress } from '../openings';
+import { BUILTIN_OPENINGS } from '../data/openings';
+import { OPENING_LESSONS } from '../data/openingLessons';
 
-interface Row { o: Opening; lines: number; due: number; fresh: number; holes: number }
+interface Row { o: Opening; lines: number; due: number; fresh: number; holes: number; lesson?: LessonProgress }
 
 export default function Openings() {
   const [rows, setRows] = useState<Row[] | null>(null);
@@ -16,6 +18,7 @@ export default function Openings() {
 
   async function load() {
     const today = dayKey();
+    const progress = await getLessonProgress();
     const out: Row[] = [];
     for (const o of await db.openings.toArray()) {
       const cards = await db.cards.where('openingId').equals(o.id).toArray();
@@ -24,9 +27,12 @@ export default function Openings() {
         due: cards.filter((c) => c.due !== DUE_NEW && c.due <= today).length,
         fresh: cards.filter((c) => c.due === DUE_NEW).length,
         holes: await db.holes.where('openingId').equals(o.id).count(),
+        lesson: progress[o.id],
       });
     }
-    out.sort((a, b) => Number(b.o.builtin) - Number(a.o.builtin) || a.o.name.localeCompare(b.o.name));
+    // Ordre conseillé : Londres, puis GDR, puis Française ; ensuite les ouvertures ajoutées.
+    const rank = (o: Opening) => { const i = BUILTIN_OPENINGS.findIndex((b) => b.id === o.id); return i < 0 ? 99 : i; };
+    out.sort((a, b) => rank(a.o) - rank(b.o) || a.o.name.localeCompare(b.o.name));
     setRows(out);
   }
   useEffect(() => { load(); }, []);
@@ -46,7 +52,9 @@ export default function Openings() {
   return (
     <div className="openings">
       <h2>Ouvertures</h2>
-      {rows.map(({ o, lines: n, due, fresh, holes }) => (
+      <p className="notice">Ordre conseillé pour chaque ouverture : <b>1. Leçon → 2. Drill → 3. Partie à thème</b>.
+        {' '}Commence par le Système de Londres, puis le Gambit Dame refusé, puis la Défense française.</p>
+      {rows.map(({ o, lines: n, due, fresh, holes, lesson }) => (
         <section key={o.id} className="card opening">
           <div className="opening-head">
             <h3>{o.name}</h3>
@@ -54,10 +62,15 @@ export default function Openings() {
               {o.forced.length > 0 && <> · l’adversaire joue {fig(o.forced.join(', '))}</>}</span>
           </div>
           <div className="row">
-            <button className="primary" disabled={n === 0} onClick={() => go({ name: 'play', opening: o.id })}>Partie à thème</button>
+            {OPENING_LESSONS.some((l) => l.openingId === o.id) && (
+              <button className={lesson?.done ? '' : 'primary'} onClick={() => go({ name: 'lesson', id: o.id })}>
+                1. Leçon{lesson?.done ? ' ✓' : lesson?.blocksDone ? ` (${lesson.blocksDone} bloc${lesson.blocksDone > 1 ? 's' : ''})` : ''}
+              </button>
+            )}
             <button disabled={due + fresh === 0} onClick={() => go({ name: 'revise', opening: o.id })}>
-              Drill · {due} à revoir{fresh ? ` · ${fresh} nouvelles` : ''}
+              2. Drill · {due} à revoir{fresh ? ` · ${fresh} nouvelles` : ''}
             </button>
+            <button className={lesson?.done ? 'primary' : ''} disabled={n === 0} onClick={() => go({ name: 'play', opening: o.id })}>3. Partie à thème</button>
             <button onClick={() => go({ name: 'repertoire', id: o.id })}>
               Répertoire{holes ? ` · ${holes} trou${holes > 1 ? 's' : ''}` : ''}
             </button>
