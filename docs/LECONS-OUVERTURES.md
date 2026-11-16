@@ -47,7 +47,7 @@ Le Système de Londres est une ouverture tranquille pour les Blancs : on place p
 
 **Bloc 3**
 
-- 7. Bg3 — Le fou recule en g3 pour éviter l’échange et rester sur sa bonne diagonale.
+- 7. Bg3 — Le fou recule sans s’échanger lui-même. Si les Noirs prennent (…Bxg3), tu reprends avec le pion h (hxg3) et ta tour h1 gagne la colonne h.
 - 7... O-O — Les Noirs roquent : leur roi est à l’abri.
 - 8. Bd3 — Le fou f1 se place sur la diagonale qui vise le roi noir en h7.
 - 8... b6 — Les Noirs préparent le fianchetto de leur fou c8 en b7. _(mot expliqué : fianchetto)_
@@ -108,7 +108,7 @@ Le Gambit Dame refusé est une défense solide contre 1.d4 : tu tiens le centre 
 
 **Bloc 3**
 
-- 7. Bh4 — Le fou recule et garde le clouage sur ton cavalier f6.
+- 7. Bh4 — Le fou recule mais garde la pression sur ton cavalier f6. Ce n’est plus un clouage : ton fou e7 fait écran devant ta dame.
 - 7... b6 — Tu prépares le fianchetto de ton fou c8 en b7 : c’est la variante Tartakower. _(mot expliqué : fianchetto)_
 - 8. cxd5 — Les Blancs échangent au centre.
 - 8... Nxd5 — Tu reprends avec le cavalier pour libérer ton jeu par des échanges.
@@ -197,7 +197,7 @@ Moments clés :
 
 - 11. g4 — Les Blancs ont roqué côté dame et lancent leurs pions côté roi : ce sont des roques opposés, chacun attaque sur une aile. _(mot expliqué : roques opposés)_
 - 11... b4 — Ton pion b chasse le cavalier c3 : ton attaque avance.
-- 12... O-O — Tu roques côté roi pour mettre ton roi à l’abri.
+- 12... O-O — Tu roques côté roi pour quitter le centre, mais c’est le côté où avancent les pions blancs (g4, f5) : ton roi n’y sera pas tranquille.
 - 13. f5 — La poussée f5 attaque ta chaîne de pions à sa base, le pion e6.
 - 13... cxd4 — Tu prends en d4 et ouvres la colonne c vers le roi blanc.
 - 15... Qxf6 — Les Blancs ont donné des pions pour ouvrir des lignes vers ton roi ; ta dame reprend en f6.
