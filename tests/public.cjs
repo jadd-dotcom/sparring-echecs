@@ -11,11 +11,12 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   let bytes = 0;
   ctx.on('requestfinished', async (r) => { try { const s = await r.sizes(); bytes += s.responseBodySize + s.responseHeadersSize; } catch {} });
   const p = await ctx.newPage();
+  globalThis.__page = p;
   const errors = [];
   p.on('pageerror', (e) => errors.push(e.message));
   const sq = (s) => p.locator(`[data-square="${s}"]`);
   const cur = () => p.evaluate(() => window.__db.meta.get('current').then((m) => m?.value ?? null));
-  const waitPlies = async (n) => { const end = Date.now() + 60000; for (;;) { const g = await cur(); if (g && g.uci.length >= n) return g; if (Date.now() > end) throw new Error('Maia ne répond pas'); await p.waitForTimeout(100); } };
+  const waitPlies = async (n) => { const end = Date.now() + 60000; for (;;) { const g = await cur(); if (g && g.uci.length >= n) return g; if (Date.now() > end) throw new Error(`Maia ne répond pas (attendu ${n} demi-coups, partie : ${g ? g.uci.join(' ') + ' / ' + g.myColor : 'aucune'})`); await p.waitForTimeout(100); } };
 
   const t0 = Date.now();
   const resp = await p.goto(URL);
@@ -101,4 +102,4 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(true, 'exercice de mat prêt hors ligne (position précalculée)');
   assert(errors.length === 0, 'aucune erreur JS ' + errors.join(' | '));
   await b.close();
-})().catch((e) => { console.error(e); process.exit(1); });
+})().catch(async (e) => { console.error(e); try { await globalThis.__page?.screenshot({ path: process.env.SHOT ?? '/tmp/public-fail.png' }); console.error('capture :', process.env.SHOT); } catch {} process.exit(1); });
