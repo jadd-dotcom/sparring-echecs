@@ -30,7 +30,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
       const moves = unfig(shown);
       const fen0 = await p.locator('[data-start-fen]').getAttribute('data-start-fen');
       const c = new Chess(fen0);
-      if (!moves.includes('Aucun')) for (const t of moves.split(/\s+/)) if (!/^\d+\.$/.test(t)) c.move(t);
+      if (!moves.includes('Aucun')) for (const t of moves.split(/\s+/)) { const mv = t.replace(/^\d+(\.|…)/, ''); if (mv) c.move(mv); }
       if (c.turn() !== 'w' || c.isGameOver()) { await p.waitForTimeout(150); continue; }
       const u = await pick(c.fen(), c);
       await sq(u.slice(0, 2)).tap(); await sq(u.slice(2, 4)).tap();

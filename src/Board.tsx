@@ -15,12 +15,16 @@ interface Props {
   highlight?: Record<string, string>;
   /** Pastille sur une case (ex. classe du coup sur la case d'arrivée). */
   badges?: Record<string, { icon: string; color: string; label?: string }>;
+  /** Dernier coup, surligné de façon contrastée (cases de départ et d'arrivée). */
+  lastMove?: { from: string; to: string } | null;
+  /** Tap sur l'échiquier quand il est bloqué (ex. revenir à la position actuelle). */
+  onTap?: () => void;
 }
 
 const LIGHT = '#eeeed2';
 const DARK = '#769656';
 
-export default function Board({ fen, orientation, movable, onMove, arrows = [], highlight = {}, badges = {} }: Props) {
+export default function Board({ fen, orientation, movable, onMove, arrows = [], highlight = {}, badges = {}, lastMove, onTap }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [promo, setPromo] = useState<{ from: string; to: string } | null>(null);
   const chess = useMemo(() => new Chess(fen), [fen]);
@@ -42,7 +46,7 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
   }
 
   function onSquareClick(square: string) {
-    if (!canMove) return;
+    if (!canMove) { onTap?.(); return; }
     const p = chess.get(square as Square);
     if (selected && targets.includes(square)) { tryMove(selected, square); return; }
     if (p && p.color === movable) setSelected(square === selected ? null : square);
@@ -50,7 +54,11 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
   }
 
   const squareStyles: Record<string, React.CSSProperties> = {};
-  for (const [sq, c] of Object.entries(highlight)) squareStyles[sq] = { background: c };
+  if (lastMove) {
+    squareStyles[lastMove.from] = { background: 'rgba(255, 200, 0, .45)', boxShadow: 'inset 0 0 0 3px rgba(214, 150, 0, .85)' };
+    squareStyles[lastMove.to] = { background: 'rgba(255, 200, 0, .7)', boxShadow: 'inset 0 0 0 3px rgba(214, 150, 0, .95)' };
+  }
+  for (const [sq, c] of Object.entries(highlight)) squareStyles[sq] = { ...squareStyles[sq], background: c };
   if (selected) squareStyles[selected] = { background: 'rgba(255, 213, 0, 0.55)' };
   for (const t of targets) {
     const occupied = !!chess.get(t as Square);

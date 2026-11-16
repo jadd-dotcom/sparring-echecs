@@ -135,3 +135,8 @@ table.classes td:first-child, table.classes th:first-child { text-align: left; }
 .lesson-steps span.past { color: var(--muted); }
 .why { font-size: 1.05rem; line-height: 1.5; }
 .term { background: rgba(60,122,60,.12); border-radius: 8px; padding: 8px; font-size: .95rem; }
+.nav-banner { background: #2d5e9e; color: #fff; border-radius: 10px; padding: 8px 12px; margin: 4px 0; font-weight: 600; text-align: center; }
+.last-move { padding: 4px 2px; font-weight: 600; min-height: 1.6em; }
+@keyframes blink { 50% { opacity: .45; } }
+.blink { animation: blink .9s infinite; }
+.assist .row > button.on { outline: 3px solid var(--accent); }

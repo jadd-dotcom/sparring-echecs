@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { exportAll, getCurrent, getProfile, importAll, setProfile, type Profile } from '../db';
 import { colorModeOf, withManualRating, type ColorMode } from '../lib/profile';
 import { CALIBRATION_GAMES, K_CALIBRATION, RATING_MAX, RATING_MIN } from '../lib/rating';
+import { loadSoundSetting, playSound, setSoundEnabled } from '../sound';
 
 export default function Settings() {
   const [msg, setMsg] = useState<string | null>(null);
@@ -9,6 +10,7 @@ export default function Settings() {
   const [ratingInput, setRatingInput] = useState('');
   const [levelMsg, setLevelMsg] = useState<{ text: string; bad?: boolean } | null>(null);
   const [inProgress, setInProgress] = useState(false);
+  const [sound, setSound] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -16,6 +18,7 @@ export default function Settings() {
       setP(prof);
       setRatingInput(String(Math.round(prof.rating)));
       setInProgress(!!(await getCurrent()));
+      setSound(await loadSoundSetting());
     })();
   }, []);
 
@@ -90,6 +93,15 @@ export default function Settings() {
           ))}
         </div>
         {p && mode === 'alternate' && <p className="muted small">Prochaine partie : {p.nextColor === 'w' ? 'Blancs' : 'Noirs'}.</p>}
+
+        <p style={{ marginTop: 18 }}><b>Sons</b> <span className="muted small">(coup, prise, échec, roque, fin de partie)</span></p>
+        <div className="row" role="radiogroup" aria-label="Sons">
+          {([[true, 'Oui'], [false, 'Non']] as const).map(([on, label]) => (
+            <label key={label} className={`radio ${sound === on ? 'on' : ''}`}>
+              <input type="radio" name="sound" checked={sound === on} onChange={async () => { await setSoundEnabled(on); setSound(on); if (on) playSound('move'); }} /> {label}
+            </label>
+          ))}
+        </div>
       </section>
 
       <section className="card">
