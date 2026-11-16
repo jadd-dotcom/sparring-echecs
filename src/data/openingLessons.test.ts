@@ -8,6 +8,13 @@ describe('leçons d’ouvertures', () => {
   it('ordre conseillé : Londres, GDR, Française', () => {
     expect(OPENING_LESSONS.map((l) => l.openingId)).toEqual(['london', 'qgd', 'french']);
   });
+  it('corrections de la relecture : 7.Bg3 (Londres), 7.Bh4 (GDR)', () => {
+    const why = (id: string, ply: number) => OPENING_LESSONS.find((l) => l.openingId === id)!.moves[ply];
+    expect(why('london', 12)).toMatchObject({ san: 'Bg3' });
+    expect(why('london', 12).why).toContain('tu reprends avec le pion h (hxg3)');
+    expect(why('qgd', 12)).toMatchObject({ san: 'Bh4' });
+    expect(why('qgd', 12).why).toContain('Ce n’est plus un clouage');
+  });
   for (const l of OPENING_LESSONS) {
     const o = BUILTIN_OPENINGS.find((x) => x.id === l.openingId)!;
     const root = parsePgn(o.pgn).root;
@@ -16,14 +23,14 @@ describe('leçons d’ouvertures', () => {
       for (let n = root; n.children.length; n = n.children[0]) main.push(n.children[0].san);
       expect(l.moves.map((m) => m.san)).toEqual(main);
     });
-    it(`${l.openingId} : légale, une phrase simple par coup`, () => {
+    it(`${l.openingId} : légale, une phrase simple par coup (deux au plus quand une précision s’impose)`, () => {
       const c = new Chess();
       for (const m of l.moves) {
         expect(() => c.move(m.san), m.san).not.toThrow();
         const t = plainText(m.why);
         expect(t.length, t).toBeLessThan(160);
         expect(t.trim().endsWith('.'), t).toBe(true);
-        expect(t.slice(0, -1).match(/[.!?](\s|$)/g), `une seule phrase : ${t}`).toBeNull();
+        expect((t.slice(0, -1).match(/[.!?](\s|$)/g) ?? []).length, `deux phrases au plus : ${t}`).toBeLessThanOrEqual(1);
       }
     });
     it(`${l.openingId} : chaque coup appris est une carte de drill`, () => {
@@ -50,13 +57,14 @@ describe('leçons d’ouvertures', () => {
       expect(new Set(first)).toEqual(new Set(all));          // et tous le sont
     });
     it(`${l.openingId} : partie type légale (suite de la ligne principale), moments clés commentés`, () => {
+      if (l.openingId === 'french') expect(l.model.notes[3]).toMatch(/^Tu roques côté roi pour quitter le centre/);  // 12…O-O
       const c = new Chess();
       for (const m of l.moves) c.move(m.san);
       for (const s of l.model.moves) expect(() => c.move(s), s).not.toThrow();
       const keys = Object.keys(l.model.notes).map(Number);
       expect(keys.length).toBeGreaterThanOrEqual(5);
       for (const k of keys) expect(k).toBeLessThan(l.model.moves.length);
-      for (const t of Object.values(l.model.notes)) expect(plainText(t).slice(0, -1).match(/[.!?](\s|$)/g), t).toBeNull();
+      for (const t of Object.values(l.model.notes)) expect((plainText(t).slice(0, -1).match(/[.!?](\s|$)/g) ?? []).length, t).toBeLessThanOrEqual(1);
     });
   }
 });

@@ -35,7 +35,9 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
     const g = await cur();
     const c = new Chess(); g.uci.forEach((u) => c.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] }));
     if (c.isGameOver()) break;
-    const m = c.moves({ verbose: true }).filter((x) => !x.promotion).sort((a, z) => (a.piece === 'p' ? -1 : 1) - (z.piece === 'p' ? -1 : 1))[0];
+    // Coup sensé (Stockfish, 100 ms) : des coups naïfs comme a3-a4-a5 se font mater en 4 coups.
+    const u = await p.evaluate((f) => window.__sfBest(f, 100), c.fen());
+    const m = { from: u.slice(0, 2), to: u.slice(2, 4) };
     const t = Date.now();
     await sq(m.from).tap(); await sq(m.to).tap();
     await waitPlies(g.uci.length + 2);

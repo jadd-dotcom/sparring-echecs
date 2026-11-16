@@ -20,8 +20,10 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
     await p.getByText('à toi de jouer').waitFor({ timeout: 120000 });
     const g = await cur();
     const c = new Chess(); g.uci.forEach((u) => c.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] }));
-    const m = c.moves({ verbose: true }).filter((x) => !x.promotion && !x.captured)[0] ?? c.moves({ verbose: true })[0];
-    await p.locator(`[data-square="${m.from}"]`).tap(); await p.locator(`[data-square="${m.to}"]`).tap();
+    // Coup sensé (Stockfish, 100 ms) pour que la partie ne se termine pas par un mat rapide.
+    const u = await p.evaluate((f) => window.__sfBest(f, 100), c.fen());
+    if (u.length === 5) throw new Error('promotion inattendue');
+    await p.locator(`[data-square="${u.slice(0, 2)}"]`).tap(); await p.locator(`[data-square="${u.slice(2, 4)}"]`).tap();
     await waitFor(async () => { const x = await cur(); return !x || x.uci.length >= g.uci.length + 2; });
   };
   const resign = async () => {
