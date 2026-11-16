@@ -32,7 +32,7 @@ export default defineConfig({
       },
       workbox: {
         // Tout est précaché, y compris le modèle Maia (~22 Mo) et les .wasm → hors ligne complet.
-        globPatterns: ['**/*.{js,mjs,css,html,svg,png,wasm,onnx,webmanifest}'],
+        globPatterns: ['**/*.{js,mjs,css,html,svg,png,wasm,onnx,webmanifest,dtm}'],
         maximumFileSizeToCacheInBytes: 40 * 1024 * 1024,
         navigateFallback: 'index.html',
       },

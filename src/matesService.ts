@@ -7,6 +7,8 @@ import {
   type MateLevel, type MateLevelId, type PrecomputedPosition,
 } from './lib/mates';
 import { dayKey, newCard } from './lib/srs';
+import { dtmWhite } from './lib/dtmLookup';
+import { loadDtmForLevel } from './dtmTables';
 
 export const DEFENSE_MS = 500;
 
@@ -36,11 +38,14 @@ function loadPrecomputed() {
 export async function prepareExercise(level: MateLevel, seed = Math.floor(Math.random() * 2 ** 31)) {
   const rand = mulberry32(seed);
   const pick = pickPrecomputed((await loadPrecomputed())[level.id] ?? [], rand);
-  if (pick && isValidExercise(pick.fen, level)) return { fen: pick.fen, minMoves: pick.minMoves };
+  if (pick && isValidExercise(pick.fen, level)) return { fen: pick.fen, minMoves: pick.minMoves, exact: true };
+  // Secours : générateur ; distance exacte si la table est disponible, sinon Stockfish.
+  const { table } = await loadDtmForLevel(level.id);
   for (let i = 0; i < 6; i++) {
     const fen = generatePosition(level, rand);
-    const min = await mateDistance(fen);
-    if (min !== null && min > 2) return { fen, minMoves: min };
+    const exact = table ? dtmWhite(table, fen) : null;
+    const min = exact !== null && exact > 0 ? exact : await mateDistance(fen);
+    if (min !== null && min > 2) return { fen, minMoves: min, exact: exact !== null && exact > 0 };
   }
   throw new Error('impossible de préparer un exercice');
 }

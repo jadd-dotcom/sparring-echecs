@@ -111,3 +111,5 @@ textarea { font-family: ui-monospace, monospace; font-size: .9rem; }
 .steps li.on { background: rgba(60,122,60,.15); font-weight: 600; }
 .big-count { font-size: 1.3rem; margin: .3em 0; }
 .mate-next { max-width: 860px; margin: 12px auto; }
+.trap { background: rgba(220,40,40,.1); border-radius: 8px; padding: 8px; }
+.pat-explain { line-height: 1.5; }

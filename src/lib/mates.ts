@@ -20,9 +20,16 @@ export const MATE_LEVELS: MateLevel[] = [
   { id: 'kbn', name: 'Fou + cavalier + roi contre roi', short: 'F+C+R', pieces: ['B', 'N'], available: false },
 ];
 
-/** Niveau validé après 3 réussites d'affilée en ≤ minimum + 10 coups. */
+/** Niveau validé après 3 réussites d'affilée dans la limite de coups. */
 export const STREAK_TO_VALIDATE = 3;
 export const EXTRA_MOVES_ALLOWED = 10;
+export const MAX_MOVE_LIMIT = 50;
+
+/**
+ * Limite de coups pour qu'un mat compte : max(minimum + 10, 2 × minimum), plafonnée à 50.
+ * (Avec le minimum exact, +10 seul est trop strict pour une méthode humaine comme la boîte.)
+ */
+export const moveLimit = (minMoves: number) => Math.min(MAX_MOVE_LIMIT, Math.max(minMoves + EXTRA_MOVES_ALLOWED, 2 * minMoves));
 
 // ---------------------------------------------------------------- hasard reproductible
 
@@ -152,13 +159,8 @@ export function exerciseOutcome(c: Chess, pieceCount: number): MateOutcome | nul
   return null;
 }
 
-/**
- * Alerte d'un exercice.
- * - 'unprotected' : après mon coup `san` (demi-coup `ply`), une de mes pièces était attaquée par le roi noir et non défendue ;
- * - 'near-stalemate' : dans la position du demi-coup `ply` (à moi de jouer), le coup piège `san` aurait fait pat
- *   (`traps` = nombre de coups pat possibles dans cette position).
- */
-export interface MoveFlag { ply: number; san: string; kind: 'near-stalemate' | 'unprotected'; traps?: number }
+/** Alerte d'un exercice : après mon coup `san` (demi-coup `ply`), une de mes pièces attaquée par le roi noir et non défendue. */
+export interface MoveFlag { ply: number; san: string; kind: 'unprotected' }
 
 /** Pièce sans protection après un de mes coups (position après le coup, roi noir au trait). */
 export function flagsAfterMyMove(fenAfter: string, ply: number, san: string): MoveFlag[] {
@@ -167,7 +169,7 @@ export function flagsAfterMyMove(fenAfter: string, ply: number, san: string): Mo
   return hangingPieces(fenAfter, 'w').length ? [{ ply, san, kind: 'unprotected' }] : [];
 }
 
-/** Mes coups légaux qui feraient pat dans cette position (à moi de jouer), en SAN. */
+/** Mes coups légaux qui feraient pat dans cette position (à moi de jouer), en SAN — pour les leçons. */
 export function stalemateTraps(fen: string): string[] {
   const c = new Chess(fen);
   const out: string[] = [];
@@ -179,21 +181,10 @@ export function stalemateTraps(fen: string): string[] {
   return out;
 }
 
-/**
- * « Pat frôlé » : au plus une alerte par exercice, sur la position où le plus de coups faisaient pat
- * (à égalité, la première). Aucune alerte si aucun coup n'aurait fait pat, ou si l'exercice a fini en pat.
- */
-export function pickNearStalemate(positions: { ply: number; traps: string[] }[], outcome?: MateOutcome | null): MoveFlag | null {
-  if (outcome === 'stalemate') return null;
-  let best: { ply: number; traps: string[] } | null = null;
-  for (const p of positions) if (p.traps.length && (!best || p.traps.length > best.traps.length)) best = p;
-  return best ? { ply: best.ply, san: best.traps[0], kind: 'near-stalemate', traps: best.traps.length } : null;
-}
-
 export interface MateRunLike { outcome: MateOutcome; myMoves: number; minMoves: number }
 
-/** Réussite qui compte pour la validation : mat en ≤ minimum + 10 coups. */
-export const countsForStreak = (r: MateRunLike) => r.outcome === 'mate' && r.myMoves <= r.minMoves + EXTRA_MOVES_ALLOWED;
+/** Réussite qui compte pour la validation : mat dans la limite de coups. */
+export const countsForStreak = (r: MateRunLike) => r.outcome === 'mate' && r.myMoves <= moveLimit(r.minMoves);
 
 /** Série actuelle de réussites (en partant de la plus récente) et validation. */
 export function levelProgress(runs: MateRunLike[]): { streak: number; validated: boolean } {
