@@ -4,6 +4,7 @@ import type { BookExit } from './lib/repertoire';
 import type { ErrorDetail } from './lib/report/motifs';
 import type { MateLevelId, MateOutcome, MoveFlag } from './lib/mates';
 import { RATING_START, type Score } from './lib/rating';
+import type { ProfileData } from './lib/profile';
 
 /** Origine d'une partie — prévu pour l'import Chess.com (V2). */
 export type GameSource = 'app' | 'chesscom';
@@ -129,11 +130,7 @@ export interface Hole {
 
 export interface Meta { key: string; value: unknown }
 
-export interface Profile {
-  rating: number;
-  gamesPlayed: number;
-  nextColor: Color;
-}
+export type Profile = ProfileData;
 
 /** Partie en cours, sauvegardée à chaque coup (reprise après rechargement). */
 export interface CurrentGame {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { db, getCurrent, getProfile, type Profile } from '../db';
 import { botRating, CALIBRATION_GAMES } from '../lib/rating';
+import { colorForNewGame, gamesSinceCalibration, inCalibration } from '../lib/profile';
 import { go } from '../router';
 import { reviewQueue } from '../openings';
 import { isOfflineReady, waitOfflineReady } from '../offline';
@@ -31,11 +32,11 @@ export default function Home() {
         <div className="big">{Math.round(p.rating)}</div>
         <div className="muted">
           Ton niveau estimé · Maia jouera à {Math.round(botRating(p.rating))}
-          {p.gamesPlayed < CALIBRATION_GAMES && <><br />Calibration : partie {p.gamesPlayed + 1}/{CALIBRATION_GAMES}</>}
+          {inCalibration(p) && <><br />Calibration : partie {gamesSinceCalibration(p) + 1}/{CALIBRATION_GAMES}</>}
         </div>
       </section>
       <button className="primary huge" onClick={() => go({ name: 'play' })}>
-        {inProgress ? 'Reprendre la partie' : `Jouer (${p.nextColor === 'w' ? 'Blancs' : 'Noirs'})`}
+        {inProgress ? 'Reprendre la partie' : `Jouer (${colorForNewGame(p) === 'w' ? 'Blancs' : 'Noirs'})`}
       </button>
       <button className="huge" disabled={due === 0} onClick={() => go({ name: 'revise' })}>
         {due === 0
@@ -49,7 +50,7 @@ export default function Home() {
       <div className="row">
         <button onClick={() => go({ name: 'stats' })}>Statistiques et parties</button>
         <button onClick={() => go({ name: 'report' })}>Rapport pour Claude</button>
-        <button onClick={() => go({ name: 'settings' })}>Sauvegarde</button>
+        <button onClick={() => go({ name: 'settings' })}>Réglages et sauvegarde</button>
       </div>
       <p className="muted small center-text">
         {offline === 'ready' ? '✓ Disponible hors ligne' : offline ? `Préparation du mode hors ligne… ${offline}` : ''}

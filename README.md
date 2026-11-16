@@ -3,7 +3,8 @@
 Appli web (PWA) d'entraînement aux échecs pour tablette, 100 % dans le navigateur :
 
 - **Adversaire humain** : Maia-3 (variante 5M, paquet `maia3-js`) jouant ~50 points au-dessus de ton niveau estimé.
-- **Niveau adaptatif** (échelle Lichess, 600–2600, départ 900, K = 80 pendant 10 parties puis 32).
+- **Niveau adaptatif** (échelle de l'appli proche de Lichess, 550–2600, départ 900, K = 80 pendant 10 parties puis 32 ;
+  réglable à la main, ce qui relance la calibration). Couleur : Blancs, Noirs ou Alterner.
 - **Analyse d'après-partie** par Stockfish 19 lite (single-thread) : imprécisions / erreurs / gaffes selon la chute de % de gain.
 - **Paquet de révision** (J+1, J+3, J+7, J+14, J+30 ; raté → J+1).
 - **Stats** : courbe de niveau, V/N/D, gaffes par partie. Export/import JSON.
@@ -29,6 +30,7 @@ node tests/v2.cjs <dossier-captures>    # parcours Ouvertures (V2)
 node tests/report.cjs <dossier-captures> # 3 parties de test → docs/exemple-rapport.md (V1.5)
 node tests/mates.cjs <dossier-captures>  # onglet Mats élémentaires
 npm run verify-mates                    # 20 positions/niveau, Stockfish joue mon camp → docs/MATS.md
+node tests/settings.cjs <dossier-captures> # réglages : niveau, couleur, alternance
 node tests/public.cjs <url>             # test de l'URL publique (chargement, Maia, analyse, hors ligne)
 npm run validate-repertoire             # vérif Stockfish du répertoire pré-chargé → docs/REPERTOIRE.md
 ```
