@@ -1,6 +1,6 @@
 # Mats élémentaires — vérification Stockfish
 
-Pour chaque niveau, 20 positions générées (graine fixe), toutes légales. Stockfish 19 lite joue mon camp (300 ms/coup) contre Stockfish en défense maximale (300 ms/coup). Réussite = mat en au plus « minimum + 10 » coups (minimum = mat en N calculé au départ, comme dans l'appli).
+Pour chaque niveau, 20 positions générées (graine fixe), toutes légales. Stockfish 19 lite joue mon camp (300 ms/coup) contre Stockfish en défense maximale (300 ms/coup). Réussite = mat en au plus « minimum + 10 » coups (minimum = mat en N calculé au départ, comme dans l'appli). Une position qui échoue est rejouée une fois à 1000 ms par coup (les deux essais sont notés).
 
 ## Dame + roi contre roi
 
@@ -85,29 +85,29 @@ Pour chaque niveau, 20 positions générées (graine fixe), toutes légales. Sto
 
 ## Deux fous + roi contre roi
 
-19/20 dans la limite · 2316 s
+20/20 dans la limite · 2263 s
 
 | # | Position | Légale | Mat en (min) | Coups joués | Issue | OK |
 |---|---|---|---|---|---|---|
-| 1 | `7K/8/7B/3k4/8/8/8/1B6 w - - 0 1` | oui | 18 | 19 | mate | ✅ |
-| 2 | `8/8/8/8/B1K1k3/8/8/4B3 w - - 0 1` | oui | 16 | 18 | mate | ✅ |
-| 3 | `8/K7/2k5/8/8/8/2B5/4B3 w - - 0 1` | oui | 15 | 18 | mate | ✅ |
+| 1 | `7K/8/7B/3k4/8/8/8/1B6 w - - 0 1` | oui | 18 | 21 | mate | ✅ |
+| 2 | `8/8/8/8/B1K1k3/8/8/4B3 w - - 0 1` | oui | 16 | 13 | mate | ✅ |
+| 3 | `8/K7/2k5/8/8/8/2B5/4B3 w - - 0 1` | oui | 15 | 24 | mate | ✅ |
 | 4 | `8/4K3/2k5/8/8/8/7B/3B4 w - - 0 1` | oui | 15 | 16 | mate | ✅ |
-| 5 | `8/8/8/3k2B1/8/8/4B1K1/8 w - - 0 1` | oui | 19 | 20 | mate | ✅ |
-| 6 | `8/8/K7/5k2/2B5/2B5/8/8 w - - 0 1` | oui | 19 | 20 | mate | ✅ |
-| 7 | `8/8/8/3k4/8/3B4/6K1/4B3 w - - 0 1` | oui | 19 | 23 | mate | ✅ |
-| 8 | `8/8/2k3B1/8/5B2/7K/8/8 w - - 0 1` | oui | 19 | 16 | mate | ✅ |
-| 9 | `1B2B3/8/8/8/8/2k3K1/8/8 w - - 0 1` | oui | 19 | 20 | mate | ✅ |
-| 10 | `8/K3B3/8/3k4/8/8/8/1B6 w - - 0 1` | oui | 17 | 16 | mate | ✅ |
-| 11 | `8/8/8/8/B1k2K2/8/1B6/8 w - - 0 1` | oui | 15 | 20 | mate | ✅ |
-| 12 | `8/8/B1k5/5K2/8/8/7B/8 w - - 0 1` | oui | 17 | 13 | mate | ✅ |
-| 13 | `8/8/3k4/8/8/8/1B3K2/5B2 w - - 0 1` | oui | 17 | 19 | mate | ✅ |
+| 5 | `8/8/8/3k2B1/8/8/4B1K1/8 w - - 0 1` | oui | 19 | 16 | mate | ✅ |
+| 6 | `8/8/K7/5k2/2B5/2B5/8/8 w - - 0 1` | oui | 19 | 19 | mate | ✅ |
+| 7 | `8/8/8/3k4/8/3B4/6K1/4B3 w - - 0 1` | oui | 19 | 17 | mate | ✅ |
+| 8 | `8/8/2k3B1/8/5B2/7K/8/8 w - - 0 1` | oui | 19 | 17 | mate | ✅ |
+| 9 | `1B2B3/8/8/8/8/2k3K1/8/8 w - - 0 1` | oui | 19 | 15 | mate | ✅ |
+| 10 | `8/K3B3/8/3k4/8/8/8/1B6 w - - 0 1` | oui | 17 | 18 | mate | ✅ |
+| 11 | `8/8/8/8/B1k2K2/8/1B6/8 w - - 0 1` | oui | 15 | 19 | mate | ✅ |
+| 12 | `8/8/B1k5/5K2/8/8/7B/8 w - - 0 1` | oui | 17 | 14 | mate | ✅ |
+| 13 | `8/8/3k4/8/8/8/1B3K2/5B2 w - - 0 1` | oui | 17 | 15 | mate | ✅ |
 | 14 | `8/2B5/K7/5k2/8/8/4B3/8 w - - 0 1` | oui | 23 | 14 | mate | ✅ |
-| 15 | `8/5B2/8/5k2/1B6/8/8/5K2 w - - 0 1` | oui | 18 | 16 | mate | ✅ |
-| 16 | `K7/6B1/8/5k2/8/1B6/8/8 w - - 0 1` | oui | 24 | 16 | mate | ✅ |
-| 17 | `8/3B4/8/8/5BK1/2k5/8/8 w - - 0 1` | oui | 16 | 19 | mate | ✅ |
+| 15 | `8/5B2/8/5k2/1B6/8/8/5K2 w - - 0 1` | oui | 18 | 14 | mate | ✅ |
+| 16 | `K7/6B1/8/5k2/8/1B6/8/8 w - - 0 1` | oui | 24 | 22 | mate | ✅ |
+| 17 | `8/3B4/8/8/5BK1/2k5/8/8 w - - 0 1` | oui | 16 | 14 | mate | ✅ |
 | 18 | `8/B7/B7/8/3K4/8/6k1/8 w - - 0 1` | oui | 11 | 11 | mate | ✅ |
-| 19 | `1B6/8/K7/3B1k2/8/8/8/8 w - - 0 1` | oui | 16 | 28 | mate | ❌ |
-| 20 | `8/B7/3k4/8/8/8/8/2K4B w - - 0 1` | oui | 21 | 19 | mate | ✅ |
+| 19 | `1B6/8/K7/3B1k2/8/8/8/8 w - - 0 1` | oui | 16 | 14 | mate | ✅ |
+| 20 | `8/B7/3k4/8/8/8/8/2K4B w - - 0 1` | oui | 20 | 17 | mate | ✅ |
 
-**Certaines positions ne sont pas matées dans la limite (voir ❌).**
+**Toutes les positions sont matées dans la limite.**

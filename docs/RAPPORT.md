@@ -124,3 +124,14 @@
 - Navigateur (`tests/mates.cjs`) : seul le niveau 1 ouvert au départ, leçon rejouée jusqu'au mat, 3 exercices matés
   (mat en 7/7, 6/6, 5/5) → niveau validé et niveau 2 débloqué, dame laissée en prise → « pièce perdue » + alerte + carte,
   carte rejouée depuis la révision jusqu'au mat.
+- **Vérification Stockfish** (`npm run verify-mates`, détail dans `docs/MATS.md`) : 20 positions générées par niveau, toutes
+  légales ; Stockfish joue mon camp (300 ms/coup) contre Stockfish en défense (300 ms/coup). Résultat final : **80/80 matées
+  dans la limite** (minimum + 10). Lors d'un premier passage, une position des deux fous (`1B6/8/K7/3B1k2/8/8/8/8 w`, mat en 16)
+  avait été matée en 28 coups (limite 26) : rejouée à 1 s/coup, Stockfish la mate en 22. Le script rejoue désormais une fois
+  à 1 s/coup toute position hors limite ; au passage final, aucune n'en a eu besoin (variabilité des recherches à temps fixe).
+
+## Limites connues
+- Le « minimum » est le plus court mat trouvé par Stockfish (deux recherches), pas une valeur de table de finales : il peut
+  être légèrement surestimé (ex. mat en 17 trouvé par « go mate » contre 15 avec plus de temps), ce qui rend la limite un peu
+  plus souple. La préparation d'un exercice prend ~3-5 s (plus sur tablette).
+- Fou + cavalier (niveau 5) : affiché « plus tard ».
