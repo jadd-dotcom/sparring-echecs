@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { fig } from '../lib/notation';
 import { Chess } from 'chess.js';
 import Board, { type BoardArrow } from '../Board';
 import { db, type Hole, type MoveCheck, type Opening } from '../db';
@@ -48,7 +49,7 @@ export default function RepertoireEditor({ id }: { id: string }) {
     const rejected: string[] = [];
     for (const l of newLines) {
       const r = lineLoss({ color: opening.color, checks }, l);
-      if (r.bad.length) { removeLine(candidate, l); rejected.push(`${formatLine(l)} → ${r.bad.join(', ')}`); }
+      if (r.bad.length) { removeLine(candidate, l); rejected.push(fig(`${formatLine(l)} → ${r.bad.join(', ')}`)); }
     }
     await saveTree(opening.id, candidate, checks);
     await reload();
@@ -80,7 +81,7 @@ export default function RepertoireEditor({ id }: { id: string }) {
   }
 
   async function deleteLine(l: string[]) {
-    if (!confirm(`Supprimer la ligne ${formatLine(l)} ?`)) return;
+    if (!confirm(`Supprimer la ligne ${fig(formatLine(l))} ?`)) return;
     const t = cloneTree(tree!);
     removeLine(t, l);
     await saveTree(opening.id, t);
@@ -143,7 +144,7 @@ export default function RepertoireEditor({ id }: { id: string }) {
           }} />
         {mode.kind === 'add' && (
           <div className="card">
-            <p className="line-text">{formatLine(mode.moves) || 'Joue les coups des deux camps sur l’échiquier.'}</p>
+            <p className="line-text">{fig(formatLine(mode.moves)) || 'Joue les coups des deux camps sur l’échiquier.'}</p>
             <div className="row">
               <button disabled={!mode.moves.length} onClick={() => setMode({ kind: 'add', moves: mode.moves.slice(0, -1) })}>↶ Retirer le dernier coup</button>
               <button onClick={() => setMode({ kind: 'view' })}>Annuler</button>
@@ -156,7 +157,7 @@ export default function RepertoireEditor({ id }: { id: string }) {
         <div className="card">
           <h2>{opening.name}</h2>
           <p className="muted">{opening.color === 'w' ? 'Blancs' : 'Noirs'} · {allLines.length} lignes
-            {opening.forced.length > 0 && <> · coups adverses imposés : {opening.forced.join(', ')}</>}</p>
+            {opening.forced.length > 0 && <> · coups adverses imposés : {fig(opening.forced.join(', '))}</>}</p>
           <div className="row wrap">
             <button onClick={() => { setPreview(null); setMode({ kind: 'add', moves: [] }); }}>+ Ligne</button>
             <button onClick={() => setMode({ kind: 'import', text: '' })}>Importer PGN</button>
@@ -187,12 +188,12 @@ export default function RepertoireEditor({ id }: { id: string }) {
             {holes.map((h) => (
               <div key={h.id} className="hole">
                 <button className="ghost line-btn" onClick={() => setPreview({ sans: h.path, arrow: h.bestSan ?? undefined })}>
-                  <span className="line-text">{formatLine(h.path)}</span>
+                  <span className="line-text">{fig(formatLine(h.path))}</span>
                 </button>
-                <div className="muted small">L’adversaire a joué {h.oppSan}{h.count > 1 ? ` (${h.count} fois)` : ''}.
-                  {' '}Stockfish conseille <b>{h.bestSan ?? '…'}</b>.</div>
+                <div className="muted small">L’adversaire a joué {fig(h.oppSan)}{h.count > 1 ? ` (${h.count} fois)` : ''}.
+                  {' '}Stockfish conseille <b>{h.bestSan ? fig(h.bestSan) : '…'}</b>.</div>
                 <div className="row">
-                  <button className="small primary" disabled={!h.bestSan || !!busy} onClick={() => addHole(h)}>Ajouter {h.bestSan} au répertoire</button>
+                  <button className="small primary" disabled={!h.bestSan || !!busy} onClick={() => addHole(h)}>Ajouter {fig(h.bestSan ?? '')} au répertoire</button>
                   <button className="small" onClick={() => { setPreview(null); setMode({ kind: 'add', moves: h.path }); }}>Compléter à la main</button>
                   <button className="small" onClick={async () => { await db.holes.delete(h.id!); reload(); }}>Ignorer</button>
                 </div>
@@ -212,7 +213,7 @@ export default function RepertoireEditor({ id }: { id: string }) {
                 <span className={`status ${r.max === undefined ? '' : r.max > MAX_LOSS_CP ? 'bad-text' : 'good-text'}`}
                   title={r.bad.join(', ')}>{r.max === undefined ? '?' : r.max > MAX_LOSS_CP ? '⚠' : '✓'}</span>
                 <button className="ghost line-btn" onClick={() => { setMode({ kind: 'view' }); setPreview({ sans: l }); }}>
-                  <span className="line-text">{formatLine(l)}</span>
+                  <span className="line-text">{fig(formatLine(l))}</span>
                 </button>
                 <button className="small" title="Partir de cette ligne" onClick={() => { setPreview(null); setMode({ kind: 'add', moves: l }); }}>⑂</button>
                 <button className="small danger" title="Supprimer" onClick={() => deleteLine(l)}>✕</button>

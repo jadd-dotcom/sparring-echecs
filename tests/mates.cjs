@@ -4,6 +4,8 @@ const { chromium, devices } = require('playwright');
 const { Chess } = require('chess.js');
 const OUT = process.argv[2];
 const URL = process.argv[3] || 'http://localhost:4173/sparring-echecs/';
+const FIG = { '♔': 'K', '♕': 'Q', '♖': 'R', '♗': 'B', '♘': 'N' };
+const unfig = (t) => t.replace(/[♔♕♖♗♘]/g, (c) => FIG[c]);
 const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log('ok -', m); };
 
 (async () => {
@@ -23,7 +25,9 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
       if ((await runs()).length > n0) break;
       await p.getByText('À toi : mate le roi noir.').waitFor({ timeout: 30000 }).catch(() => {});
       if ((await runs()).length > n0) break;
-      const moves = await p.locator('.moves').innerText();
+      const shown = await p.locator('.moves').innerText();
+      if (k === 0 && !shown.includes('Aucun') && /[KQRBN][a-h]?x?[a-h][1-8]/.test(shown)) throw new Error('lettres anglaises affichées : ' + shown);
+      const moves = unfig(shown);
       const fen0 = await p.locator('[data-start-fen]').getAttribute('data-start-fen');
       const c = new Chess(fen0);
       if (!moves.includes('Aucun')) for (const t of moves.split(/\s+/)) if (!/^\d+\.$/.test(t)) c.move(t);
@@ -56,12 +60,47 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
     await p.goto(URL + (i === 0 ? '#/mates/kq/play' : '#/mates'));
     if (i > 0) { await p.goto(URL + '#/mates/kq/play'); }
     const r = await playExercise(sfPick);
-    assert(r.outcome === 'mate' && r.myMoves <= r.minMoves + 10, `exercice ${i + 1} : mat en ${r.myMoves} (minimum ${r.minMoves})`);
+    const limit = Math.min(50, Math.max(r.minMoves + 10, 2 * r.minMoves));
+    assert(r.outcome === 'mate' && r.myMoves <= limit, `exercice ${i + 1} : mat en ${r.myMoves} (minimum exact ${r.minMoves}, limite ${limit})`);
+    if (i === 0) assert(await p.getByText(/distance exacte/).count() > 0 && await p.getByText(new RegExp(`objectif : mat en ${limit} coups`)).count() > 0, 'affichage : minimum exact et nouvelle limite');
+    assert(await p.getByText(/Pat frôlé/).count() === 0, 'plus d’alerte « pat frôlé »');
     if (i === 0) await p.screenshot({ path: OUT + '/m-3-exercice.png' });
   }
   await p.goto(URL); await p.goto(URL + '#/mates');
   await p.getByText('✓ Validé').waitFor();
   assert(await p.locator('section.locked').count() === 3, 'niveau 1 validé → niveau 2 (échelle) débloqué');
+
+  // Exercice raté par pat : dès qu'un coup fait pat, on le joue
+  let patRun = null;
+  for (let attempt = 0; attempt < 3 && patRun?.outcome !== 'stalemate'; attempt++) {
+    await p.goto(URL); await p.goto(URL + '#/mates/kq/play');
+    patRun = await playExercise(async (fen, c) => {
+      const legal = c.moves({ verbose: true });
+      const after = (m) => { const d = new Chess(fen); d.move(m); return d; };
+      const pat = legal.find((m) => after(m).isStalemate());
+      if (pat) return pat.from + pat.to;
+      const best = await sfPick(fen);
+      if (!after({ from: best.slice(0, 2), to: best.slice(2, 4) }).isCheckmate()) return best;
+      // Ne pas mater tant qu'aucun coup pat n'est apparu : un coup sûr qui ne mate pas.
+      const safe = legal.find((m) => { const d = after(m); return !d.isCheckmate() && !d.isStalemate() && !d.moves({ verbose: true }).some((x) => x.captured); });
+      return safe ? safe.from + safe.to : best;
+    });
+  }
+  assert(patRun.outcome === 'stalemate', `exercice terminé par pat après ${patRun.myMoves} coups`);
+  await p.getByText(/n’avait plus aucune case et/).waitFor({ timeout: 30000 });
+  const expl = await p.locator('.pat-explain').innerText();
+  assert(/Coup correct : .+ — mat en \d+ \(distance exacte\)/.test(expl) && !/[KQRBN][a-h]?x?[a-h][1-8]/.test(expl), 'explication (figurines) : ' + expl.replace(/\s+/g, ' '));
+  await p.screenshot({ path: OUT + '/m-5-pat.png' });
+  await p.getByRole('button', { name: 'Position de pat' }).tap();
+  await p.getByRole('button', { name: 'Avant mon coup' }).tap();
+
+  // Leçon : étape « piège du pat »
+  await p.goto(URL); await p.goto(URL + '#/mates/kq/lesson');
+  for (let i = 0; i < 12; i++) await p.getByRole('button', { name: /Coup suivant/ }).tap();
+  await p.getByText(/Piège du pat : ♕c7/).first().waitFor();
+  await p.waitForTimeout(500);
+  await p.screenshot({ path: OUT + '/m-6-lecon-pat.png' });
+  assert(true, 'leçon Dame : étape « piège du pat » avec le coup ♕c7 en flèche rouge (figurines)');
 
   // Exercice raté : la dame se met à côté du roi noir sans protection
   await p.goto(URL); await p.goto(URL + '#/mates/kq/play');
@@ -76,8 +115,9 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByText(/Pièce sans protection/).waitFor();
   await p.screenshot({ path: OUT + '/m-4-echec.png' });
   assert(true, 'alerte « pièce sans protection » affichée après l’exercice');
-  const card = await p.evaluate(() => window.__db.cards.filter((c) => c.kind === 'mate').first());
-  assert(card && card.fen === failed.fen, 'position ratée ajoutée au paquet de révision');
+  const card = await p.evaluate((fen) => window.__db.cards.filter((c) => c.kind === 'mate' && c.fen === fen).first(), failed.fen);
+  const nMateCards = await p.evaluate(() => window.__db.cards.filter((c) => c.kind === 'mate').count());
+  assert(card && nMateCards === 2, 'positions ratées (pat, pièce perdue) ajoutées au paquet de révision');
 
   // Révision de la position ratée
   await p.evaluate((id) => window.__db.cards.update(id, { due: '2000-01-01' }), card.id);

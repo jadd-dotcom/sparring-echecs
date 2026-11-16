@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 import { spawn } from 'node:child_process';
 import positions from '../src/data/matePositions.json';
 import { Chess } from 'chess.js';
-import { applySymmetry, exerciseOutcome, generatePosition, isValidExercise, MATE_LEVELS, mulberry32, EXTRA_MOVES_ALLOWED } from '../src/lib/mates';
+import { applySymmetry, exerciseOutcome, generatePosition, isValidExercise, MATE_LEVELS, moveLimit, mulberry32 } from '../src/lib/mates';
 
 const require = createRequire(import.meta.url);
 const N = Number(process.env.N ?? 20);
@@ -76,7 +76,7 @@ async function main() {
       ? `précalculées (src/data/matePositions.json, symétrie tirée au hasard, graine fixe) ; minimum = distance exacte au mat (analyse rétrograde). `
       : `générées (graine fixe) ; minimum = mat en N calculé par Stockfish au départ, comme dans l'appli. `) +
     `${engineName} joue mon camp (${MY_MS} ms/coup) contre lui-même en défense maximale (${DEF_MS} ms/coup). ` +
-    `Réussite = position légale et mat en au plus « minimum + ${EXTRA_MOVES_ALLOWED} » coups. ` +
+    `Réussite = position légale et mat dans la limite = max(minimum + 10, 2 × minimum), plafonnée à 50 (limite de validation de l'appli). ` +
     `Une position qui échoue est rejouée une fois à ${RETRY_MS} ms par coup (les deux essais sont notés).\n\n`;
   let allOk = true;
   const sections: Record<string, string> = {};
@@ -100,7 +100,7 @@ async function main() {
       }
       const legal = isValidExercise(fen, level);
       let { outcome, my } = await playOut(fen, level.pieces.length, MY_MS);
-      const within = (o: string | null, n: number) => o === 'mate' && min !== null && n <= min + EXTRA_MOVES_ALLOWED;
+      const within = (o: string | null, n: number) => o === 'mate' && min !== null && n <= moveLimit(min);
       let note = '';
       if (legal && !within(outcome, my)) {
         // 2e essai avec plus de temps par coup : distingue « limite trop stricte » de « Stockfish trop pressé ».
@@ -111,9 +111,9 @@ async function main() {
       }
       const pass = legal && within(outcome, my);
       if (pass) ok++; else allOk = false;
-      rows.push(`| ${i + 1} | \`${fen}\` | ${legal ? 'oui' : 'NON'} | ${min ?? '?'} | ${my}${note} | ${outcome} | ${pass ? '✅' : '❌'} |`);
+      rows.push(`| ${i + 1} | \`${fen}\` | ${legal ? 'oui' : 'NON'} | ${min ?? '?'} | ${min !== null ? moveLimit(min) : '?'} | ${my}${note} | ${outcome} | ${pass ? '✅' : '❌'} |`);
     }
-    sections[level.id] = `## ${level.name}\n\n${ok}/${N} dans la limite${retried ? ` (dont ${retried} au 2e essai à ${RETRY_MS} ms/coup)` : ''} · ${((Date.now() - t0) / 1000).toFixed(0)} s\n\n| # | Position | Légale | Mat en (min) | Coups joués | Issue | OK |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}\n\n`;
+    sections[level.id] = `## ${level.name}\n\n${ok}/${N} dans la limite${retried ? ` (dont ${retried} au 2e essai à ${RETRY_MS} ms/coup)` : ''} · ${((Date.now() - t0) / 1000).toFixed(0)} s\n\n| # | Position | Légale | Mat en (min) | Limite | Coups joués | Issue | OK |\n|---|---|---|---|---|---|---|---|\n${rows.join('\n')}\n\n`;
     console.log(`${level.name} : ${ok}/${N}`);
   }
   // Avec LEVELS, on garde les sections déjà présentes des autres niveaux.

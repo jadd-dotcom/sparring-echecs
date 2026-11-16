@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import { fig } from '../lib/notation';
 import { Chess } from 'chess.js';
-import Board from '../Board';
+import Board, { type BoardArrow } from '../Board';
 import MateExercise from '../MateExercise';
 import { MATE_LESSONS } from '../data/mateLessons';
-import { MATE_LEVELS, STREAK_TO_VALIDATE, EXTRA_MOVES_ALLOWED, type MateLevelId } from '../lib/mates';
+import { MATE_LEVELS, STREAK_TO_VALIDATE, MAX_MOVE_LIMIT, EXTRA_MOVES_ALLOWED, stalemateTraps, type MateLevelId } from '../lib/mates';
 import { levelStates, type LevelState } from '../matesService';
 import { go } from '../router';
 
@@ -15,7 +16,8 @@ function LevelList() {
     <div className="mates">
       <h2>Mats élémentaires</h2>
       <p className="muted">Apprends la méthode, puis automatise-la contre Stockfish qui défend au mieux. Un niveau est validé après
-        {' '}{STREAK_TO_VALIDATE} mats d’affilée en au plus « minimum + {EXTRA_MOVES_ALLOWED} » coups ; il débloque le suivant.</p>
+        {' '}{STREAK_TO_VALIDATE} mats d’affilée dans la limite de coups — le plus grand de « minimum + {EXTRA_MOVES_ALLOWED} » et
+        {' '}« 2 × minimum », au plus {MAX_MOVE_LIMIT} — ; il débloque le suivant.</p>
       {states.map((s, i) => (
         <section key={s.level.id} className={`card mate-level ${s.unlocked ? '' : 'locked'}`}>
           <div className="opening-head">
@@ -48,10 +50,16 @@ function Lesson({ level }: { level: MateLevelId }) {
   let step = 0;
   for (let i = k - 1; i >= 0; i--) if (lesson.moves[i].s) { step = lesson.moves[i].s!; break; }
   const highlight: Record<string, string> = last ? { [last.from]: 'rgba(255,255,0,.35)', [last.to]: 'rgba(255,255,0,.45)' } : {};
+  // Piège du pat : flèche rouge sur le coup qui ferait pat ; l'étape du coup suivant est surlignée.
+  const trap = lesson.traps?.find((t) => t.at === k);
+  if (trap) step = lesson.moves[k].s ?? step;
+  const arrows: BoardArrow[] = [];
+  if (trap) { const m = new Chess(c.fen()).move(trap.san); arrows.push({ from: m.from, to: m.to, color: 'rgba(220,40,40,.85)' }); }
+  const trapCount = trap ? stalemateTraps(c.fen()).length : 0;
   return (
     <div className="play">
       <div className="board-col">
-        <Board fen={c.fen()} orientation="w" movable={null} highlight={highlight} />
+        <Board fen={c.fen()} orientation="w" movable={null} highlight={highlight} arrows={arrows} />
         <div className="nav row">
           <button onClick={() => setK(0)}>⏮</button>
           <button onClick={() => setK(Math.max(0, k - 1))}>◀</button>
@@ -64,9 +72,13 @@ function Lesson({ level }: { level: MateLevelId }) {
           <h3>Leçon : {def.name}</h3>
           <p>{lesson.intro}</p>
           <ol className="steps">
-            {lesson.steps.map((t, i) => <li key={i} className={step === i + 1 ? 'on' : ''}>{t}</li>)}
+            {lesson.steps.map((t, i) => <li key={i} className={step === i + 1 ? 'on' : ''}>{fig(t)}</li>)}
           </ol>
-          <p className="muted small">{k === 0 ? 'Avance coup par coup avec ▶.' : `Coup ${Math.ceil(k / 2)} : ${lesson.moves.slice(0, k).map((m, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${m.san}` : m.san)).slice(-2).join(' ')}`}
+          {trap && (
+            <p className="trap">⚠ Piège du pat : <b>{fig(trap.san)}</b> (flèche rouge) ferait pat — le roi noir n’aurait plus aucune case
+              {' '}sans être en échec{trapCount > 1 ? ` (${trapCount} coups font pat ici)` : ''}. Le bon coup : <b>{fig(lesson.moves[k].san)}</b> (▶).</p>
+          )}
+          <p className="muted small">{k === 0 ? 'Avance coup par coup avec ▶.' : `Coup ${Math.ceil(k / 2)} : ${fig(lesson.moves.slice(0, k).map((m, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${m.san}` : m.san)).slice(-2).join(' '))}`}
             {c.isCheckmate() && ' — échec et mat !'}</p>
           {c.isCheckmate() && <button className="primary" onClick={() => go({ name: 'mates', level, mode: 'play' })}>À toi : exercice</button>}
         </div>

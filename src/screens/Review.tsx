@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { fig } from '../lib/notation';
 import Board, { type BoardArrow } from '../Board';
 import { db, type Game } from '../db';
 import { analyseGame, replay } from '../analysis';
@@ -135,32 +136,32 @@ export default function Review({ id }: { id: number }) {
             {exit === null && <span>📖 Partie entièrement dans ton répertoire.</span>}
             {exit?.by === 'end' && <span>📖 Tu as suivi ton répertoire jusqu’au bout de la ligne (coup {Math.floor(exit.ply / 2) + 1}).</span>}
             {exit?.by === 'me' && (
-              <span>📖 <b>Sortie du répertoire</b> au coup {Math.floor(exit.ply / 2) + 1}{exit.ply % 2 ? '…' : '.'} : tu as joué <b>{exit.playedSan}</b>,
-                {' '}ton répertoire prévoit <b>{exit.expectedSan.join(' ou ')}</b> (flèche bleue).{' '}
+              <span>📖 <b>Sortie du répertoire</b> au coup {Math.floor(exit.ply / 2) + 1}{exit.ply % 2 ? '…' : '.'} : tu as joué <b>{fig(exit.playedSan)}</b>,
+                {' '}ton répertoire prévoit <b>{fig(exit.expectedSan.join(' ou '))}</b> (flèche bleue).{' '}
                 <button className="small" onClick={() => setPly(exit.ply)}>Voir</button></span>
             )}
             {exit?.by === 'opponent' && (
-              <span>📖 L’adversaire a quitté ton répertoire avec <b>{exit.playedSan}</b> (coup {Math.floor(exit.ply / 2) + 1}).
+              <span>📖 L’adversaire a quitté ton répertoire avec <b>{fig(exit.playedSan)}</b> (coup {Math.floor(exit.ply / 2) + 1}).
                 {' '}Position ajoutée aux <b>trous du répertoire</b> avec le meilleur coup Stockfish.</span>
             )}
           </div>
         )}
         <div className="card explain">
           {ply < 0 && <span className="muted">Touche un coup ou utilise les flèches.</span>}
-          {ply >= 0 && !a && <span>Coup de Maia : <b>{san[ply]}</b></span>}
-          {isMyExit && <><span>📖 Répertoire : <b>{exit!.expectedSan.join(' ou ')}</b> (flèche bleue) au lieu de {exit!.playedSan}.</span><br /></>}
+          {ply >= 0 && !a && <span>Coup de Maia : <b>{fig(san[ply])}</b></span>}
+          {isMyExit && <><span>📖 Répertoire : <b>{fig(exit!.expectedSan.join(' ou '))}</b> (flèche bleue) au lieu de {fig(exit!.playedSan)}.</span><br /></>}
           {a && a.severity === 'ok' && (
-            <span>Tu as joué <b>{a.san}</b> — bon coup{a.bestSan && a.bestSan !== a.san ? ` (Stockfish préférait ${a.bestSan})` : ''}.
+            <span>Tu as joué <b>{fig(a.san)}</b> — bon coup{a.bestSan && a.bestSan !== a.san ? ` (Stockfish préférait ${fig(a.bestSan)})` : ''}.
               {' '}Gain estimé : {Math.round(a.wpAfter)} %</span>
           )}
           {isMistake && (
             <span>
-              <b className={SEV_CLASS[a.severity]}>{SEVERITY_LABEL[a.severity]}</b> : tu as joué <b>{a.san}</b> (flèche rouge).<br />
-              Meilleur coup : <b>{a.bestSan}</b> (flèche verte).<br />
+              <b className={SEV_CLASS[a.severity]}>{SEVERITY_LABEL[a.severity]}</b> : tu as joué <b>{fig(a.san)}</b> (flèche rouge).<br />
+              Meilleur coup : <b>{fig(a.bestSan ?? '')}</b> (flèche verte).<br />
               Tes chances de gain : {Math.round(a.wpBefore)} % → {Math.round(a.wpAfter)} % (−{Math.round(a.drop)} pts)
               {a.detail && <>
                 <br />Motif : <b>{MOTIF_LABEL[a.detail.motif]}</b>
-                <br /><span className="muted small">Réfutation : {a.detail.refutation || '—'}</span>
+                <br /><span className="muted small">Réfutation : {fig(a.detail.refutation) || '—'}</span>
               </>}
             </span>
           )}
@@ -173,7 +174,7 @@ export default function Review({ id }: { id: number }) {
             const an = byPly.get(i);
             return (
               <button key={i} className={`mv ${i === ply ? 'active' : ''} ${an ? SEV_CLASS[an.severity] : 'theirs'} ${exit && exit.by !== 'end' && exit.ply === i ? 'book-exit' : ''}`} onClick={() => setPly(i)}>
-                {i % 2 === 0 ? `${i / 2 + 1}.` : ''}{s}{an ? SEV_ICON[an.severity] : ''}{exit && exit.by !== 'end' && exit.ply === i ? ' 📖' : ''}
+                {i % 2 === 0 ? `${i / 2 + 1}.` : ''}{fig(s)}{an ? SEV_ICON[an.severity] : ''}{exit && exit.by !== 'end' && exit.ply === i ? ' 📖' : ''}
               </button>
             );
           })}

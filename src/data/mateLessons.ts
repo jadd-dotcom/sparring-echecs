@@ -9,6 +9,8 @@ export interface MateLesson {
   intro: string;
   steps: string[];
   moves: { san: string; s?: number }[];
+  /** Pièges du pat : après `at` demi-coups (trait aux Blancs), le coup `san` ferait pat. */
+  traps?: { at: number; san: string }[];
 }
 
 const line = (spec: string) =>
@@ -26,10 +28,11 @@ export const MATE_LESSONS: MateLesson[] = [
       'Place ta dame à un saut de cavalier du roi adverse : il est enfermé dans une « boîte », sans échec.',
       'Rapproche ton roi pendant que la dame garde la boîte.',
       'Suis le roi avec la dame (toujours à un saut de cavalier) : la boîte rétrécit jusqu’au bord.',
-      'Attention au pat : quand le roi est au bord, laisse-lui toujours une case et amène ton roi.',
+      'Piège du pat : quand le roi est au bord, ne lui enlève pas sa dernière case sans lui donner échec. Ici, Qc7 ferait pat : on amène plutôt le roi.',
       'Mat : la dame donne échec sur le bord, ton roi garde les cases de fuite.',
     ],
     moves: line('Qe3@1 Kd6 Kd3@2 Kd7 Kc4@2 Kd6 Qe8@3 Kc7 Kc5@2 Kb7 Qe7+@3 Ka6 Kc6@4 Ka5 Qa3#@5'),
+    traps: [{ at: 12, san: 'Qc7' }],
   },
   {
     level: 'krr',
@@ -64,10 +67,11 @@ export const MATE_LESSONS: MateLesson[] = [
     steps: [
       'Les deux fous, côte à côte, forment une barrière en diagonale que le roi ne peut pas franchir.',
       'Ton roi avance pour soutenir les fous et prendre des cases au roi adverse.',
-      'Repousse le roi vers un coin en rapprochant la barrière (attention au pat : laisse-lui une case).',
-      'Dans le coin, ton roi garde les cases de fuite ; un fou prépare l’échec final.',
-      'Mat : un fou donne échec, l’autre fou et ton roi gardent les dernières cases.',
+      'Repousse le roi vers un coin en rapprochant la barrière ; ton roi garde les cases de fuite.',
+      'Piège du pat : dans le coin, le roi noir n’a plus qu’une ou deux cases. Un coup de trop (ici Kb6) les lui enlève sans échec : pat. Garde-lui une case jusqu’à l’échec final.',
+      'Mat : un fou donne échec, l’autre fou et ton roi gardent les dernières cases (ici, presque tous les autres coups de fou feraient pat).',
     ],
-    moves: line('Bc4+@1 Ke7 Bb2@1 Kd6 Kd3@2 Kc5 Bf7@3 Kc6 Ba2@3 Kb5 Kd4@2 Ka4 Kc5@2 Ka5 Bb3@3 Ka6 Kc6@2 Ka5 Bc3+@3 Ka6 Bc4+@3 Ka7 Be5@4 Ka8 Kc7@4 Ka7 Bd4+@4 Ka8 Bd5#@5'),
+    moves: line('Bc4+@1 Ke7 Bb2@1 Kd6 Kd3@2 Kc5 Bf7@3 Kc6 Ba2@3 Kb5 Kd4@2 Ka4 Kc5@2 Ka5 Bb3@3 Ka6 Kc6@2 Ka5 Bc3+@3 Ka6 Bc4+@3 Ka7 Be5@3 Ka8 Kc7@4 Ka7 Bd4+@3 Ka8 Bd5#@5'),
+    traps: [{ at: 24, san: 'Kb6' }, { at: 28, san: 'Bb5' }],
   },
 ];

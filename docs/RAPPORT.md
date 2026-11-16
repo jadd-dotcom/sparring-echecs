@@ -147,3 +147,20 @@
   (jusqu'à 30 et 38 coups, au-delà des maximums théoriques 16 et 19) : la distance exacte est calculée par analyse rétrograde
   (`scripts/dtm.ts`, maximums retrouvés 10 / 7 / 16 / 19) et c'est elle que l'appli affiche ; la valeur Stockfish reste dans le JSON.
 - Vérification refaite sur ces positions avec le minimum exact : **80/80 matées dans la limite** (`docs/MATS.md`).
+
+## Mise à jour (16/11, suite)
+- **Alerte « pat frôlé » supprimée** (tous niveaux). À la place, quand un exercice échoue par pat : position avant mon coup,
+  mon coup (flèche rouge) et un coup correct (flèche verte) avec sa distance exacte, et le message « le roi noir n'avait plus
+  aucune case et n'était pas en échec » ; bouton pour revoir la position de pat.
+- **Tables exactes dans l'appli** : `public/dtm/*.dtm` (gzip, roi blanc ramené par symétrie dans le triangle a1-d1-d4 ;
+  10 + 11 + 355 + 356 Ko, mises en cache hors ligne), générées une fois par `scripts/build-dtm-tables.ts`. Elles servent au
+  coup correct après un pat et, pour les positions du générateur de secours, au minimum exact.
+- **Leçons Dame et deux fous** : étape « Piège du pat » montrant le coup qui fait pat (Dame : Qc7 ; deux fous : Kb6, puis
+  avant le mat final où 16 coups sur 17 feraient pat).
+- **Limite de validation** = max(minimum + 10, 2 × minimum), plafonnée à 50 (ex. minimum 16 → 32 coups ; 19 → 38).
+  Vérification Stockfish refaite : 80/80 dans la limite (`docs/MATS.md`).
+
+## Notation à figurines (16/11)
+- Partout où un coup s'affiche dans l'interface (liste des coups, revue, messages de pat et de coup correct, leçons, drill,
+  éditeur de répertoire, trous) : ♔ ♕ ♖ ♗ ♘, rien pour les pions (`src/lib/notation.ts`, fonction `fig`, appliquée seulement
+  à l'affichage). Le PGN, l'export JSON et le rapport pour Claude restent en notation anglaise standard.

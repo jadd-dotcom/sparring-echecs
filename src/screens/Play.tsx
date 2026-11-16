@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { fig } from '../lib/notation';
 import Board from '../Board';
 import { maia } from '../engines/maia';
 import { getCurrent, setCurrent, db, type CurrentGame, type Game, type Opening } from '../db';
@@ -129,7 +130,7 @@ export default function Play({ opening }: { opening?: string }) {
   }
 
   const moveRows: string[] = [];
-  for (let i = 0; i < san.length; i += 2) moveRows.push(`${i / 2 + 1}. ${san[i]} ${san[i + 1] ?? ''}`);
+  for (let i = 0; i < san.length; i += 2) moveRows.push(fig(`${i / 2 + 1}. ${san[i]} ${san[i + 1] ?? ''}`));
 
   return (
     <div className="play">
