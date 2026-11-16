@@ -115,3 +115,17 @@ textarea { font-family: ui-monospace, monospace; font-size: .9rem; }
 .pat-explain { line-height: 1.5; }
 .unrated-toggle { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; }
 .unrated-toggle input { width: 22px; height: 22px; margin: 0; flex: none; }
+.sq-badge { position: absolute; top: -6%; right: -6%; min-width: 42%; height: 42%; padding: 0 3px; border-radius: 999px; color: #fff;
+  font-weight: 800; font-size: clamp(10px, 2.2vmin, 18px); display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,.4); z-index: 5; pointer-events: none; line-height: 1; }
+.review-board { display: flex; gap: 8px; align-items: stretch; }
+.review-board .board-wrap { flex: 1; margin: 0; }
+.evalbar { width: 22px; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; background: #3a3a35; position: relative; border: 1px solid var(--line); }
+.evalbar .white { background: #f4f4f0; transition: height .3s; margin-top: auto; }
+.evalbar .lbl { position: absolute; left: 0; right: 0; text-align: center; font-size: 10px; font-weight: 700; }
+.move-sentence { margin: 8px 2px 0; font-size: 1.05rem; }
+.mv .ic { display: inline-block; min-width: 1.4em; margin-left: 3px; padding: 0 4px; border-radius: 999px; color: #fff; font-size: .78rem; font-weight: 800; }
+table.classes { width: 100%; border-collapse: collapse; font-size: .9rem; margin-top: 8px; }
+table.classes td, table.classes th { padding: 2px 4px; text-align: center; }
+table.classes td:first-child, table.classes th:first-child { text-align: left; }
+.ic-inline { display: inline-block; min-width: 1.6em; padding: 0 5px; border-radius: 999px; color: #fff; font-size: .8rem; font-weight: 800; text-align: center; }

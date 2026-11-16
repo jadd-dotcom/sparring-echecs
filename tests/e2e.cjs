@@ -79,9 +79,9 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   // Analyse
   const t0 = Date.now();
   await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
-  await p.getByText(/Analyse de tes coups/).waitFor();
+  await p.getByText(/Analyse de la partie/).waitFor();
   await p.screenshot({ path: OUT + '/3-analyse.png' });
-  await p.locator('.counts').waitFor({ timeout: 180000 });
+  await p.locator('table.classes').waitFor({ timeout: 180000 });
   const g = await p.evaluate(() => window.__db.games.toArray().then((a) => a[0]));
   assert(g.analysis.length === Math.ceil(g.uci.length / 2), `analyse de ${g.analysis.length} coups en ${((Date.now() - t0) / 1000).toFixed(1)} s`);
   console.log('   classement :', JSON.stringify(g.counts), g.analysis.map((a) => `${a.san}:${a.drop.toFixed(0)}`).join(' '));

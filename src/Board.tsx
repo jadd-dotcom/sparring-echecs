@@ -13,12 +13,14 @@ interface Props {
   onMove?: (uci: string) => void;
   arrows?: BoardArrow[];
   highlight?: Record<string, string>;
+  /** Pastille sur une case (ex. classe du coup sur la case d'arrivée). */
+  badges?: Record<string, { icon: string; color: string; label?: string }>;
 }
 
 const LIGHT = '#eeeed2';
 const DARK = '#769656';
 
-export default function Board({ fen, orientation, movable, onMove, arrows = [], highlight = {} }: Props) {
+export default function Board({ fen, orientation, movable, onMove, arrows = [], highlight = {}, badges = {} }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [promo, setPromo] = useState<{ from: string; to: string } | null>(null);
   const chess = useMemo(() => new Chess(fen), [fen]);
@@ -81,6 +83,16 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
           lightSquareStyle: { backgroundColor: LIGHT },
           darkSquareStyle: { backgroundColor: DARK },
           animationDurationInMs: 200,
+          squareRenderer: ({ square, children }) => {
+            const b = badges[square];
+            if (!b) return null as unknown as React.JSX.Element; // rendu par défaut
+            return (
+              <div style={{ width: '100%', height: '100%', position: 'relative', ...squareStyles[square] }}>
+                {children}
+                <span className="sq-badge" style={{ background: b.color }} title={b.label} aria-label={b.label}>{b.icon}</span>
+              </div>
+            );
+          },
         }}
       />
       {promo && (

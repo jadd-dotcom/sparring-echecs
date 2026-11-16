@@ -80,7 +80,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(p4.rating === p2.rating && p4.gamesPlayed === p2.gamesPlayed, 'défaite non comptée : niveau et calibration inchangés');
   assert(p4.nextColor !== g4.myColor, 'la couleur alterne quand même');
   await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
-  await p.locator('.counts').waitFor({ timeout: 180000 });
+  await p.locator('table.classes').waitFor({ timeout: 180000 });
   const last = await p.evaluate(() => window.__db.games.toArray().then((a) => a[a.length - 1]));
   assert(last.unrated && last.analysis?.length > 0 && last.ratingAfter === last.ratingBefore, 'partie non comptée enregistrée et analysée normalement');
   await p.goto(URL + '#/stats');

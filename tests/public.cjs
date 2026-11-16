@@ -46,7 +46,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
   const ta = Date.now();
   await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
-  await p.locator('.counts').waitFor({ timeout: 300000 });
+  await p.locator('table.classes').waitFor({ timeout: 300000 });
   assert(true, `analyse Stockfish en ligne : ${((Date.now() - ta) / 1000).toFixed(1)} s`);
 
   // Mats élémentaires en ligne : leçon (figurines) + exercice joué jusqu'au mat (mon camp : Stockfish via le plateau)
@@ -93,7 +93,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByRole('button', { name: /Abandonner/ }).tap();
   await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
   await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
-  await p.locator('.counts').waitFor({ timeout: 120000 });
+  await p.locator('table.classes').waitFor({ timeout: 120000 });
   assert(true, 'analyse Stockfish hors ligne');
   await p.goto(URL + '#/mates');
   await p.getByRole('heading', { name: /1\. Dame/ }).waitFor();
