@@ -135,3 +135,15 @@
   être légèrement surestimé (ex. mat en 17 trouvé par « go mate » contre 15 avec plus de temps), ce qui rend la limite un peu
   plus souple. La préparation d'un exercice prend ~3-5 s (plus sur tablette).
 - Fou + cavalier (niveau 5) : affiché « plus tard ».
+
+## Mise à jour (16/11)
+- **« Pat frôlé »** : alerte seulement si, dans une position où c'était à moi de jouer, un de mes coups légaux aurait fait pat ;
+  le coup piège est affiché ; au plus une alerte par exercice (position avec le plus de coups pat). Mesure sur 20 exercices
+  par niveau joués par Stockfish : D+R 16 → 18, T+T 16 → 3, T+R 20 → 8, F+F 20 → 20 exercices avec alerte (ancienne → nouvelle règle).
+  Avec la dame ou les fous, un coup pat existe presque toujours près du mat.
+- **Positions précalculées** : 150 par niveau (`src/data/matePositions.json`), générées une fois avec Stockfish 16 natif
+  (5 s par position, `scripts/precompute-mates.ts`), symétrie tirée au hasard parmi les 8 ; le générateur + Stockfish reste en secours.
+  Le « mat en N » de Stockfish était surestimé pour 2/150 (D+R), 0/150 (T+T), 134/150 (T+R) et 147/150 (F+F) positions
+  (jusqu'à 30 et 38 coups, au-delà des maximums théoriques 16 et 19) : la distance exacte est calculée par analyse rétrograde
+  (`scripts/dtm.ts`, maximums retrouvés 10 / 7 / 16 / 19) et c'est elle que l'appli affiche ; la valeur Stockfish reste dans le JSON.
+- Vérification refaite sur ces positions avec le minimum exact : **80/80 matées dans la limite** (`docs/MATS.md`).

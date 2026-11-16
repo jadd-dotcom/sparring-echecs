@@ -29,6 +29,7 @@ node tests/v2.cjs <dossier-captures>    # parcours Ouvertures (V2)
 node tests/report.cjs <dossier-captures> # 3 parties de test → docs/exemple-rapport.md (V1.5)
 node tests/mates.cjs <dossier-captures>  # onglet Mats élémentaires
 npm run verify-mates                    # 20 positions/niveau, Stockfish joue mon camp → docs/MATS.md
+node tests/public.cjs <url>             # test de l'URL publique (chargement, Maia, analyse, hors ligne)
 npm run validate-repertoire             # vérif Stockfish du répertoire pré-chargé → docs/REPERTOIRE.md
 ```
 
