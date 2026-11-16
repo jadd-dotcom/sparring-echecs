@@ -164,3 +164,11 @@
 - Partout où un coup s'affiche dans l'interface (liste des coups, revue, messages de pat et de coup correct, leçons, drill,
   éditeur de répertoire, trous) : ♔ ♕ ♖ ♗ ♘, rien pour les pions (`src/lib/notation.ts`, fonction `fig`, appliquée seulement
   à l'affichage). Le PGN, l'export JSON et le rapport pour Claude restent en notation anglaise standard.
+
+## Réglages : niveau et couleur (16/11)
+- **Mon niveau** modifiable dans Réglages (550 à 2600, « échelle de l'appli, pas celle de Chess.com ») ; après un changement,
+  retour en calibration (K = 80 pour les 10 parties suivantes, via `calibrationStart` dans le profil).
+- **Plancher à 550** (`RATING_MIN`) : au plus bas, Maia joue à 600 (R + 50). Rapport pour Claude : bornes 550–2600.
+- **Ma couleur** : Blancs / Noirs / Alterner (défaut). En mode Alterner, la couleur change à chaque partie libre terminée
+  (abandon compris) ; une partie interrompue (rechargement) reprend avec la même couleur ; les parties à thème ne comptent pas.
+- Tests : unitaires (bornes, calibration après réglage, alternance, couleur fixe) et navigateur (`tests/settings.cjs`).

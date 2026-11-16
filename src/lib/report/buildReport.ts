@@ -4,7 +4,7 @@ import type { Card, Game, MoveAnalysis } from '../../db';
 import { asciiBoard, moveLabel, phaseOf, type Phase } from './facts';
 import { MOTIF_LABEL, MOTIF_ORDER, DETAIL_DEPTH, LINE_PLIES, type Motif } from './motifs';
 import { SEVERITY_LABEL, THRESHOLDS } from '../winpct';
-import { RATING_START } from '../rating';
+import { RATING_MAX, RATING_MIN, RATING_START } from '../rating';
 
 export type PeriodKind = 'since-last' | '7-days' | '20-games';
 
@@ -111,7 +111,7 @@ export function buildReport({ now, period, games, allGames, cards }: ReportInput
     '',
     '## Définitions',
     '',
-    '- **Niveau** : estimation de type Elo, échelle Lichess (bornes 600–2600), mise à jour après chaque partie. Mon adversaire est Maia-3, une IA qui imite le jeu humain, réglée 50 points au-dessus de mon niveau.',
+    `- **Niveau** : estimation de type Elo, échelle de l’appli proche de Lichess (bornes ${RATING_MIN}–${RATING_MAX}), mise à jour après chaque partie. Mon adversaire est Maia-3, une IA qui imite le jeu humain, réglée 50 points au-dessus de mon niveau.`,
     '- **win%** : mes chances de gain estimées depuis l’évaluation de Stockfish (formule Lichess), de mon point de vue.',
     `- **Imprécision / erreur / gaffe** : un de mes coups qui fait chuter mon win% d’au moins ${THRESHOLDS.inaccuracy} / ${THRESHOLDS.mistake} / ${THRESHOLDS.blunder} points par rapport au meilleur coup.`,
     '- **Phases** : ouverture = coups 1 à 10 ; finale = chaque camp a au plus 13 points de pièces hors pions (cavalier/fou 3, tour 5, dame 9) ; milieu de partie = le reste.',

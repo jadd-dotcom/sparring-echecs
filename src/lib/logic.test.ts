@@ -28,9 +28,12 @@ describe('niveau', () => {
   it('mise à jour après calibration (K=32)', () => {
     expect(updateRating(1200, 1250, 0, 25)).toBeCloseTo(1200 - 32 * expectedScore(1200, 1250));
   });
-  it('bornes 600–2600', () => {
-    expect(updateRating(610, 660, 0, 0)).toBe(RATING_MIN);
+  it('bornes 550–2600 ; au plancher, Maia joue à 600', () => {
+    expect(RATING_MIN).toBe(550);
+    expect(updateRating(560, 610, 0, 0)).toBe(RATING_MIN);
     expect(updateRating(2590, 2600, 1, 0)).toBe(RATING_MAX);
+    expect(botRating(RATING_MIN)).toBe(600);
+    expect(updateRating(610, 660, 0, 0)).toBeCloseTo(610 - 80 * expectedScore(610, 660)); // plus de plancher à 600
   });
 });
 
@@ -98,5 +101,44 @@ describe('tirage Maia', () => {
   });
   it('garde le meilleur coup si tout est < 3 %', () => {
     expect(pickMove([['a', 0.01], ['b', 0.02]], () => 0.5)).toBe('b');
+  });
+});
+
+import { colorForNewGame, gamesSinceCalibration, inCalibration, nextColorAfter, withManualRating, type ProfileData } from './profile';
+
+describe('profil : couleur et calibration', () => {
+  const base: ProfileData = { rating: 900, gamesPlayed: 0, nextColor: 'w' };
+  it('« Alterner » par défaut : Blancs, Noirs, Blancs…', () => {
+    let p = { ...base };
+    const colors: string[] = [];
+    for (let i = 0; i < 4; i++) {
+      const c = colorForNewGame(p);
+      colors.push(c);
+      p = { ...p, gamesPlayed: p.gamesPlayed + 1, nextColor: nextColorAfter(p, c) }; // fin de partie (abandon compris)
+    }
+    expect(colors).toEqual(['w', 'b', 'w', 'b']);
+  });
+  it('partie à thème : l’alternance n’avance pas', () => {
+    expect(nextColorAfter({ ...base, nextColor: 'b' }, 'w', true)).toBe('b');
+  });
+  it('couleur fixe : toujours la même ; retour à « Alterner » : l’inverse de la dernière partie', () => {
+    let p: ProfileData = { ...base, colorMode: 'b' };
+    for (let i = 0; i < 3; i++) {
+      expect(colorForNewGame(p)).toBe('b');
+      p = { ...p, gamesPlayed: p.gamesPlayed + 1, nextColor: nextColorAfter(p, 'b') };
+    }
+    expect(colorForNewGame({ ...p, colorMode: 'alternate' })).toBe('w');
+  });
+  it('niveau à la main : borné à 550–2600, arrondi, et retour en calibration (K = 80 pour 10 parties)', () => {
+    const p = { ...base, gamesPlayed: 37 };
+    expect(inCalibration(p)).toBe(false);
+    const q = withManualRating(p, 1234.6);
+    expect(q.rating).toBe(1235);
+    expect(gamesSinceCalibration(q)).toBe(0);
+    expect(kFactor(gamesSinceCalibration(q))).toBe(80);
+    expect(kFactor(gamesSinceCalibration({ ...q, gamesPlayed: 46 }))).toBe(80);  // 9e partie après le réglage
+    expect(kFactor(gamesSinceCalibration({ ...q, gamesPlayed: 47 }))).toBe(32);  // 11e
+    expect(withManualRating(p, 400).rating).toBe(550);
+    expect(withManualRating(p, 3000).rating).toBe(2600);
   });
 });

@@ -70,6 +70,7 @@ describe('rapport complet', () => {
   const md = buildReport({ now: NOW, period, games, allGames: [G1, G2, G3], cards });
   it('contient les 4 sections et les faits clés', () => {
     expect(md).toContain('## 1. Résumé de la période');
+    expect(md).toContain('bornes 550–2600');
     expect(md).toContain('Début : **901** → fin : **913** (+12)');
     expect(md).toContain('Victoires / nulles / défaites : **1 / 0 / 2**');
     expect(md).toContain('| Pièce laissée en prise | 4 |');
