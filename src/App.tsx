@@ -31,7 +31,7 @@ export default function App() {
       )}
       <main>{ready && <>
         {route.name === 'home' && <Home />}
-        {route.name === 'play' && <Play key={route.opening ?? ''} opening={route.opening} />}
+        {route.name === 'play' && <Play key={`${route.opening ?? ''}-${route.unrated ? 'nc' : ''}`} opening={route.opening} unrated={route.unrated} />}
         {route.name === 'review' && <Review key={route.id} id={route.id} />}
         {route.name === 'revise' && <Revise key={route.opening ?? ''} opening={route.opening} />}
         {route.name === 'openings' && <Openings />}

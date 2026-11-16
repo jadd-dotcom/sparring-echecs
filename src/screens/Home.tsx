@@ -11,6 +11,7 @@ export default function Home() {
   const [due, setDue] = useState(0);
   const [total, setTotal] = useState(0);
   const [inProgress, setInProgress] = useState(false);
+  const [unrated, setUnrated] = useState(false);
   const [offline, setOffline] = useState<string>(isOfflineReady() ? 'ready' : '');
   useEffect(() => {
     (async () => {
@@ -35,7 +36,13 @@ export default function Home() {
           {inCalibration(p) && <><br />Calibration : partie {gamesSinceCalibration(p) + 1}/{CALIBRATION_GAMES}</>}
         </div>
       </section>
-      <button className="primary huge" onClick={() => go({ name: 'play' })}>
+      {!inProgress && (
+        <label className="unrated-toggle">
+          <input type="checkbox" checked={unrated} onChange={(e) => setUnrated(e.target.checked)} />
+          Partie non comptée <span className="muted small">(analysée normalement, sans effet sur mon niveau)</span>
+        </label>
+      )}
+      <button className="primary huge" onClick={() => go({ name: 'play', ...(unrated && !inProgress ? { unrated: true } : {}) })}>
         {inProgress ? 'Reprendre la partie' : `Jouer (${colorForNewGame(p) === 'w' ? 'Blancs' : 'Noirs'})`}
       </button>
       <button className="huge" disabled={due === 0} onClick={() => go({ name: 'revise' })}>

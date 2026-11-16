@@ -45,6 +45,8 @@ export interface Game {
   /** Partie à thème : ouverture choisie et première sortie du répertoire. */
   openingId?: string;
   bookExit?: BookExit | null;
+  /** Partie non comptée (sans effet sur le niveau). */
+  unrated?: boolean;
   /** « Ce que je pensais », saisi pendant la revue : demi-coup → texte. */
   thoughts?: Record<number, string>;
 }
@@ -142,6 +144,8 @@ export interface CurrentGame {
   maiaMs: number[];
   startedAt: number;
   openingId?: string;
+  /** Partie non comptée : analysée normalement, sans effet sur le niveau. */
+  unrated?: boolean;
 }
 
 class SparringDB extends Dexie {

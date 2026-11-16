@@ -113,3 +113,5 @@ textarea { font-family: ui-monospace, monospace; font-size: .9rem; }
 .mate-next { max-width: 860px; margin: 12px auto; }
 .trap { background: rgba(220,40,40,.1); border-radius: 8px; padding: 8px; }
 .pat-explain { line-height: 1.5; }
+.unrated-toggle { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; }
+.unrated-toggle input { width: 22px; height: 22px; margin: 0; flex: none; }
