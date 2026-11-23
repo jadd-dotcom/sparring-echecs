@@ -229,3 +229,17 @@
 - **Police** Inter (OFL), sous-ensemble latin local (48 Ko) ; niveau en très grand (4,2 rem), précision et classements en gras.
 - **Zones tactiles ≥ 48 px** et **aucun emoji affiché** : vérifiés par `tests/appearance.cjs` (8 écrans, iPhone et iPad).
 - Captures avant / après et poids ajouté (≈ 149 Ko brut, ≈ 71 Ko compressé) : `docs/design/README.md`.
+
+## Ajustements : coordonnées et analyse des parties importées (23/11)
+- **Coordonnées jamais sous les pièces** : coordonnées plus petites (≈ 15 % de la case), tout au coin, au premier plan ;
+  pièces centrées à 88 % de la case, avec une marge minimale pour les coins sur les petits échiquiers (iPad : 88 % ;
+  iPhone : 74 à 86 % selon le jeu, Merida étant le plus large). Arrondi de l'échiquier ramené à 6 px ; les deux seules
+  coordonnées situées dans un coin arrondi (cases a8 et h1) sont un peu décalées vers l'intérieur, et la pièce de ces deux
+  cases garde un peu plus de marge. Vérifié au pixel (`tests/coords.cjs`, 61 contrôles) : pièces centrées, aucune
+  coordonnée rognée par l'arrondi, et pour les 12 pièces × 16 coordonnées aucun pixel de pièce sous le texte — Celtic,
+  Merida, Cburnett × iPhone SE, iPhone 13 (portrait, paysage), iPad (paysage, portrait) × côté Blancs et Noirs.
+- **Analyse des parties importées** : les plus récentes d'abord ; automatiquement seulement celles jouées depuis le
+  16/11/2026 ; les plus anciennes restent importées sans analyse, avec un bouton « Analyser aussi les anciennes (N) ».
+  Progression « Analyse : X/Y », avancement de la partie en cours et temps restant estimé (d'après la vitesse observée,
+  en demi-coups analysés). Exemple sur les parties de lightning_light : 30 parties analysées automatiquement (≈ 20 min),
+  138 plus anciennes à la demande.

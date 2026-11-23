@@ -15,8 +15,9 @@ Noms : `{accueil,partie,revue,mats}-{iphone,ipad}-{dark,light}.jpg` ; en plus, d
    Sombre / Clair / Auto (Auto suit l'appareil), appliqué dès le chargement de la page.
 2. **Pièces** : jeux libres de Lichess, au choix dans Réglages → Apparence — *Celtic* (par défaut, avec relief, MIT),
    *Merida* (ombré, GPLv2+), *Cburnett* (classique, GPLv2+). Fichiers dans `public/pieces/`, crédits dans le README.
-3. **Échiquier** : bords arrondis, ombre, coordonnées discrètes dans les cases du bord ; pièce saisie agrandie (×1,22)
-   avec une ombre portée pendant le glisser.
+3. **Échiquier** : bords arrondis (6 px), ombre, coordonnées discrètes tout au coin des cases du bord, jamais sous les
+   pièces (pièces à 88 % de la case, un peu moins sur les petits écrans ; vérifié au pixel par `tests/coords.cjs`) ;
+   pièce saisie agrandie (×1,22) avec une ombre portée pendant le glisser.
 4. **Boutons** pleins et gras, avec une épaisseur en bas et un effet d'enfoncement au toucher ; bouton « Jouer » vert et grand.
 5. **Icônes** : tous les emojis remplacés par des icônes SVG Lucide (ISC) ; pastilles de classement des coups dessinées
    pour l'appli (cercle de couleur + étoile, !, coche, livre, ?!, ?, ??).

@@ -16,7 +16,8 @@ Appli web (PWA) d'entraînement aux échecs pour tablette, 100 % dans le navigat
   Noirs : système …c5/…g6 (Dragon accéléré contre 1.e4) ; l'ancien répertoire (Londres, GDR, Française) est dans l'onglet
   « Archives ». Leçons, parties à thème, sorties signalées en revue, trous du répertoire, drill, stats par ouverture.
 - **Import Chess.com** : pseudo dans Réglages, « Importer mes parties » (API publique, seulement les nouvelles ; plan B :
-  coller un PGN). Parties analysées comme celles contre Maia, marquées « Chess.com », sans effet sur le niveau Maia,
+  coller un PGN). Parties analysées comme celles contre Maia (automatiquement depuis le 16/11/2026, les plus récentes
+  d'abord ; les anciennes à la demande ; progression et temps restant), marquées « Chess.com », sans effet sur le niveau Maia,
   avec le suivi de mon répertoire. Incluses dans le rapport pour Claude (par source et par ouverture).
 
 ## Développement
@@ -41,6 +42,7 @@ node tests/chesscom.cjs <dossier-captures> # import Chess.com sur des réponses 
 node tests/ingame.cjs <dossier-captures>   # navigation en partie, sons, assistance (non comptée)
 node tests/review2.cjs <dossier-captures>  # revue : raison, Réessayer, courbe, précision
 node tests/appearance.cjs <dossier-captures> # thème, pièces, zones tactiles ≥ 48 px, aucun emoji
+node tests/coords.cjs <dossier-captures>     # coordonnées jamais sous les pièces (3 jeux, 5 écrans, au pixel)
 node tests/screens.cjs <dossier> [url]     # captures accueil/partie/revue/Mats (iPhone, iPad ; sombre, clair)
 npm run lessons-doc                     # docs/LECONS-OUVERTURES.md depuis les données
 node tests/public.cjs <url>             # test de l'URL publique (chargement, Maia, analyse, hors ligne)

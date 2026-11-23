@@ -64,15 +64,36 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(inRep > 20, `${inRep} parties avec les Blancs ont suivi l’Anglaise du répertoire`);
   await p.screenshot({ path: OUT + '/cc-1-import.png' });
 
-  // Analyse automatique, arrêtée après la 1re partie (la plus récente)
+  // Analyse automatique : seulement les parties depuis le 16/11/2026, les plus récentes d'abord ; X/Y et temps restant
+  const since = await p.evaluate(() => new Date(2026, 10, 16).getTime());
+  const nRecent = games.filter((g) => g.date >= since).length;
+  const nOld = games.length - nRecent;
   await p.getByTestId('cc-analysing').waitFor();
+  const prog = p.getByTestId('cc-analysing');
+  await prog.getByText(new RegExp(`^Analyse : 1/${nRecent}$`)).waitFor();
+  assert(nRecent > 0 && nOld > 0, `progression « Analyse : 1/${nRecent} » (parties depuis le 16/11/2026 ; ${nOld} plus anciennes non analysées)`);
+  assert(new RegExp(`Analyse automatique : ${nRecent} parties depuis le 16/11/2026 ; ${nOld} plus anciennes importées sans analyse`).test(await p.getByTestId('cc-msg').innerText()), 'bilan de l’import : parties analysées automatiquement et anciennes sans analyse');
+  await prog.getByText(/Temps restant estimé : (≈ \d+ min|≈ \d+ h \d+ min|moins d’une minute)/).waitFor({ timeout: 120000 });
+  const progText = (await prog.innerText()).replace(/\s+/g, ' ');
+  assert(true, 'temps restant estimé affiché : ' + progText);
+  await p.screenshot({ path: OUT + '/cc-1b-analyse.png' });
   await p.getByRole('button', { name: 'Arrêter l’analyse' }).tap();
   await p.getByTestId('cc-msg').filter({ hasText: /analysée/ }).waitFor({ timeout: 180000 });
-  const analysed = (await ccGames()).filter((g) => g.analysis);
-  assert(analysed.length >= 1, `${analysed.length} partie analysée, puis arrêt ; bouton « Analyser les … parties importées » proposé`);
-  assert(await p.getByRole('button', { name: /Analyser les \d+ parties importées/ }).count() === 1, 'reprise de l’analyse possible');
-  const newest = [...games].sort((x, y) => y.date - x.date)[0];
-  assert(analysed.some((g) => g.id === newest.id), 'la plus récente est analysée en premier');
+  let analysed = (await ccGames()).filter((g) => g.analysis);
+  const recentSorted = games.filter((g) => g.date >= since).sort((x, y) => y.date - x.date);
+  assert(analysed.length >= 1 && analysed.every((g) => g.date >= since), `${analysed.length} partie(s) analysée(s), toutes depuis le 16/11/2026, puis arrêt`);
+  assert(analysed.some((g) => g.id === recentSorted[0].id), 'la plus récente est analysée en premier');
+  assert(await p.getByRole('button', { name: new RegExp(`Analyser les ${nRecent - analysed.length} parties récentes`) }).count() === 1, 'reprise des récentes possible');
+  // Les anciennes : à la demande
+  await p.getByRole('button', { name: `Analyser aussi les anciennes (${nOld})` }).tap();
+  await prog.getByText(new RegExp(`^Analyse des anciennes parties : 1/${nOld}$`)).waitFor();
+  assert(await p.getByTestId('cc-msg').count() === 0, 'message précédent effacé au démarrage');
+  assert(true, `« Analyser aussi les anciennes (${nOld}) » → « Analyse des anciennes parties : 1/${nOld} »`);
+  await p.getByRole('button', { name: 'Arrêter l’analyse' }).tap();
+  await p.getByTestId('cc-msg').filter({ hasText: /analysée/ }).waitFor({ timeout: 180000 });
+  analysed = (await ccGames()).filter((g) => g.analysis);
+  const oldSorted = games.filter((g) => g.date < since).sort((x, y) => y.date - x.date);
+  assert(analysed.some((g) => g.id === oldSorted[0].id), 'anciennes : la plus récente d’entre elles analysée en premier');
 
   // Une partie avec des erreurs → cartes de révision « chesscom »
   const withErrors = games.filter((g) => g.uci.length > 30).sort((x, y) => y.date - x.date)[0];
