@@ -34,6 +34,11 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
 
   await p.goto(URL);
   await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor();
+  // Niveau Maia réglé à 1000 avant l'import : il ne doit pas bouger.
+  await p.goto(URL + '#/settings');
+  await p.locator('#rating').fill('1000');
+  await p.getByRole('button', { name: 'Enregistrer' }).first().tap();
+  await p.getByText(/Niveau réglé à 1000/).waitFor();
   const p0 = await prof();
 
   // Pseudo inconnu → message clair
@@ -117,7 +122,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.screenshot({ path: OUT + '/cc-4-pgn.png' });
 
   const p1 = await prof();
-  assert(JSON.stringify(p0) === JSON.stringify(p1), `niveau Maia inchangé (${Math.round(p0.rating)}, ${p0.gamesPlayed} parties)`);
+  assert(JSON.stringify(p0) === JSON.stringify(p1), `niveau Maia inchangé (${p0 ? `${Math.round(p0.rating)}, ${p0.gamesPlayed} parties` : 'profil de départ, 0 partie contre Maia'})`);
   assert(errors.length === 0, 'aucune erreur JS ' + errors.join(' | '));
   await b.close();
 })().catch((e) => { console.error(e); process.exit(1); });

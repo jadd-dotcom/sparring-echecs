@@ -5,13 +5,13 @@ Perte d'un de mes coups = éval du meilleur coup − éval de mon coup (même po
 
 ## Anglaise (système fermé) (Blancs)
 
-Coups adverses imposés : aucun · 15 lignes · 112 coups vérifiés · 187 s
+Coups adverses imposés : aucun · 15 lignes · 111 coups vérifiés · 184 s
 
 ```pgn
 [Event "Anglaise (système fermé)"]
 [Orientation "white"]
 
-1. c4 e5 (1... c5 2. Nc3 Nc6 (2... Nf6 3. g3 d5 4. cxd5 Nxd5 5. Bg2 Nc7 6. Nf3 Nc6 7. O-O e5 8. d3 Be7 9. Nd2 Bd7 10. Nc4 f6) 3. g3 g6 4. Bg2 Bg7 5. d3 d6 (5... Nf6 6. e4 O-O 7. Nge2 d6 8. O-O a6 9. h3 Rb8 10. a4 Ne8) 6. e4 e5 7. Nge2 Nge7 8. O-O O-O 9. Be3 Nd4 10. Qd2 Be6) (1... Nf6 2. Nc3 g6 (2... e6 3. d4 Bb4 4. e3 O-O 5. Bd3 d5 6. cxd5 exd5 7. Ne2 Re8 8. O-O Bd6 9. a3 c6 10. Qc2 Nbd7) 3. g3 Bg7 4. Bg2 O-O 5. e4 d6 6. Nge2 e5 7. O-O c6 8. d3 a6 9. h3 b5 10. Be3 Nbd7) (1... e6 2. Nc3 d5 3. cxd5 exd5 4. d4 Nf6 5. Bg5 Be7 6. e3 O-O 7. Bd3 Nbd7 8. Nge2 Re8 9. O-O Nf8 10. Qc2 c6) (1... d5 2. cxd5 Qxd5 (2... Nf6 3. Nf3 Nxd5 4. g3 g6 5. Bg2 Bg7 6. O-O O-O 7. d4 Nb6 8. Nc3 Nc6 9. d5 Na5 10. e4 c6) 3. Nc3 Qd8 (3... Qa5 4. d4 Nf6 5. Nf3 c6 6. Bd2 Qb6 7. e4 Bg4 8. Qa4 Bxf3 9. gxf3) 4. d4 Nf6 5. Nf3 g6 (5... e6 6. e4 Be7 7. Bd3 O-O 8. O-O c5 9. dxc5 Nfd7 10. Qe2 Nc6 11. Rd1) 6. e4 Bg7 7. Be2 c5 8. d5 O-O 9. O-O) 2. Nc3 Nc6 (2... Nf6 3. g3 d5 (3... Bb4 4. Bg2 O-O 5. e4 Bxc3 6. bxc3 c6 7. Ne2 d5 8. cxd5 cxd5 9. exd5 Nxd5 10. O-O Nc6) 4. cxd5 Nxd5 5. Bg2 Nb6 6. d3 Be7 7. Nf3 Nc6 8. Be3 O-O 9. a3 Be6 10. O-O h6 11. Rc1) 3. g3 g6 (3... Nf6 4. Bg2 Bc5 5. e3 O-O 6. Nge2 d6 7. O-O a6 8. d4 Ba7 9. h3 Re8) 4. Bg2 Bg7 5. d3 d6 6. e4 Nge7 (6... f5 7. Nge2 Nf6 8. O-O O-O 9. exf5 Bxf5 10. h3 Qd7) 7. Nge2 O-O 8. O-O Be6 9. Nd5 Qd7 10. Be3 f5 *
+1. c4 e5 (1... c5 2. Nc3 Nc6 (2... Nf6 3. g3 d5 4. cxd5 Nxd5 5. Bg2 Nc7 6. Nf3 Nc6 7. O-O e5 8. d3 Be7 9. Nd2 Bd7 10. Nc4 f6) 3. g3 g6 4. Bg2 Bg7 5. d3 d6 (5... Nf6 6. e4 O-O 7. Nge2 d6 8. O-O a6 9. h3 Rb8 10. a4 Ne8) 6. e4 e5 7. Nge2 Nge7 8. O-O O-O 9. Be3 Nd4 10. Qd2 Be6) (1... Nf6 2. Nc3 g6 (2... e6 3. d4 Bb4 4. e3 O-O 5. Bd3 d5 6. cxd5 exd5 7. Ne2 Re8 8. O-O Bd6 9. a3 c6 10. Qc2 Nbd7) 3. g3 Bg7 4. Bg2 O-O 5. e4 d6 6. Nge2 e5 7. O-O c6 8. d3 a6 9. h3 b5 10. Be3 Nbd7) (1... e6 2. Nc3 d5 3. cxd5 exd5 4. d4 Nf6 5. Bg5 Be7 6. e3 O-O 7. Bd3 Nbd7 8. Nge2 Re8 9. O-O Nf8 10. Qc2 c6) (1... d5 2. cxd5 Qxd5 (2... Nf6 3. Nf3 Nxd5 4. d4 g6 5. e4 Nb6 6. h3 Bg7 7. Nc3 O-O 8. Be3 Nc6 9. Qd2 f5) 3. Nc3 Qd8 (3... Qa5 4. d4 Nf6 5. Nf3 c6 6. Bd2 Qb6 7. e4 Bg4 8. Qa4 Bxf3 9. gxf3) 4. d4 Nf6 5. Nf3 g6 (5... e6 6. e4 Be7 7. Bd3 O-O 8. O-O c5 9. dxc5 Nfd7 10. Qe2 Nc6 11. Rd1) 6. e4 Bg7 7. Be2 c5 8. d5 O-O 9. O-O) 2. Nc3 Nc6 (2... Nf6 3. g3 d5 (3... Bb4 4. Bg2 O-O 5. e4 Bxc3 6. bxc3 c6 7. Ne2 d5 8. cxd5 cxd5 9. exd5 Nxd5 10. O-O Nc6) 4. cxd5 Nxd5 5. Bg2 Nb6 6. d3 Be7 7. Nf3 Nc6 8. Be3 O-O 9. a3 Be6 10. O-O h6 11. Rc1) 3. g3 g6 (3... Nf6 4. Bg2 Bc5 5. e3 O-O 6. Nge2 d6 7. O-O a6 8. d4 Ba7 9. h3 Re8) 4. Bg2 Bg7 5. d3 d6 6. e4 Nge7 (6... f5 7. Nge2 Nf6 8. O-O O-O 9. exf5 Bxf5 10. h3 Qd7) 7. Nge2 O-O 8. O-O Be6 9. Nd5 Qd7 10. Be3 f5 *
 ```
 
 | # | Ligne | Perte max (cp) | Résultat |
@@ -30,13 +30,13 @@ Coups adverses imposés : aucun · 15 lignes · 112 coups vérifiés · 187 s
 | 12 | 1. c4 d5 2. cxd5 Qxd5 3. Nc3 Qd8 4. d4 Nf6 5. Nf3 g6 6. e4 Bg7 7. Be2 c5 8. d5 O-O 9. O-O | 31 | ✅ |
 | 13 | 1. c4 d5 2. cxd5 Qxd5 3. Nc3 Qd8 4. d4 Nf6 5. Nf3 e6 6. e4 Be7 7. Bd3 O-O 8. O-O c5 9. dxc5 Nfd7 10. Qe2 Nc6 11. Rd1 | 31 | ✅ |
 | 14 | 1. c4 d5 2. cxd5 Qxd5 3. Nc3 Qa5 4. d4 Nf6 5. Nf3 c6 6. Bd2 Qb6 7. e4 Bg4 8. Qa4 Bxf3 9. gxf3 | 19 | ✅ |
-| 15 | 1. c4 d5 2. cxd5 Nf6 3. Nf3 Nxd5 4. g3 g6 5. Bg2 Bg7 6. O-O O-O 7. d4 Nb6 8. Nc3 Nc6 9. d5 Na5 10. e4 c6 | 93 | ❌ g3 −93 (SF : d4) |
+| 15 | 1. c4 d5 2. cxd5 Nf6 3. Nf3 Nxd5 4. d4 g6 5. e4 Nb6 6. h3 Bg7 7. Nc3 O-O 8. Be3 Nc6 9. Qd2 f5 | 13 | ✅ |
 
-Coups les plus coûteux : g3 (93 cp, SF préfère d4), d4 (31 cp, SF préfère Nf3), e4 (29 cp, SF préfère d4)
+Coups les plus coûteux : d4 (31 cp, SF préfère Nf3), e4 (29 cp, SF préfère d4), Be3 (25 cp, SF préfère a3)
 
 ## Système …c5 / …g6 (Dragon accéléré) (Noirs)
 
-Coups adverses imposés : aucun · 29 lignes · 156 coups vérifiés · 265 s
+Coups adverses imposés : aucun · 29 lignes · 156 coups vérifiés · 270 s
 
 ```pgn
 [Event "Système …c5 / …g6 (Dragon accéléré)"]
@@ -79,7 +79,7 @@ Coups adverses imposés : aucun · 29 lignes · 156 coups vérifiés · 265 s
 
 Coups les plus coûteux : g6 (30 cp, SF préfère Nf6), d6 (27 cp, SF préfère d5), e5 (27 cp, SF préfère Qa5+)
 
-**Certaines lignes dépassent le seuil (voir ❌).**
+**Toutes les lignes passent le seuil.**
 
 ## Archives (ancien répertoire)
 

@@ -86,12 +86,13 @@ export default function OpeningLessonScreen({ id }: { id: string }) {
   const highlight: Record<string, string> = {};
   let lastMove: { from: string; to: string } | null = null;
   if (stage.kind === 'watch' || stage.kind === 'replay') {
-    const [s] = blocks[stage.block];
+    const [s, e] = blocks[stage.block];
     const c = positionAfter(sans, s + stage.k);
     fen = c.fen();
     const h = c.history({ verbose: true });
     lastMove = h.length ? h[h.length - 1] : null;
-    if (stage.kind === 'replay' && !stage.done && c.turn() === me) {
+    // (s + k < e : la ligne peut finir par un coup adverse ; le bloc est alors terminé.)
+    if (stage.kind === 'replay' && !stage.done && s + stage.k < e && c.turn() === me) {
       movable = me;
       const expected = new Chess(fen).move(sans[s + stage.k]);
       if (stage.hint === 'square' || stage.hint === 'solution') highlight[expected.from] = 'rgba(255, 170, 0, .65)';
@@ -167,8 +168,8 @@ export default function OpeningLessonScreen({ id }: { id: string }) {
         })()}
 
         {stage.kind === 'replay' && (() => {
-          const [s] = blocks[stage.block];
-          const ply = s + stage.k;
+          const [s, e] = blocks[stage.block];
+          const ply = Math.min(s + stage.k, e - 1);
           return (
             <div className="card">
               {!stage.done ? (
