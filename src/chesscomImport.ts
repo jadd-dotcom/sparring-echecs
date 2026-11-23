@@ -6,6 +6,7 @@ import {
   archivesUrl, convertGame, convertPgn, isPastMonth, monthOf, splitPgns, type CcGame, type ImportedGame,
 } from './lib/chesscom';
 import { repertoireInfoWith } from './openings';
+import { estimateRemaining, splitPending, type AnalysisScope } from './lib/analysisQueue';
 import { analyseGame } from './analysis';
 
 export type FetchFn = (url: string, init?: RequestInit) => Promise<Response>;
@@ -122,21 +123,41 @@ export async function importPgnText(text: string, user: string, color?: 'w' | 'b
   return report;
 }
 
-/** Parties importées pas encore analysées, des plus récentes aux plus anciennes. */
-export async function pendingImports(): Promise<Game[]> {
+/** Parties importées pas encore analysées : récentes (depuis le 16/11/2026) et anciennes, des plus récentes aux plus anciennes. */
+export async function pendingImports(): Promise<{ recent: Game[]; old: Game[] }> {
   const gs = await db.games.where('source').equals('chesscom').filter((g) => !g.analysis).toArray();
-  return gs.sort((a, b) => b.date - a.date);
+  return splitPending(gs);
+}
+
+export interface AnalysisProgress {
+  done: number;            // parties terminées
+  total: number;           // parties à analyser dans cette série
+  pct: number;             // avancement de la partie en cours (%)
+  etaSec: number | null;   // temps restant estimé (s), null au début
 }
 
 /**
- * Analyse les parties importées une à une (comme une partie contre Maia : classement des coups,
- * cartes de révision pour mes erreurs). S'arrête entre deux parties si `stop()` renvoie vrai.
+ * Analyse les parties importées une à une, des plus récentes aux plus anciennes (comme une partie contre Maia :
+ * classement des coups, cartes de révision pour mes erreurs). `scope` : les récentes (depuis le 16/11/2026,
+ * par défaut) ou les anciennes. S'arrête entre deux parties si `stop()` renvoie vrai.
  */
-export async function analysePending(onProgress: (i: number, n: number, pct: number) => void, stop: () => boolean): Promise<number> {
-  const todo = await pendingImports();
+export async function analysePending(scope: AnalysisScope, onProgress: (p: AnalysisProgress) => void, stop: () => boolean): Promise<number> {
+  const todo = (await pendingImports())[scope];
+  const pliesTotal = todo.reduce((t, g) => t + g.uci.length, 0);
+  const t0 = performance.now();
+  let pliesBefore = 0;
   let done = 0;
+  onProgress({ done: 0, total: todo.length, pct: 0, etaSec: null });
   for (let i = 0; i < todo.length && !stop(); i++) {
-    await analyseGame(todo[i].id!, (d, t) => onProgress(i, todo.length, Math.round((100 * d) / t)));
+    const n = todo[i].uci.length;
+    await analyseGame(todo[i].id!, (d, t) => {
+      const frac = t ? d / t : 0;
+      onProgress({
+        done, total: todo.length, pct: Math.round(100 * frac),
+        etaSec: estimateRemaining({ elapsedMs: performance.now() - t0, pliesDone: pliesBefore + frac * n, pliesTotal }),
+      });
+    });
+    pliesBefore += n;
     done++;
   }
   return done;
