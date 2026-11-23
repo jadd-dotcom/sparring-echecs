@@ -1,15 +1,16 @@
-// Navigation dans les coups (lecture seule) : ⏮ ◀ ▶ ⏭, bandeau, ⏭ qui clignote quand l'adversaire a joué.
+// Navigation dans les coups (lecture seule) : début, précédent, suivant, position actuelle (clignote quand l'adversaire a joué).
 import { fig } from './lib/notation';
 import type { MoveNavState } from './useMoveNav';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from './icons';
 
 export function NavBar({ nav, label = 'Maia a joué' }: { nav: MoveNavState; label?: string }) {
   return (
     <div className="nav row movenav">
-      <button aria-label="Début" onClick={() => nav.goTo(0)}>⏮</button>
-      <button aria-label="Coup précédent" onClick={() => nav.goTo(nav.at - 1)}>◀</button>
-      <button aria-label="Coup suivant" onClick={() => nav.goTo(nav.at + 1)}>▶</button>
+      <button aria-label="Début" onClick={() => nav.goTo(0)}><ChevronsLeft aria-hidden /></button>
+      <button aria-label="Coup précédent" onClick={() => nav.goTo(nav.at - 1)}><ChevronLeft aria-hidden /></button>
+      <button aria-label="Coup suivant" onClick={() => nav.goTo(nav.at + 1)}><ChevronRight aria-hidden /></button>
       <button aria-label="Position actuelle" className={nav.pending ? 'blink primary' : ''} onClick={nav.toLive}>
-        ⏭{nav.pending ? ` ${label}` : ''}
+        <ChevronsRight aria-hidden />{nav.pending ? ` ${label}` : ''}
       </button>
     </div>
   );
@@ -21,7 +22,7 @@ export function NavBanner({ nav }: { nav: MoveNavState }) {
   const n = nav.at;
   return (
     <div className="nav-banner" role="status">
-      {n === 0 ? 'Tu revois la position de départ' : `Tu revois le coup ${Math.ceil(n / 2)}${n % 2 ? '' : '…'}`} — ⏭ pour revenir
+      {n === 0 ? 'Tu revois la position de départ' : `Tu revois le coup ${Math.ceil(n / 2)}${n % 2 ? '' : '…'}`} — touche <ChevronsRight aria-hidden className="ico sm" /> pour revenir
     </div>
   );
 }

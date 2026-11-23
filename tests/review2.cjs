@@ -39,7 +39,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
 
   // Réessayer : deux échecs → solution ; puis réussite
   await p.locator('.moves .mv').nth(2).tap();
-  await p.getByRole('button', { name: '↻ Réessayer' }).tap();
+  await p.getByRole('button', { name: 'Réessayer' }).tap();
   await p.getByText(/trouve un meilleur coup que ♕g4/).waitFor();
   await sq('d1').tap(); await sq('g4').tap();
   await p.getByText(/Essaie encore/).waitFor({ timeout: 30000 });
@@ -49,9 +49,9 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(true, '2e essai raté : la solution s’affiche');
   await p.screenshot({ path: OUT + '/r2-2-solution.png' });
   await p.getByRole('button', { name: 'Fermer' }).tap();
-  await p.getByRole('button', { name: '↻ Réessayer' }).tap();
+  await p.getByRole('button', { name: 'Réessayer' }).tap();
   await sq('e4').tap(); await sq('d5').tap();   // exd5 : le meilleur coup
-  await p.getByText(/✅ Bien vu : exd5/).waitFor({ timeout: 30000 });
+  await p.getByText(/Bien vu : exd5/).waitFor({ timeout: 30000 });
   assert(true, 'réussite : exd5 classé Bon ou mieux');
 
   // Stats : courbe de précision

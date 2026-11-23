@@ -22,8 +22,8 @@ export default defineConfig({
         scope: base,
         display: 'standalone',
         orientation: 'any',
-        background_color: '#f4f1ea',
-        theme_color: '#3c7a3c',
+        background_color: '#1f2023',
+        theme_color: '#1f2023',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -32,7 +32,7 @@ export default defineConfig({
       },
       workbox: {
         // Tout est précaché, y compris le modèle Maia (~22 Mo) et les .wasm → hors ligne complet.
-        globPatterns: ['**/*.{js,mjs,css,html,svg,png,wasm,onnx,webmanifest,dtm}'],
+        globPatterns: ['**/*.{js,mjs,css,html,svg,png,wasm,onnx,webmanifest,dtm,woff2}'],
         maximumFileSizeToCacheInBytes: 40 * 1024 * 1024,
         navigateFallback: 'index.html',
       },

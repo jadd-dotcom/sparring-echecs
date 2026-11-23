@@ -7,11 +7,12 @@ import { errorReason } from '../lib/reason';
 import { accuracyOfGame } from '../lib/accuracy';
 import { winPercent } from '../lib/winpct';
 import EvalCurve from '../EvalCurve';
+import { BookOpen, Check, CircleCheck, CircleX, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ClassBadge, RotateCcw } from '../icons';
 import { recordBookExit, treeOf } from '../openings';
 import { MOTIF_LABEL } from '../lib/report/motifs';
 import { buildIndex } from '../lib/repertoire';
 import {
-  bookLength, CLASS_COLOR, CLASS_ICON, CLASS_LABEL, CLASS_ORDER, classifyMove, classSummary, mergeIndexes, moveSentence, type MoveClass,
+  bookLength, CLASS_LABEL, CLASS_ORDER, classifyMove, classSummary, mergeIndexes, moveSentence, type MoveClass,
 } from '../lib/moveClass';
 import { Chess } from 'chess.js';
 
@@ -40,7 +41,7 @@ function ThoughtBox({ game, ply, onSaved }: { game: Game; ply: number; onSaved: 
           timer.current = setTimeout(() => save(v), 600);
         }}
         onBlur={() => { if (timer.current) clearTimeout(timer.current); if (!saved) save(text); }} />
-      <span className="muted small">{saved ? (text.trim() ? '✓ enregistré' : '') : '…'}</span>
+      <span className="muted small">{saved ? (text.trim() ? <><Check aria-hidden className="ico sm" /> enregistré</> : '') : '…'}</span>
     </label>
   );
 }
@@ -113,12 +114,12 @@ export default function Review({ id }: { id: number }) {
   const fen = fens[ply + 1];
   const arrows: BoardArrow[] = [];
   const highlight: Record<string, string> = {};
-  const badges: Record<string, { icon: string; color: string; label: string }> = {};
+  const badges: Record<string, MoveClass> = {};
   if (pe && cls) {
     const u = game.uci[ply];
     highlight[u.slice(0, 2)] = 'rgba(255,255,0,.35)';
     highlight[u.slice(2, 4)] = 'rgba(255,255,0,.45)';
-    badges[u.slice(2, 4)] = { icon: CLASS_ICON[cls], color: CLASS_COLOR[cls], label: CLASS_LABEL[cls] };
+    badges[u.slice(2, 4)] = cls;
     if (cls !== 'best' && cls !== 'book' && pe.bestUci && pe.bestUci !== u)
       arrows.push({ from: pe.bestUci.slice(0, 2), to: pe.bestUci.slice(2, 4), color: 'rgba(30,160,60,.9)' });
     if (isMyExit) for (const sanExp of exit!.expectedSan) {
@@ -155,7 +156,7 @@ export default function Review({ id }: { id: number }) {
     setRetry({
       ply: retry.ply, tries, checking: false, solution: !ok && tries >= 2,
       result: ok
-        ? { ok, text: `✅ Bien vu : ${fig(m.san)} est ${k === 'best' ? 'le meilleur coup' : k === 'excellent' ? 'excellent' : 'un bon coup'}.` }
+        ? { ok, text: `Bien vu : ${fig(m.san)} est ${k === 'best' ? 'le meilleur coup' : k === 'excellent' ? 'excellent' : 'un bon coup'}.` }
         : { ok, text: `${fig(m.san)} est ${{ inaccuracy: 'une imprécision', mistake: 'une erreur', blunder: 'une gaffe' }[k as 'inaccuracy' | 'mistake' | 'blunder']}. ${tries >= 2 ? `Solution : ${fig(pe.bestSan ?? '')} (flèche verte).` : 'Essaie encore.'}` },
     });
   }
@@ -179,16 +180,16 @@ export default function Review({ id }: { id: number }) {
             onMove={onRetryMove} arrows={arrows} highlight={highlight} badges={badges} lastMove={retryOn ? null : pe ? { from: pe.uci.slice(0, 2), to: pe.uci.slice(2, 4) } : null} />
         </div>
         <p className="move-sentence">
-          {pe && cls ? <><span className="ic-inline" style={{ background: CLASS_COLOR[cls] }}>{CLASS_ICON[cls]}</span>{' '}
+          {pe && cls ? <><ClassBadge cls={cls} size={22} className="class-badge inline" />{' '}
             {moveSentence(fig(pe.san), cls, pe.bestSan ? fig(pe.bestSan) : null, mine(ply) ? reason : null, mine(ply) && reason && a?.detail ? MOTIF_LABEL[a.detail.motif] : null)}{' '}
             <span className="muted small">({mine(ply) ? 'ton coup' : opp})</span></>
             : <span className="muted">Touche un coup ou utilise les flèches.</span>}
         </p>
         <div className="nav row">
-          <button onClick={() => { setRetry(null); setPly(-1); }}>⏮</button>
-          <button onClick={() => { setRetry(null); setPly(Math.max(-1, ply - 1)); }}>◀</button>
-          <button onClick={() => { setRetry(null); setPly(Math.min(game.uci.length - 1, ply + 1)); }}>▶</button>
-          <button onClick={() => { setRetry(null); setPly(game.uci.length - 1); }}>⏭</button>
+          <button aria-label="Début" onClick={() => { setRetry(null); setPly(-1); }}><ChevronsLeft aria-hidden /></button>
+          <button aria-label="Coup précédent" onClick={() => { setRetry(null); setPly(Math.max(-1, ply - 1)); }}><ChevronLeft aria-hidden /></button>
+          <button aria-label="Coup suivant" onClick={() => { setRetry(null); setPly(Math.min(game.uci.length - 1, ply + 1)); }}><ChevronRight aria-hidden /></button>
+          <button aria-label="Fin" onClick={() => { setRetry(null); setPly(game.uci.length - 1); }}><ChevronsRight aria-hidden /></button>
           <button onClick={() => { const n = errorsPlies.find((p) => p > ply); if (n !== undefined) { setRetry(null); setPly(n); } }}>Erreur suivante</button>
         </div>
       </div>
@@ -208,7 +209,7 @@ export default function Review({ id }: { id: number }) {
             <tbody>
               {CLASS_ORDER.map((c) => (
                 <tr key={c}>
-                  <td><span className="ic-inline" style={{ background: CLASS_COLOR[c] }}>{CLASS_ICON[c]}</span> {CLASS_LABEL[c]}</td>
+                  <td><ClassBadge cls={c} size={20} className="class-badge inline" /> {CLASS_LABEL[c]}</td>
                   <td>{summary.me[c]}</td><td>{summary.maia[c]}</td>
                 </tr>
               ))}
@@ -220,31 +221,31 @@ export default function Review({ id }: { id: number }) {
         </div>
         {imported && game.bookExit !== undefined && (
           <div className="card book" data-testid="book-info">
-            {game.bookExit === null && <span>📖 Partie entièrement dans ton répertoire{repName ? ` (${repName})` : ''}.</span>}
+            {game.bookExit === null && <span><BookOpen aria-hidden className="ico sm book-ico" /> Partie entièrement dans ton répertoire{repName ? ` (${repName})` : ''}.</span>}
             {exit && exit.ply === 0 && exit.by === 'me' && <span>Hors répertoire dès ton 1er coup : tu as joué <b>{fig(exit.playedSan)}</b>, ton répertoire prévoit <b>{fig(exit.expectedSan.join(' ou '))}</b>.</span>}
             {exit && exit.ply === 0 && exit.by !== 'me' && <span>Hors répertoire dès le 1er coup : l’adversaire a joué <b>{fig(exit.playedSan)}</b>, que ton répertoire ne couvre pas.</span>}
-            {exit && exit.ply > 0 && exit.by === 'end' && <span>📖 Resté dans ton répertoire{repName ? ` (${repName})` : ''} jusqu’au bout de la ligne (coup {Math.floor(exit.ply / 2) + 1}).</span>}
+            {exit && exit.ply > 0 && exit.by === 'end' && <span><BookOpen aria-hidden className="ico sm book-ico" /> Resté dans ton répertoire{repName ? ` (${repName})` : ''} jusqu’au bout de la ligne (coup {Math.floor(exit.ply / 2) + 1}).</span>}
             {exit && exit.ply > 0 && exit.by === 'me' && (
-              <span>📖 {repName ? `${repName} : ` : ''}<b>sorti du répertoire</b> au coup {Math.floor(exit.ply / 2) + 1}{exit.ply % 2 ? '…' : '.'} : tu as joué <b>{fig(exit.playedSan)}</b>,
+              <span><BookOpen aria-hidden className="ico sm book-ico" /> {repName ? `${repName} : ` : ''}<b>sorti du répertoire</b> au coup {Math.floor(exit.ply / 2) + 1}{exit.ply % 2 ? '…' : '.'} : tu as joué <b>{fig(exit.playedSan)}</b>,
                 {' '}ton répertoire prévoit <b>{fig(exit.expectedSan.join(' ou '))}</b> (flèche bleue).{' '}
                 <button className="small" onClick={() => setPly(exit.ply)}>Voir</button></span>
             )}
             {exit && exit.ply > 0 && exit.by === 'opponent' && (
-              <span>📖 {repName ? `${repName} : ` : ''}tu es resté dans ton répertoire ; l’adversaire l’a quitté avec <b>{fig(exit.playedSan)}</b> (coup {Math.floor(exit.ply / 2) + 1}{exit.ply % 2 ? '…' : '.'}).</span>
+              <span><BookOpen aria-hidden className="ico sm book-ico" /> {repName ? `${repName} : ` : ''}tu es resté dans ton répertoire ; l’adversaire l’a quitté avec <b>{fig(exit.playedSan)}</b> (coup {Math.floor(exit.ply / 2) + 1}{exit.ply % 2 ? '…' : '.'}).</span>
             )}
           </div>
         )}
         {game.openingId && (
           <div className="card book">
-            {exit === null && <span>📖 Partie entièrement dans ton répertoire.</span>}
-            {exit?.by === 'end' && <span>📖 Tu as suivi ton répertoire jusqu’au bout de la ligne (coup {Math.floor(exit.ply / 2) + 1}).</span>}
+            {exit === null && <span><BookOpen aria-hidden className="ico sm book-ico" /> Partie entièrement dans ton répertoire.</span>}
+            {exit?.by === 'end' && <span><BookOpen aria-hidden className="ico sm book-ico" /> Tu as suivi ton répertoire jusqu’au bout de la ligne (coup {Math.floor(exit.ply / 2) + 1}).</span>}
             {exit?.by === 'me' && (
-              <span>📖 <b>Sortie du répertoire</b> au coup {Math.floor(exit.ply / 2) + 1}{exit.ply % 2 ? '…' : '.'} : tu as joué <b>{fig(exit.playedSan)}</b>,
+              <span><BookOpen aria-hidden className="ico sm book-ico" /> <b>Sortie du répertoire</b> au coup {Math.floor(exit.ply / 2) + 1}{exit.ply % 2 ? '…' : '.'} : tu as joué <b>{fig(exit.playedSan)}</b>,
                 {' '}ton répertoire prévoit <b>{fig(exit.expectedSan.join(' ou '))}</b> (flèche bleue).{' '}
                 <button className="small" onClick={() => setPly(exit.ply)}>Voir</button></span>
             )}
             {exit?.by === 'opponent' && (
-              <span>📖 L’adversaire a quitté ton répertoire avec <b>{fig(exit.playedSan)}</b> (coup {Math.floor(exit.ply / 2) + 1}).
+              <span><BookOpen aria-hidden className="ico sm book-ico" /> L’adversaire a quitté ton répertoire avec <b>{fig(exit.playedSan)}</b> (coup {Math.floor(exit.ply / 2) + 1}).
                 {' '}Position ajoutée aux <b>trous du répertoire</b> avec le meilleur coup Stockfish.</span>
             )}
           </div>
@@ -252,19 +253,19 @@ export default function Review({ id }: { id: number }) {
         {(a || pe) && (
           <div className="card explain">
             {pe && <span className="muted small">Chances de gain {mine(ply) ? 'pour toi' : `pour ${opp}`} : {Math.round(pe.wpBefore)} % → {Math.round(pe.wpAfter)} %{pe.drop >= 1 ? ` (−${Math.round(pe.drop)} pts)` : ''}</span>}
-            {isMyExit && <><br /><span>📖 Répertoire : <b>{fig(exit!.expectedSan.join(' ou '))}</b> (flèche bleue) au lieu de {fig(exit!.playedSan)}.</span></>}
+            {isMyExit && <><br /><span><BookOpen aria-hidden className="ico sm book-ico" /> Répertoire : <b>{fig(exit!.expectedSan.join(' ou '))}</b> (flèche bleue) au lieu de {fig(exit!.playedSan)}.</span></>}
             {a?.detail && <>
               <br />Motif : <b>{MOTIF_LABEL[a.detail.motif]}</b>
               <br /><span className="muted small">Réfutation : {fig(a.detail.refutation) || '—'}</span>
             </>}
             {a && a.severity !== 'ok' && !retryOn && (
-              <div><button className="primary" onClick={() => setRetry({ ply, tries: 0, checking: false, result: null, solution: false })}>↻ Réessayer</button></div>
+              <div><button className="primary" onClick={() => setRetry({ ply, tries: 0, checking: false, result: null, solution: false })}><RotateCcw aria-hidden className="ico" />Réessayer</button></div>
             )}
             {retryOn && (
               <div className={`retry-card ${retry!.result ? (retry!.result.ok ? 'good' : 'bad') : ''}`}>
                 <p><b>Réessayer :</b> trouve un meilleur coup que {fig(pe!.san)}.</p>
                 {retry!.checking && <p className="pulse muted">Vérification par Stockfish…</p>}
-                {retry!.result && <p>{retry!.result.text}</p>}
+                {retry!.result && <p>{retry!.result.ok ? <CircleCheck aria-hidden className="ico good-text" /> : <CircleX aria-hidden className="ico bad-text" />} {retry!.result.text}</p>}
                 <button onClick={() => setRetry(null)}>Fermer</button>
               </div>
             )}
@@ -279,7 +280,7 @@ export default function Review({ id }: { id: number }) {
             return (
               <button key={i} className={`mv ${i === ply ? 'active' : ''} ${mine(i) ? '' : 'theirs'} ${exit && exit.by !== 'end' && exit.ply === i ? 'book-exit' : ''}`}
                 onClick={() => { setRetry(null); setPly(i); }} aria-label={`${s} : ${CLASS_LABEL[c]}`}>
-                {i % 2 === 0 ? `${i / 2 + 1}.` : ''}{fig(s)}<span className="ic" style={{ background: CLASS_COLOR[c] }}>{CLASS_ICON[c]}</span>
+                {i % 2 === 0 ? `${i / 2 + 1}.` : ''}{fig(s)}<ClassBadge cls={c} size={18} className="class-badge ic" />
               </button>
             );
           })}

@@ -7,6 +7,7 @@ import {
   cloneTree, formatLine, lines, parsePgn, removeLine, addLine, toPgn, type RepNode,
 } from '../lib/repertoire';
 import { checkMyMoves, lineLoss, MAX_LOSS_CP, saveTree, treeOf } from '../openings';
+import { Check, Trash2, TriangleAlert, Undo2 } from '../icons';
 
 type Mode = { kind: 'view' } | { kind: 'add'; moves: string[] } | { kind: 'import'; text: string };
 
@@ -146,7 +147,7 @@ export default function RepertoireEditor({ id }: { id: string }) {
           <div className="card">
             <p className="line-text">{fig(formatLine(mode.moves)) || 'Joue les coups des deux camps sur l’échiquier.'}</p>
             <div className="row">
-              <button disabled={!mode.moves.length} onClick={() => setMode({ kind: 'add', moves: mode.moves.slice(0, -1) })}>↶ Retirer le dernier coup</button>
+              <button disabled={!mode.moves.length} onClick={() => setMode({ kind: 'add', moves: mode.moves.slice(0, -1) })}><Undo2 aria-hidden className="ico" />Retirer le dernier coup</button>
               <button onClick={() => setMode({ kind: 'view' })}>Annuler</button>
               <button className="primary" disabled={!mode.moves.length || !!busy} onClick={() => saveAddedLine(mode.moves)}>Enregistrer la ligne</button>
             </div>
@@ -211,16 +212,16 @@ export default function RepertoireEditor({ id }: { id: string }) {
             return (
               <div key={key} className="line-row">
                 <span className={`status ${r.max === undefined ? '' : r.max > MAX_LOSS_CP ? 'bad-text' : 'good-text'}`}
-                  title={r.bad.join(', ')}>{r.max === undefined ? '?' : r.max > MAX_LOSS_CP ? '⚠' : '✓'}</span>
+                  title={r.bad.join(', ')}>{r.max === undefined ? '?' : r.max > MAX_LOSS_CP ? <TriangleAlert aria-label="perd plus de 0,5 pion" className="ico sm bad-text" /> : <Check aria-label="vérifiée" className="ico sm good-text" />}</span>
                 <button className="ghost line-btn" onClick={() => { setMode({ kind: 'view' }); setPreview({ sans: l }); }}>
                   <span className="line-text">{fig(formatLine(l))}</span>
                 </button>
                 <button className="small" title="Partir de cette ligne" onClick={() => { setPreview(null); setMode({ kind: 'add', moves: l }); }}>⑂</button>
-                <button className="small danger" title="Supprimer" onClick={() => deleteLine(l)}>✕</button>
+                <button className="small danger" title="Supprimer" onClick={() => deleteLine(l)}><Trash2 aria-hidden className="ico sm" /></button>
               </div>
             );
           })}
-          <p className="muted small">✓ aucun de tes coups ne perd plus de 0,5 pion · ⚠ un coup perd plus · ? pas encore vérifié</p>
+          <p className="muted small"><Check aria-hidden className="ico sm good-text" /> aucun de tes coups ne perd plus de 0,5 pion · <TriangleAlert aria-hidden className="ico sm bad-text" /> un coup perd plus · ? pas encore vérifié</p>
         </div>
       </aside>
     </div>

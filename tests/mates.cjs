@@ -67,7 +67,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
     if (i === 0) await p.screenshot({ path: OUT + '/m-3-exercice.png' });
   }
   await p.goto(URL); await p.goto(URL + '#/mates');
-  await p.getByText('✓ Validé').waitFor();
+  await p.getByText(/Validé · /).first().waitFor();
   assert(await p.locator('section.locked').count() === 3, 'niveau 1 validé → niveau 2 (échelle) débloqué');
 
   // Exercice raté par pat : dès qu'un coup fait pat, on le joue

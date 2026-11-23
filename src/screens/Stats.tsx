@@ -1,11 +1,12 @@
 import { fig } from '../lib/notation';
-import { bookLabel, stayedUntil } from '../lib/bookLabel';
+import { bookLabel, inBook, stayedUntil } from '../lib/bookLabel';
 import { useEffect, useState } from 'react';
 import { db, getProfile, type Game, type Opening } from '../db';
 import { openingStats } from '../lib/openingStats';
 import { accuracyOfGame } from '../lib/accuracy';
 import { RATING_START } from '../lib/rating';
 import { go } from '../router';
+import { BookOpen } from '../icons';
 
 const W = 640, H = 220, PAD = { l: 44, r: 12, t: 14, b: 26 };
 
@@ -170,7 +171,7 @@ export default function Stats() {
             {[...games].reverse().map((g) => (
               <tr key={g.id}>
                 <td>{new Date(g.date).toLocaleDateString('fr-FR')}</td>
-                <td>{g.myColor === 'w' ? 'Blancs' : 'Noirs'}{g.openingId && <div className="muted small">📖 {openings.find((o) => o.id === g.openingId)?.name}</div>}</td>
+                <td>{g.myColor === 'w' ? 'Blancs' : 'Noirs'}{g.openingId && <div className="muted small"><BookOpen aria-hidden className="ico sm" /> {openings.find((o) => o.id === g.openingId)?.name}</div>}</td>
                 <td>{g.score === 1 ? 'Victoire' : g.score === 0 ? 'Défaite' : 'Nulle'} <span className="muted">({g.termination}{g.unrated ? ', non comptée' : ''})</span></td>
                 <td>{Math.round(g.ratingAfter ?? 0)}</td>
                 <td>{g.counts ? g.counts.blunder : '–'}</td>
@@ -207,7 +208,7 @@ function ImportedList({ games, openings }: { games: Game[]; openings: Opening[] 
               <td>{g.myColor === 'w' ? 'Blancs' : 'Noirs'}</td>
               <td>{g.score === 1 ? 'Victoire' : g.score === 0 ? 'Défaite' : 'Nulle'} <span className="muted">({g.termination})</span></td>
               <td>{g.ext?.opp.name ?? '–'}{g.ext?.opp.rating ? <span className="muted"> ({g.ext.opp.rating})</span> : null}</td>
-              <td className="small">{fig(bookLabel(g.bookExit) ?? '–')}{g.repOpeningId && <div className="muted">{openings.find((o) => o.id === g.repOpeningId)?.name}</div>}</td>
+              <td className="small">{inBook(g.bookExit) && <BookOpen aria-hidden className="ico sm book-ico" />} {fig(bookLabel(g.bookExit) ?? '–')}{g.repOpeningId && <div className="muted">{openings.find((o) => o.id === g.repOpeningId)?.name}</div>}</td>
               <td>{g.counts ? g.counts.blunder : '–'}</td>
               <td><button className="small" onClick={() => go({ name: 'review', id: g.id! })}>{g.analysis ? 'Revoir' : 'Analyser'}</button></td>
             </tr>

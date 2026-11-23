@@ -49,6 +49,9 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   const end = Date.now() + 20000;
   let g; do { await p.waitForTimeout(150); g = await cur(); } while (g.uci.length < before + 2 && Date.now() < end);
   assert(g.uci.length >= before + 2, 'Maia répond hors ligne (' + g.uci.join(' ') + ')');
+  const imgs = await p.evaluate(() => [...document.querySelectorAll('.piece-img')].map((i) => i.complete && i.naturalWidth > 0));
+  const font = await p.evaluate(async () => { await document.fonts.ready; return [...document.fonts].some((f) => f.family.includes('Inter') && f.status === 'loaded'); });
+  assert(imgs.length >= 30 && imgs.every(Boolean) && font, `pièces (${imgs.length} images) et police Inter affichées hors ligne`);
   await p.getByRole('button', { name: /Abandonner/ }).tap();
   await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
   await p.getByRole('button', { name: 'Analyser mes coups' }).tap();

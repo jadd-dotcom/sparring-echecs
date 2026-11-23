@@ -8,6 +8,7 @@ import {
 import { introduceDrillCards, saveLessonProgress } from '../openings';
 import { fig } from '../lib/notation';
 import { go } from '../router';
+import { ChevronLeft, ChevronRight, CircleCheck } from '../icons';
 
 type Stage =
   | { kind: 'watch'; block: number; k: number }      // k = demi-coups montrés dans le bloc
@@ -129,9 +130,9 @@ export default function OpeningLessonScreen({ id }: { id: string }) {
         <Board fen={fen} orientation={me} movable={movable} onMove={onMove} arrows={arrows} highlight={highlight} />
         {(stage.kind === 'watch' || stage.kind === 'model') && (
           <div className="nav row">
-            <button onClick={() => setStage({ ...stage, k: Math.max(0, stage.k - 1) })}>◀</button>
+            <button aria-label="Coup précédent" onClick={() => setStage({ ...stage, k: Math.max(0, stage.k - 1) })}><ChevronLeft aria-hidden /></button>
             <button className="primary" disabled={stage.kind === 'watch' ? stage.k >= blocks[stage.block][1] - blocks[stage.block][0] : stage.k >= lesson.model.moves.length}
-              onClick={() => setStage({ ...stage, k: stage.k + 1 })}>▶ Coup suivant</button>
+              onClick={() => setStage({ ...stage, k: stage.k + 1 })}><ChevronRight aria-hidden className="ico" />Coup suivant</button>
           </div>
         )}
       </div>
@@ -152,7 +153,7 @@ export default function OpeningLessonScreen({ id }: { id: string }) {
           return (
             <div className="card">
               {stage.block === 0 && stage.k === 0 && <p>{lesson.intro}</p>}
-              {stage.k === 0 ? <p className="muted">Avance coup par coup avec ▶ : chaque coup a un but.</p> : (
+              {stage.k === 0 ? <p className="muted">Avance coup par coup avec « Coup suivant » : chaque coup a un but.</p> : (
                 <>
                   <h3>{label(ply, sans[ply])} {ply % 2 === (me === 'w' ? 0 : 1) ? <span className="tag">ton coup</span> : null}</h3>
                   <Explained text={lesson.moves[ply].why} fresh={fresh[`move:${ply}`]} />
@@ -183,7 +184,7 @@ export default function OpeningLessonScreen({ id }: { id: string }) {
                 </>
               ) : (
                 <>
-                  <h3>✅ Bloc réussi</h3>
+                  <h3><CircleCheck aria-hidden className="ico good-text" /> Bloc réussi</h3>
                   <p className="muted small">Ces coups entrent dans ton drill (première révision demain).</p>
                   {stage.block + 1 < blocks.length
                     ? <button className="primary" onClick={() => setStage({ kind: 'watch', block: stage.block + 1, k: 0 })}>Bloc suivant</button>
@@ -210,7 +211,7 @@ export default function OpeningLessonScreen({ id }: { id: string }) {
             <div className="card">
               <h3>Partie type</h3>
               <p className="muted small">Suite de la ligne principale jouée par Stockfish (ordinateur contre lui-même).</p>
-              {i < 0 ? <p>Position à la fin de la ligne principale. Avance avec ▶.</p> : (
+              {i < 0 ? <p>Position à la fin de la ligne principale. Avance avec « Coup suivant ».</p> : (
                 <>
                   <p><b>{label(ply, lesson.model.moves[i])}</b></p>
                   {note ? <><span className="tag">moment clé</span><Explained text={note} fresh={fresh[`model:${i}`]} /></> : <p className="muted">—</p>}
@@ -234,7 +235,7 @@ export default function OpeningLessonScreen({ id }: { id: string }) {
 
         {stage.kind === 'done' && (
           <div className="card good">
-            <h3>✅ Leçon terminée</h3>
+            <h3><CircleCheck aria-hidden className="ico good-text" /> Leçon terminée</h3>
             <p>Les coups de la ligne principale sont dans ton drill. Étapes suivantes conseillées :</p>
             <div className="col">
               <button className="primary" onClick={() => go({ name: 'revise', opening: opening.id })}>2. Drill</button>

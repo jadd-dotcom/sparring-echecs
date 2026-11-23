@@ -11,6 +11,7 @@ import { Chess } from 'chess.js';
 import { go } from '../router';
 import MateExercise from '../MateExercise';
 import { MATE_LEVELS } from '../lib/mates';
+import { BookOpen, CircleCheck, CircleX, Crown } from '../icons';
 
 type Outcome = { ok: boolean; uci: string; san: string; drop: number };
 
@@ -42,7 +43,7 @@ export default function Revise({ opening }: { opening?: string }) {
     const level = MATE_LEVELS.find((l) => l.id === card.mateLevel)!;
     return (
       <>
-        <p className="muted center-text">♚ Révision : position de mat ratée ({queue.length} restante{queue.length > 1 ? 's' : ''}) — mate le roi noir.</p>
+        <p className="muted center-text"><Crown aria-hidden className="ico sm" /> Révision : position de mat ratée ({queue.length} restante{queue.length > 1 ? 's' : ''}) — mate le roi noir.</p>
         <MateExercise key={card.id} level={level} fen={card.fen} minMoves={card.minMoves} review
           onDone={async (run) => {
             const ok = run.outcome === 'mate';
@@ -111,7 +112,7 @@ export default function Revise({ opening }: { opening?: string }) {
           <div className="muted">{queue.length} position{queue.length > 1 ? 's' : ''} restante{queue.length > 1 ? 's' : ''}</div>
           {isDrill ? (
             <>
-              <h2>📖 {openingName[card.openingId!] ?? 'Répertoire'}</h2>
+              <h2><BookOpen aria-hidden className="ico book-ico" /> {openingName[card.openingId!] ?? 'Répertoire'}</h2>
               <p>Joue le coup de ton répertoire ({card.myColor === 'w' ? 'Blancs' : 'Noirs'}).{card.due === DUE_NEW && <> <span className="tag">nouvelle</span></>}</p>
               <p className="muted line-text">{fig(formatLine(card.path ?? [])) || 'Position de départ'}</p>
             </>
@@ -127,11 +128,11 @@ export default function Revise({ opening }: { opening?: string }) {
         {outcome && (
           <div className={`card ${outcome.ok ? 'good' : 'bad'}`}>
             {isDrill ? (outcome.ok
-              ? <p>✅ Juste ! <b>{fig(outcome.san)}</b> est bien dans ton répertoire.</p>
-              : <p>❌ <b>{fig(outcome.san)}</b> n’est pas ton coup de répertoire. Prévu : <b>{fig(card.acceptSan?.join(' ou ') ?? '')}</b> (flèche verte). Tu la reverras demain.</p>)
+              ? <p><CircleCheck aria-hidden className="ico good-text" /> Juste ! <b>{fig(outcome.san)}</b> est bien dans ton répertoire.</p>
+              : <p><CircleX aria-hidden className="ico bad-text" /> <b>{fig(outcome.san)}</b> n’est pas ton coup de répertoire. Prévu : <b>{fig(card.acceptSan?.join(' ou ') ?? '')}</b> (flèche verte). Tu la reverras demain.</p>)
             : outcome.ok
-              ? <p>✅ Juste ! <b>{fig(outcome.san)}</b>{outcome.uci === card.bestUci ? ' est le meilleur coup.' : ` est presque aussi bon que ${fig(card.bestSan)} (−${outcome.drop.toFixed(1)} pts).`}</p>
-              : <p>❌ <b>{fig(outcome.san)}</b> perd {Math.round(outcome.drop)} pts. Le bon coup était <b>{fig(card.bestSan)}</b> (flèche verte). Tu la reverras demain.</p>}
+              ? <p><CircleCheck aria-hidden className="ico good-text" /> Juste ! <b>{fig(outcome.san)}</b>{outcome.uci === card.bestUci ? ' est le meilleur coup.' : ` est presque aussi bon que ${fig(card.bestSan)} (−${outcome.drop.toFixed(1)} pts).`}</p>
+              : <p><CircleX aria-hidden className="ico bad-text" /> <b>{fig(outcome.san)}</b> perd {Math.round(outcome.drop)} pts. Le bon coup était <b>{fig(card.bestSan)}</b> (flèche verte). Tu la reverras demain.</p>}
             <button className="primary" onClick={() => { setOutcome(null); setQueue(queue.slice(1)); }}>Suivante</button>
           </div>
         )}

@@ -51,7 +51,7 @@ const MODEL_LEN = 16;
   assert(true, '2e erreur : solution affichée');
   await tap(uciOf(0));
   for (const k of [2, 4]) { await p.getByText('Joue le coup de la leçon.').waitFor(); await tap(uciOf(k)); }
-  await p.getByText('✅ Bloc réussi').waitFor();
+  await p.getByText('Bloc réussi', { exact: true }).waitFor();
   await p.waitForTimeout(400);
   const introduced = await p.evaluate(() => window.__db.cards.where('openingId').equals('english').filter((c) => c.due !== 'new').count());
   assert(introduced >= 3, `les coups du bloc entrent dans le drill (${introduced} cartes programmées)`);
@@ -63,7 +63,7 @@ const MODEL_LEN = 16;
     for (let i = s; i < e; i++) await p.getByRole('button', { name: /Coup suivant/ }).tap();
     await p.getByRole('button', { name: 'À toi : rejoue ce bloc' }).tap();
     for (let k = s; k < e; k += 2) { await p.getByText('Joue le coup de la leçon.').waitFor(); await tap(uciOf(k)); }
-    await p.getByText('✅ Bloc réussi').waitFor();
+    await p.getByText('Bloc réussi', { exact: true }).waitFor();
   }
   assert(true, 'les 4 blocs regardés et rejoués');
 
@@ -76,12 +76,12 @@ const MODEL_LEN = 16;
   for (let i = 0; i < MODEL_LEN; i++) await p.getByRole('button', { name: /Coup suivant/ }).tap();
   await p.screenshot({ path: OUT + '/l-4-partie-type.png' });
   await p.getByRole('button', { name: 'Terminer la leçon' }).tap();
-  await p.getByText('✅ Leçon terminée').waitFor();
+  await p.getByText('Leçon terminée', { exact: true }).waitFor();
   const all = await p.evaluate(() => window.__db.cards.where('openingId').equals('english').filter((c) => c.due !== 'new').count());
   assert(all >= 10, `leçon terminée : ${all} cartes de drill programmées (ligne principale)`);
   await p.goto(URL); await p.goto(URL + '#/openings');
-  await p.locator('section', { hasText: 'Anglaise (système fermé)' }).getByRole('button', { name: '1. Leçon ✓' }).waitFor();
-  assert(true, 'écran Ouvertures : « 1. Leçon ✓ »');
+  await p.locator('section', { hasText: 'Anglaise (système fermé)' }).getByRole('button', { name: '1. Leçon terminée' }).waitFor();
+  assert(true, 'écran Ouvertures : « 1. Leçon » cochée (terminée)');
   assert(errors.length === 0, 'aucune erreur JS ' + errors.join(' | '));
   await b.close();
 })().catch((e) => { console.error(e); process.exit(1); });

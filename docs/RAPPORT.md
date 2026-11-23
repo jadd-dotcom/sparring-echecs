@@ -215,3 +215,17 @@
   tableaux par source et par ouverture ; % de parties où je suis resté dans mon répertoire jusqu'au coup 8 ;
   section 2 « Mes coups les plus coûteux » (complétée par mes imprécisions s'il y a moins de 5 erreurs et gaffes) ;
   section 3 « Mes parties » (5 au plus : défaites, puis nulles, puis victoires, PGN annotés).
+
+## Refonte visuelle (23/11)
+- **Thème sombre par défaut** (fond anthracite #1f2023, cartes plus claires sans bordure fine, ombres) ; réglage
+  Réglages → Apparence : Sombre / Clair / Auto (Auto suit l'appareil et bascule en direct). Le thème est appliqué avant
+  l'affichage (script dans `index.html`, copie dans localStorage) ; la préférence est aussi dans la base (sauvegarde JSON).
+- **Pièces** : 3 jeux libres de Lichess au choix — Celtic (par défaut, relief, MIT), Merida (GPLv2+), Cburnett (GPLv2+),
+  servis avec l'appli (`public/pieces/`, précachés). Crédits : README et `public/pieces/LICENCES.txt`.
+- **Échiquier** : bords arrondis, ombre, coordonnées discrètes dans les cases du bord, pièce saisie agrandie (×1,22) avec ombre ;
+  promotion avec les images du jeu choisi.
+- **Boutons** pleins et gras avec épaisseur en bas et enfoncement au toucher ; « Jouer » vert et grand (96 px).
+- **Icônes** Lucide (ISC) à la place de tous les emojis ; pastilles de classement dessinées pour l'appli (`src/icons.tsx`).
+- **Police** Inter (OFL), sous-ensemble latin local (48 Ko) ; niveau en très grand (4,2 rem), précision et classements en gras.
+- **Zones tactiles ≥ 48 px** et **aucun emoji affiché** : vérifiés par `tests/appearance.cjs` (8 écrans, iPhone et iPad).
+- Captures avant / après et poids ajouté (≈ 149 Ko brut, ≈ 71 Ko compressé) : `docs/design/README.md`.

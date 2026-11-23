@@ -13,11 +13,13 @@ import RepertoireEditor from './screens/RepertoireEditor';
 import { ensureOpenings } from './openings';
 import './selftest';
 import { go, parse, type Route } from './router';
+import { ChevronLeft } from './icons';
+import { loadPrefs } from './prefs';
 
 export default function App() {
   const [route, setRoute] = useState<Route>(() => parse(location.hash));
   const [ready, setReady] = useState(false);
-  useEffect(() => { ensureOpenings().catch(console.error).finally(() => setReady(true)); }, []);
+  useEffect(() => { Promise.all([ensureOpenings(), loadPrefs()]).catch(console.error).finally(() => setReady(true)); }, []);
   useEffect(() => {
     const f = () => setRoute(parse(location.hash));
     addEventListener('hashchange', f);
@@ -27,7 +29,7 @@ export default function App() {
     <div className="app">
       {route.name !== 'home' && (
         <header className="topbar">
-          <button className="ghost back" onClick={() => go({ name: 'home' })}>‹ Accueil</button>
+          <button className="ghost back" onClick={() => go({ name: 'home' })}><ChevronLeft aria-hidden className="ico" />Accueil</button>
         </header>
       )}
       <main>{ready && <>

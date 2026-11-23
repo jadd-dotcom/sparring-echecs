@@ -43,6 +43,7 @@ const DEVICES = { iphone: devices['iPhone 13'], ipad: devices['iPad (gen 7) land
       await p.goto(URL + '#/review/' + id);
       await p.locator('table.classes').waitFor({ timeout: 180000 });
       await p.locator('.moves .mv').nth(2).tap();
+      await p.evaluate(() => window.scrollTo(0, 0));   // l'échiquier en haut de la capture
       await shot('revue');
       // Mats : exercice D+R
       await p.goto(URL + '#/stats'); await p.goto(URL + '#/mates/kq/play');

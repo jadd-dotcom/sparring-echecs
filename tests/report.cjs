@@ -73,7 +73,7 @@ const THOUGHTS = [
       await box.tap();
       await box.fill(THOUGHTS[thoughtIdx++ % THOUGHTS.length]);
       await p.locator('.card.explain').tap();
-      await p.getByText('✓ enregistré').waitFor();
+      await p.getByText('enregistré', { exact: true }).waitFor();
       if (n === 0) await p.screenshot({ path: OUT + '/r-1-pensee.png' });
     }
   }

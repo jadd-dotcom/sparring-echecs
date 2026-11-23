@@ -7,6 +7,7 @@ import { MATE_LESSONS } from '../data/mateLessons';
 import { MATE_LEVELS, STREAK_TO_VALIDATE, MAX_MOVE_LIMIT, EXTRA_MOVES_ALLOWED, stalemateTraps, type MateLevelId } from '../lib/mates';
 import { levelStates, type LevelState } from '../matesService';
 import { go } from '../router';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CircleCheck, Lock, TriangleAlert } from '../icons';
 
 function LevelList() {
   const [states, setStates] = useState<LevelState[] | null>(null);
@@ -23,7 +24,7 @@ function LevelList() {
           <div className="opening-head">
             <h3>{i + 1}. {s.level.name}</h3>
             <span className="muted">
-              {!s.level.available ? 'Plus tard' : s.validated ? '✓ Validé' : s.unlocked ? `Série : ${s.streak}/${STREAK_TO_VALIDATE}` : '🔒 Valide le niveau précédent'}
+              {!s.level.available ? 'Plus tard' : s.validated ? <><CircleCheck aria-hidden className="ico sm good-text" /> Validé</> : s.unlocked ? `Série : ${s.streak}/${STREAK_TO_VALIDATE}` : <><Lock aria-hidden className="ico sm" /> Valide le niveau précédent</>}
               {s.runs > 0 && ` · ${s.wins}/${s.runs} mats`}
             </span>
           </div>
@@ -61,10 +62,10 @@ function Lesson({ level }: { level: MateLevelId }) {
       <div className="board-col">
         <Board fen={c.fen()} orientation="w" movable={null} highlight={highlight} arrows={arrows} />
         <div className="nav row">
-          <button onClick={() => setK(0)}>⏮</button>
-          <button onClick={() => setK(Math.max(0, k - 1))}>◀</button>
-          <button className="primary" onClick={() => setK(Math.min(lesson.moves.length, k + 1))}>▶ Coup suivant</button>
-          <button onClick={() => setK(lesson.moves.length)}>⏭</button>
+          <button aria-label="Début" onClick={() => setK(0)}><ChevronsLeft aria-hidden /></button>
+          <button aria-label="Coup précédent" onClick={() => setK(Math.max(0, k - 1))}><ChevronLeft aria-hidden /></button>
+          <button className="primary" onClick={() => setK(Math.min(lesson.moves.length, k + 1))}><ChevronRight aria-hidden className="ico" />Coup suivant</button>
+          <button aria-label="Fin" onClick={() => setK(lesson.moves.length)}><ChevronsRight aria-hidden /></button>
         </div>
       </div>
       <aside className="side-col">
@@ -75,10 +76,10 @@ function Lesson({ level }: { level: MateLevelId }) {
             {lesson.steps.map((t, i) => <li key={i} className={step === i + 1 ? 'on' : ''}>{fig(t)}</li>)}
           </ol>
           {trap && (
-            <p className="trap">⚠ Piège du pat : <b>{fig(trap.san)}</b> (flèche rouge) ferait pat — le roi noir n’aurait plus aucune case
-              {' '}sans être en échec{trapCount > 1 ? ` (${trapCount} coups font pat ici)` : ''}. Le bon coup : <b>{fig(lesson.moves[k].san)}</b> (▶).</p>
+            <p className="trap"><TriangleAlert aria-hidden className="ico sm" /> Piège du pat : <b>{fig(trap.san)}</b> (flèche rouge) ferait pat — le roi noir n’aurait plus aucune case
+              {' '}sans être en échec{trapCount > 1 ? ` (${trapCount} coups font pat ici)` : ''}. Le bon coup : <b>{fig(lesson.moves[k].san)}</b> (« Coup suivant »).</p>
           )}
-          <p className="muted small">{k === 0 ? 'Avance coup par coup avec ▶.' : `Coup ${Math.ceil(k / 2)} : ${fig(lesson.moves.slice(0, k).map((m, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${m.san}` : m.san)).slice(-2).join(' '))}`}
+          <p className="muted small">{k === 0 ? 'Avance coup par coup avec « Coup suivant ».' : `Coup ${Math.ceil(k / 2)} : ${fig(lesson.moves.slice(0, k).map((m, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${m.san}` : m.san)).slice(-2).join(' '))}`}
             {c.isCheckmate() && ' — échec et mat !'}</p>
           {c.isCheckmate() && <button className="primary" onClick={() => go({ name: 'mates', level, mode: 'play' })}>À toi : exercice</button>}
         </div>
