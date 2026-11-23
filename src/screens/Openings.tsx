@@ -7,6 +7,7 @@ import { dayKey } from '../lib/srs';
 import { getLessonProgress, setArchived, syncDrillCards, type LessonProgress } from '../openings';
 import { BUILTIN_OPENINGS } from '../data/openings';
 import { OPENING_LESSONS } from '../data/openingLessons';
+import { Check } from '../icons';
 
 interface Row { o: Opening; lines: number; due: number; fresh: number; holes: number; lesson?: LessonProgress }
 
@@ -81,7 +82,7 @@ export default function Openings() {
           <div className="row">
             {OPENING_LESSONS.some((l) => l.openingId === o.id) && (
               <button className={lesson?.done || o.archived ? '' : 'primary'} onClick={() => go({ name: 'lesson', id: o.id })}>
-                {o.archived ? 'Leçon' : '1. Leçon'}{lesson?.done ? ' ✓' : lesson?.blocksDone ? ` (${lesson.blocksDone} bloc${lesson.blocksDone > 1 ? 's' : ''})` : ''}
+                {o.archived ? 'Leçon' : '1. Leçon'}{lesson?.done ? <><Check aria-hidden className="ico sm" /><span className="sr-only"> terminée</span></> : lesson?.blocksDone ? ` (${lesson.blocksDone} bloc${lesson.blocksDone > 1 ? 's' : ''})` : ''}
               </button>
             )}
             {!o.archived && (

@@ -16,6 +16,7 @@ import { replay } from '../analysis';
 import { waitOfflineReady } from '../offline';
 import { forcedMove } from '../lib/repertoire';
 import { recordBookExit } from '../openings';
+import { BookOpen, Bot, CircleDashed, Flag, Lightbulb, TriangleAlert, Undo2, User, X } from '../icons';
 
 const MIN_THINK_MS = 450; // pour que la réponse ne soit pas instantanée
 /** Maia accepte la nulle si sa probabilité de gain est ≤ 55 %. */
@@ -207,10 +208,10 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
   return (
     <div className="play">
       <div className="board-col">
-        {op && <div className="theme-line">📖 Partie à thème : <b>{op.name}</b></div>}
-        {cur.unrated && <div className="theme-line">⚪ Partie non comptée : sans effet sur ton niveau</div>}
+        {op && <div className="theme-line"><BookOpen aria-hidden className="ico sm" /> Partie à thème : <b>{op.name}</b></div>}
+        {cur.unrated && <div className="theme-line"><CircleDashed aria-hidden className="ico sm" /> Partie non comptée : sans effet sur ton niveau</div>}
         <div className="player-line">
-          <span>🤖 Maia · {Math.round(cur.botElo)}</span>
+          <span className="who"><span className="avatar bot"><Bot aria-hidden /></span>Maia <b className="elo">{Math.round(cur.botElo)}</b></span>
           {thinking && loadPct === null && <span className="muted pulse">réfléchit…</span>}
         </div>
         {live
@@ -220,7 +221,7 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
           onMove={onMove} lastMove={lastMove} arrows={arrows} highlight={highlight} onTap={live ? undefined : nav.toLive} />
         <NavBar nav={nav} />
         <div className="player-line">
-          <span>🙂 Toi · {Math.round(cur.rating)} ({cur.myColor === 'w' ? 'Blancs' : 'Noirs'})</span>
+          <span className="who"><span className="avatar me"><User aria-hidden /></span>Toi <b className="elo">{Math.round(cur.rating)}</b> <span className="muted small">({cur.myColor === 'w' ? 'Blancs' : 'Noirs'})</span></span>
           {myTurn && live && loadPct === null && <span className="muted">à toi de jouer</span>}
         </div>
       </div>
@@ -236,9 +237,9 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
           <div className="card assist">
             <p className="muted small">Assistance (partie non comptée)</p>
             <div className="row">
-              <button disabled={!canPlay || hintBusy} onClick={askHint}>💡 {hint && hint.fen === chess.fen() ? 'Montrer le coup' : 'Indice'}</button>
-              <button className={showThreats ? 'on' : ''} onClick={() => setShowThreats(!showThreats)}>⚠ {showThreats ? 'Masquer' : 'Afficher'} les menaces</button>
-              <button disabled={!live || !myTurn || thinking || myMovesCount === 0} onClick={takeBack}>↶ Reprendre mon coup</button>
+              <button disabled={!canPlay || hintBusy} onClick={askHint}><Lightbulb aria-hidden className="ico" />{hint && hint.fen === chess.fen() ? 'Montrer le coup' : 'Indice'}</button>
+              <button className={showThreats ? 'on' : ''} onClick={() => setShowThreats(!showThreats)}><TriangleAlert aria-hidden className="ico" />{showThreats ? 'Masquer' : 'Afficher'} les menaces</button>
+              <button disabled={!live || !myTurn || thinking || myMovesCount === 0} onClick={takeBack}><Undo2 aria-hidden className="ico" />Reprendre mon coup</button>
             </div>
             {showThreats && <p className="muted small">{threatCount ? `${threatCount} menace${threatCount > 1 ? 's' : ''} (flèches rouges).` : 'Aucune pièce menacée.'}</p>}
           </div>
@@ -246,10 +247,10 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
         {!ended && (
           <div className="row">
             {canCancel(cur) && (
-              <button onClick={() => setConfirmCancel(true)} title={`Possible pendant tes ${CANCEL_MAX_MY_MOVES} premiers coups`}>✕ Annuler la partie</button>
+              <button onClick={() => setConfirmCancel(true)} title={`Possible pendant tes ${CANCEL_MAX_MY_MOVES} premiers coups`}><X aria-hidden className="ico" />Annuler la partie</button>
             )}
             <button disabled={!myTurn} onClick={offerDraw}>½ Proposer nulle</button>
-            <button className="danger" onClick={() => setConfirmResign(true)}>🏳 Abandonner</button>
+            <button className="danger" onClick={() => setConfirmResign(true)}><Flag aria-hidden className="ico" />Abandonner</button>
           </div>
         )}
         {!ended && canCancel(cur) && <p className="muted small">Annulation possible pendant tes {CANCEL_MAX_MY_MOVES} premiers coups ; ensuite, seulement nulle ou abandon.</p>}

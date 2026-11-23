@@ -40,6 +40,8 @@ node tests/lessons.cjs <dossier-captures>  # mode Leçon (Anglaise) et onglet Ar
 node tests/chesscom.cjs <dossier-captures> # import Chess.com sur des réponses enregistrées (aucun réseau)
 node tests/ingame.cjs <dossier-captures>   # navigation en partie, sons, assistance (non comptée)
 node tests/review2.cjs <dossier-captures>  # revue : raison, Réessayer, courbe, précision
+node tests/appearance.cjs <dossier-captures> # thème, pièces, zones tactiles ≥ 48 px, aucun emoji
+node tests/screens.cjs <dossier> [url]     # captures accueil/partie/revue/Mats (iPhone, iPad ; sombre, clair)
 npm run lessons-doc                     # docs/LECONS-OUVERTURES.md depuis les données
 node tests/public.cjs <url>             # test de l'URL publique (chargement, Maia, analyse, hors ligne)
 npm run validate-repertoire             # vérif Stockfish du répertoire pré-chargé → docs/REPERTOIRE.md
@@ -51,3 +53,13 @@ Déploiement : GitHub Actions → GitHub Pages (`.github/workflows/deploy.yml`).
 
 Code de l'appli : GPL-3.0 (imposée par Stockfish). Maia3-js : MIT. Stockfish.js : GPL-3.0.
 chess.js : BSD-2-Clause. react-chessboard : MIT. onnxruntime-web : MIT. Dexie : Apache-2.0.
+
+Apparence (toutes compatibles avec la GPL-3.0 de l'appli) :
+- **Pièces** — jeux libres repris du dépôt de Lichess (`lila/public/piece`), dans `public/pieces/` :
+  - *Celtic* (par défaut) : © Maurizio Monge, [chess-art](https://github.com/maurimo/chess-art), licence MIT ;
+  - *Merida* : © Armando Hernandez Marroquin, licence GPLv2 ou ultérieure ;
+  - *Cburnett* : © Colin M.L. Burnett, licence GPLv2 ou ultérieure.
+- **Police** : Inter, © The Inter Project Authors, SIL Open Font License 1.1 (sous-ensemble latin, `src/assets/fonts/`,
+  licence dans `src/assets/fonts/Inter-OFL.txt`), servie avec l'appli pour le hors ligne.
+- **Icônes** : [Lucide](https://lucide.dev), licence ISC. Les pastilles de classement des coups sont dessinées pour l'appli.
+- Aucune pièce, icône, image, son ni logo de Chess.com n'est utilisé.

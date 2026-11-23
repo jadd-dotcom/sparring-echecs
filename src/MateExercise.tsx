@@ -14,6 +14,7 @@ import { bestExactMove } from './lib/dtmLookup';
 import { loadDtmForLevel } from './dtmTables';
 import { stockfish } from './engines/stockfish';
 import { addFailedCard, defenderMove, prepareExercise } from './matesService';
+import { CircleCheck, CircleX, TriangleAlert } from './icons';
 
 const MIN_REPLY_MS = 350;
 
@@ -167,7 +168,7 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
         </div>
         {outcome && (
           <div className={`card ${outcome === 'mate' ? 'good' : 'bad'}`}>
-            <h3>{outcome === 'mate' ? '✅ ' : '❌ '}{OUTCOME_LABEL[outcome]}</h3>
+            <h3>{outcome === 'mate' ? <CircleCheck aria-hidden className="ico good-text" /> : <CircleX aria-hidden className="ico bad-text" />} {OUTCOME_LABEL[outcome]}</h3>
             {outcome === 'mate'
               ? <p>Mat en <b>{myMoves}</b> coups (minimum {start.minMoves}). {countsForStreak(run)
                   ? `Dans la limite (${limit}) : la réussite compte pour la validation.`
@@ -178,7 +179,7 @@ export default function MateExercise({ level, fen: givenFen, minMoves: givenMin,
                 {' '}n’était pas en échec.{pat.goodSan && <> Coup correct : <b>{fig(pat.goodSan)}</b> (flèche verte)
                 {pat.mateIn ? ` — mat en ${pat.mateIn} ${pat.exact ? '(distance exacte)' : '(selon Stockfish)'}` : ''}.</>}</p>
             ) : <p className="pulse muted">Recherche d’un coup correct…</p>)}
-            {unprotected.length > 0 && <p>⚠ Pièce sans protection à portée du roi noir après {unprotected.map(label).join(', ')}.</p>}
+            {unprotected.length > 0 && <p><TriangleAlert aria-hidden className="ico sm" /> Pièce sans protection à portée du roi noir après {unprotected.map(label).join(', ')}.</p>}
           </div>
         )}
         <MoveList san={moves} at={nav.at} onPick={nav.goTo} />

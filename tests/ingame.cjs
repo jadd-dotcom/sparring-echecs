@@ -42,7 +42,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   // Navigation : ◀ ◀ → coup revu, échiquier bloqué
   await p.getByRole('button', { name: 'Coup précédent' }).tap();
   await p.getByRole('button', { name: 'Coup précédent' }).tap();
-  await p.getByText(/Tu revois le coup 2… — ⏭ pour revenir/).waitFor();
+  await p.getByText(/Tu revois le coup 2… — touche\s*pour revenir/).waitFor();
   const c2 = new Chess(); g3.uci.slice(0, 4).forEach((u) => c2.move({ from: u.slice(0, 2), to: u.slice(2, 4) }));
   const sq4 = g3.uci[4].slice(0, 2);   // case de départ de mon 3e coup : la pièce y est encore dans la position revue
   assert(await pieceOn(sq4) !== null, `position revue (coup 2…) : la pièce de mon 3e coup est encore en ${sq4}`);

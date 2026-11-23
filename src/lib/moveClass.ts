@@ -7,15 +7,16 @@ import { evalToCp, winPercent } from './winpct';
 export type MoveClass = 'best' | 'excellent' | 'good' | 'book' | 'inaccuracy' | 'mistake' | 'blunder';
 
 export const CLASS_ORDER: MoveClass[] = ['book', 'best', 'excellent', 'good', 'inaccuracy', 'mistake', 'blunder'];
+/** Symbole texte (rapport, accessibilité) ; à l'écran, pastilles SVG dessinées sur mesure (ClassBadge). */
 export const CLASS_ICON: Record<MoveClass, string> = {
-  best: '★', excellent: '👍', good: '✓', book: '📖', inaccuracy: '?!', mistake: '?', blunder: '??',
+  best: '★', excellent: '!', good: '✓', book: 'livre', inaccuracy: '?!', mistake: '?', blunder: '??',
 };
 export const CLASS_LABEL: Record<MoveClass, string> = {
   best: 'Meilleur', excellent: 'Excellent', good: 'Bon', book: 'Livre', inaccuracy: 'Imprécision', mistake: 'Erreur', blunder: 'Gaffe',
 };
 /** Couleurs des pastilles (texte blanc). */
 export const CLASS_COLOR: Record<MoveClass, string> = {
-  best: '#3e9b4f', excellent: '#5a9e3a', good: '#7a9a5c', book: '#a5845c', inaccuracy: '#d4a017', mistake: '#e07b1f', blunder: '#c9322b',
+  best: '#2f9e5b', excellent: '#4f9a2e', good: '#6f8f55', book: '#9a7650', inaccuracy: '#d9a21b', mistake: '#e5751c', blunder: '#d43a2f',
 };
 
 /**

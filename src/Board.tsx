@@ -2,6 +2,9 @@ import { useMemo, useState } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess, type Square } from 'chess.js';
 import type { Color } from './db';
+import type { MoveClass } from './lib/moveClass';
+import { ClassBadge } from './icons';
+import { pieceUrl, usePrefs, type PieceSet } from './prefs';
 
 export interface BoardArrow { from: string; to: string; color: string }
 
@@ -13,18 +16,35 @@ interface Props {
   onMove?: (uci: string) => void;
   arrows?: BoardArrow[];
   highlight?: Record<string, string>;
-  /** Pastille sur une case (ex. classe du coup sur la case d'arrivée). */
-  badges?: Record<string, { icon: string; color: string; label?: string }>;
+  /** Pastille sur une case (classe du coup sur la case d'arrivée). */
+  badges?: Record<string, MoveClass>;
   /** Dernier coup, surligné de façon contrastée (cases de départ et d'arrivée). */
   lastMove?: { from: string; to: string } | null;
   /** Tap sur l'échiquier quand il est bloqué (ex. revenir à la position actuelle). */
   onTap?: () => void;
 }
 
-const LIGHT = '#eeeed2';
-const DARK = '#769656';
+// Couleurs de l'échiquier (propres à l'appli).
+const LIGHT = '#ecebd5';
+const DARK = '#7c9a5e';
+const CODES = ['wK', 'wQ', 'wR', 'wB', 'wN', 'wP', 'bK', 'bQ', 'bR', 'bB', 'bN', 'bP'];
+
+/** Rendu des pièces : images SVG du jeu choisi (servies avec l'appli, hors ligne). */
+const piecesCache = new Map<PieceSet, Record<string, () => React.JSX.Element>>();
+function piecesFor(set: PieceSet) {
+  let r = piecesCache.get(set);
+  if (!r) {
+    r = Object.fromEntries(CODES.map((c) => [c, () => (
+      <img src={pieceUrl(set, c)} alt="" draggable={false} className="piece-img" />
+    )]));
+    piecesCache.set(set, r);
+  }
+  return r;
+}
+const PROMO: [string, string][] = [['q', 'Dame'], ['r', 'Tour'], ['b', 'Fou'], ['n', 'Cavalier']];
 
 export default function Board({ fen, orientation, movable, onMove, arrows = [], highlight = {}, badges = {}, lastMove, onTap }: Props) {
+  const { pieces: pieceSet } = usePrefs();
   const [selected, setSelected] = useState<string | null>(null);
   const [promo, setPromo] = useState<{ from: string; to: string } | null>(null);
   const chess = useMemo(() => new Chess(fen), [fen]);
@@ -90,6 +110,18 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
           arrows: arrows.map((a) => ({ startSquare: a.from, endSquare: a.to, color: a.color })),
           lightSquareStyle: { backgroundColor: LIGHT },
           darkSquareStyle: { backgroundColor: DARK },
+          pieces: piecesFor(pieceSet),
+          // Bords arrondis (l'ombre est sur .board-wrap).
+          boardStyle: { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', overflow: 'hidden', width: '100%', height: '100%', position: 'relative', borderRadius: 10 },
+          // Coordonnées discrètes dans les cases du bord.
+          lightSquareNotationStyle: { color: DARK },
+          darkSquareNotationStyle: { color: LIGHT },
+          alphaNotationStyle: { fontSize: 'clamp(9px, 1.5vmin, 13px)', fontWeight: 700, position: 'absolute', bottom: 1, right: 3, opacity: 0.9, userSelect: 'none' },
+          numericNotationStyle: { fontSize: 'clamp(9px, 1.5vmin, 13px)', fontWeight: 700, position: 'absolute', top: 1, left: 3, opacity: 0.9, userSelect: 'none' },
+          // Pièce saisie : un peu plus grande, avec une ombre.
+          draggingPieceStyle: { transform: 'scale(1.22)', filter: 'drop-shadow(0 10px 8px rgba(0,0,0,.45))' },
+          draggingPieceGhostStyle: { opacity: 0.35 },
+          dropSquareStyle: { boxShadow: 'inset 0 0 0 4px rgba(255,255,255,.75)' },
           animationDurationInMs: 200,
           squareRenderer: ({ square, children }) => {
             const b = badges[square];
@@ -97,7 +129,7 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
             return (
               <div style={{ width: '100%', height: '100%', position: 'relative', ...squareStyles[square] }}>
                 {children}
-                <span className="sq-badge" style={{ background: b.color }} title={b.label} aria-label={b.label}>{b.icon}</span>
+                <span className="sq-badge"><ClassBadge cls={b} size={30} /></span>
               </div>
             );
           },
@@ -107,8 +139,10 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
         <div className="promo" role="dialog" aria-label="Promotion">
           <p>Promotion en :</p>
           <div className="promo-row">
-            {([['q', '♛ Dame'], ['r', '♜ Tour'], ['b', '♝ Fou'], ['n', '♞ Cavalier']] as const).map(([k, label]) => (
-              <button key={k} onClick={() => { const p = promo; setPromo(null); onMove?.(p.from + p.to + k); }}>{label}</button>
+            {PROMO.map(([k, label]) => (
+              <button key={k} onClick={() => { const p = promo; setPromo(null); onMove?.(p.from + p.to + k); }}>
+                <img src={pieceUrl(pieceSet, (movable ?? 'w') + k.toUpperCase())} alt="" className="promo-piece" /> {label}
+              </button>
             ))}
           </div>
           <button className="ghost" onClick={() => setPromo(null)}>Annuler</button>

@@ -1,0 +1,4 @@
+Jeux de pièces repris du dépôt de Lichess (https://github.com/lichess-org/lila, public/piece/) :
+- celtic   : © Maurizio Monge (https://github.com/maurimo/chess-art) — licence MIT
+- merida   : © Armando Hernandez Marroquin — licence GNU GPL v2 ou ultérieure
+- cburnett : © Colin M.L. Burnett — licence GNU GPL v2 ou ultérieure
