@@ -15,6 +15,11 @@ Appli web (PWA) d'entraînement aux échecs pour tablette, 100 % dans le navigat
 - **Ouvertures (V2)** : répertoire en PGN à variantes vérifié par Stockfish — Blancs : Anglaise, système fermé ;
   Noirs : système …c5/…g6 (Dragon accéléré contre 1.e4) ; l'ancien répertoire (Londres, GDR, Française) est dans l'onglet
   « Archives ». Leçons, parties à thème, sorties signalées en revue, trous du répertoire, drill, stats par ouverture.
+- **Maîtrise de l'échiquier** (objectif : jouer à l'aveugle) : 7 chapitres débloqués dans l'ordre (repères vus des Blancs
+  et des Noirs, couleur des cases, diagonales, pièces, visualisation, aveugle), chacun avec une leçon (méthode + astuce) et des
+  exercices chronométrés ; critères de maîtrise, statistiques et carte de chaleur par case, révisions J+1/J+3/J+7 puis
+  hebdomadaires, « Échauffement échiquier (3 min) » à l'accueil, partie à l'aveugle contre Maia avec coups d'œil comptés.
+  Leçons : `docs/LECONS-ECHIQUIER.md`.
 - **Import Chess.com** : pseudo dans Réglages, « Importer mes parties » (API publique, seulement les nouvelles ; plan B :
   coller un PGN). Parties analysées comme celles contre Maia (automatiquement depuis le 16/11/2026, les plus récentes
   d'abord ; les anciennes à la demande ; progression et temps restant), marquées « Chess.com », sans effet sur le niveau Maia,
@@ -43,6 +48,8 @@ node tests/ingame.cjs <dossier-captures>   # navigation en partie, sons, assista
 node tests/review2.cjs <dossier-captures>  # revue : raison, Réessayer, courbe, précision
 node tests/appearance.cjs <dossier-captures> # thème, pièces, zones tactiles ≥ 48 px, aucun emoji
 node tests/coords.cjs <dossier-captures>     # coordonnées jamais sous les pièces (3 jeux, 5 écrans, au pixel)
+node tests/board.cjs <dossier-captures>      # Maîtrise de l'échiquier : épreuves, révisions, échauffement, aveugle, rapport
+npm run board-doc                       # docs/LECONS-ECHIQUIER.md depuis les données
 node tests/screens.cjs <dossier> [url]     # captures accueil/partie/revue/Mats (iPhone, iPad ; sombre, clair)
 npm run lessons-doc                     # docs/LECONS-OUVERTURES.md depuis les données
 node tests/public.cjs <url>             # test de l'URL publique (chargement, Maia, analyse, hors ligne)

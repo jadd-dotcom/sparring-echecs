@@ -3,6 +3,8 @@ import { db, type Game } from '../db';
 import { addErrorDetails, analyseGame, isError } from '../analysis';
 import { buildReport, inaccuraciesToDetail, selectGames, type PeriodKind, type RepInfo } from '../lib/report/buildReport';
 import { repertoireInfoWith } from '../openings';
+import { getBoardProgress, getBoardStats } from '../boardService';
+import { dayKey } from '../lib/srs';
 
 const LAST_KEY = 'lastReportAt';
 
@@ -72,7 +74,8 @@ export default function Report() {
       }
     }
     const repertoire = openings.filter((o) => !o.archived).map((o) => ({ name: o.name, color: o.color }));
-    const report = buildReport({ now, period, games: fresh, allGames: all, cards: await db.cards.toArray(), rep, repertoire });
+    const board = { progress: await getBoardProgress(), stats: await getBoardStats(), today: dayKey() };
+    const report = buildReport({ now, period, games: fresh, allGames: all, cards: await db.cards.toArray(), rep, repertoire, board });
     setGeneratedAt(now);
     setMd(report);
     if (skipped) setMsg(`${skipped} partie${skipped > 1 ? 's' : ''} non analysée${skipped > 1 ? 's' : ''} : elle${skipped > 1 ? 's' : ''} ne compte${skipped > 1 ? 'nt' : ''} que pour les résultats.`);

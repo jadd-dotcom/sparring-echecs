@@ -5,7 +5,10 @@ import { colorForNewGame, gamesSinceCalibration, inCalibration } from '../lib/pr
 import { go } from '../router';
 import { reviewQueue } from '../openings';
 import { isOfflineReady, waitOfflineReady } from '../offline';
-import { BookOpen, ChartLine, CircleCheck, Crown, FileText, Layers, PartyPopper, Play, Settings } from '../icons';
+import { BookOpen, ChartLine, CircleCheck, Crown, FileText, Flame, Grid3x3, Layers, PartyPopper, Play, Settings } from '../icons';
+import { getBoardProgress } from '../boardService';
+import { dueChapters } from '../lib/board/levels';
+import { dayKey } from '../lib/srs';
 
 export default function Home() {
   const [p, setP] = useState<Profile | null>(null);
@@ -13,11 +16,13 @@ export default function Home() {
   const [total, setTotal] = useState(0);
   const [inProgress, setInProgress] = useState(false);
   const [unrated, setUnrated] = useState(false);
+  const [boardDue, setBoardDue] = useState(0);
   const [offline, setOffline] = useState<string>(isOfflineReady() ? 'ready' : '');
   useEffect(() => {
     (async () => {
       // Tout charger avant le premier affichage (pas de « Jouer » qui devient « Reprendre la partie »).
-      const [prof, queue, nCards, current] = await Promise.all([getProfile(), reviewQueue(), db.cards.count(), getCurrent()]);
+      const [prof, queue, nCards, current, bp] = await Promise.all([getProfile(), reviewQueue(), db.cards.count(), getCurrent(), getBoardProgress()]);
+      setBoardDue(dueChapters(bp, dayKey()).length);
       setDue(queue.length);
       setTotal(nCards);
       setInProgress(!!current);
@@ -57,6 +62,10 @@ export default function Home() {
       <div className="row">
         <button className="huge" onClick={() => go({ name: 'openings' })}><BookOpen aria-hidden className="ico" />Ouvertures</button>
         <button className="huge" onClick={() => go({ name: 'mates' })}><Crown aria-hidden className="ico" />Mats élémentaires</button>
+      </div>
+      <div className="row">
+        <button className="huge" onClick={() => go({ name: 'board' })}><Grid3x3 aria-hidden className="ico" />Maîtrise de l’échiquier</button>
+        <button className="huge" onClick={() => go({ name: 'board', view: 'warmup' })}><Flame aria-hidden className="ico" />Échauffement échiquier (3 min){boardDue ? ` · ${boardDue}` : ''}</button>
       </div>
       <div className="row">
         <button onClick={() => go({ name: 'stats' })}><ChartLine aria-hidden className="ico" />Statistiques et parties</button>

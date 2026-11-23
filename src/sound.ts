@@ -2,7 +2,7 @@
 // Coup, prise, échec, roque, fin de partie. Réglage « Sons » oui/non (meta 'sound', par défaut oui).
 import { db } from './db';
 
-export type SoundKind = 'move' | 'capture' | 'check' | 'castle' | 'end';
+export type SoundKind = 'move' | 'capture' | 'check' | 'castle' | 'end' | 'good' | 'bad';
 
 let ctx: AudioContext | null = null;
 let enabled = true;
@@ -73,6 +73,8 @@ export function playSound(kind: SoundKind) {
     case 'castle': knock(a, t, 0.8, 900); knock(a, t + 0.11, 0.8, 800); break;
     case 'check': knock(a, t, 0.8, 1000); tone(a, t + 0.02, 880, 0.18); tone(a, t + 0.12, 1175, 0.2); break;
     case 'end': tone(a, t, 523, 0.5); tone(a, t + 0.12, 659, 0.5); tone(a, t + 0.24, 784, 0.7); break;
+    case 'good': tone(a, t, 880, 0.09, 0.07); break;                                  // réponse juste : bref « tic »
+    case 'bad': tone(a, t, 220, 0.18, 0.12); tone(a, t + 0.05, 196, 0.2, 0.1); break;  // erreur : son grave
   }
 }
 
@@ -83,4 +85,10 @@ export function soundForMove(san: string, over = false) {
   else if (san.startsWith('O-O')) playSound('castle');
   else if (san.includes('x')) playSound('capture');
   else playSound('move');
+}
+
+/** Retour d'une réponse (exercices) : son court si activé ; légère vibration sur erreur (si l'appareil le permet). */
+export function answerFeedback(ok: boolean) {
+  playSound(ok ? 'good' : 'bad');
+  if (!ok && enabled) { try { navigator.vibrate?.(70); } catch { /* non pris en charge (iPhone) */ } }
 }
