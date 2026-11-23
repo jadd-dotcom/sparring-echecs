@@ -73,7 +73,7 @@ export default function ChesscomImport() {
       <div className="row">
         <input id="cc-user" value={user} autoCapitalize="none" autoCorrect="off" spellCheck={false}
           onChange={(e) => setUser(e.target.value)} placeholder="ex. lightning_light" />
-        <button onClick={saveUser}>Enregistrer</button>
+        <button onClick={saveUser} aria-label="Enregistrer mon pseudo">Enregistrer</button>
       </div>
       <div className="row">
         <button className="primary" disabled={!!busy || !user.trim()} onClick={doImport}>Importer mes parties</button>

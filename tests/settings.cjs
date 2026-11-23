@@ -80,11 +80,11 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.goto(URL + '#/settings');
   await p.getByText('échelle de l’appli, pas celle de Chess.com').waitFor();
   await p.locator('#rating').fill('400');
-  await p.getByRole('button', { name: 'Enregistrer' }).tap();
+  await p.getByRole('button', { name: 'Enregistrer', exact: true }).tap();
   await p.getByText(/Entre un nombre entre 550 et 2600/).waitFor();
   assert(true, 'niveau hors bornes refusé (400)');
   await p.locator('#rating').fill('550');
-  await p.getByRole('button', { name: 'Enregistrer' }).tap();
+  await p.getByRole('button', { name: 'Enregistrer', exact: true }).tap();
   await p.getByText(/Niveau réglé à 550 : Maia jouera à 600/).waitFor();
   await p.screenshot({ path: OUT + '/s-1-reglages.png' });
   let pr = await prof();
@@ -95,7 +95,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(true, 'accueil : Maia à 600, « Calibration : partie 1/10 »');
   await p.goto(URL + '#/settings');
   await p.locator('#rating').fill('1200');
-  await p.getByRole('button', { name: 'Enregistrer' }).tap();
+  await p.getByRole('button', { name: 'Enregistrer', exact: true }).tap();
   await p.getByText(/Niveau réglé à 1200/).waitFor();
   await home();
   g = await start();
