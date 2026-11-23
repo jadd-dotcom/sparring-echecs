@@ -8,6 +8,9 @@ import { RATING_MAX, RATING_MIN, RATING_START } from '../rating';
 import { accuracyOfGame } from '../accuracy';
 import { stayedUntil } from '../bookLabel';
 import type { BookExit } from '../repertoire';
+import { CHAPTERS, chapterValidated, LEVELS, passesNeeded, type BoardProgress } from '../board/levels';
+import { weakestSquares, type SquareStats } from '../board/stats';
+import { colorName as squareColor } from '../board/geometry';
 
 export type PeriodKind = 'since-last' | '7-days' | '20-games';
 
@@ -153,9 +156,48 @@ export interface ReportInput {
   rep?: Record<number, RepInfo>;
   /** Mes ouvertures actives (pour les définitions). */
   repertoire?: { name: string; color: 'w' | 'b' }[];
+  /** Mode « Maîtrise de l'échiquier » : progression et statistiques par case. */
+  board?: { progress: BoardProgress; stats: SquareStats; today: string };
 }
 
-export function buildReport({ now, period, games, allGames, cards, rep = {}, repertoire = [] }: ReportInput): string {
+/** Section « Échiquier » : chapitres validés, meilleurs scores, mes 10 cases les plus faibles. */
+export function boardSection(b: NonNullable<ReportInput['board']>): string[] {
+  const L: string[] = ['## 5. Échiquier (mode « Maîtrise de l’échiquier »)', ''];
+  const { progress: p, stats, today } = b;
+  const tried = LEVELS.filter((l) => p.levels[l.id]?.attempts);
+  if (!tried.length && !Object.keys(stats).length) return [...L, 'Mode pas encore commencé.', ''];
+  const validated = CHAPTERS.filter((c) => chapterValidated(p, c.n));
+  L.push(`Chapitres validés : **${validated.length} / ${CHAPTERS.length}**${validated.length ? ` (${validated.map((c) => c.n).join(', ')})` : ''}.`, '');
+  if (validated.length) {
+    L.push('| Chapitre | Validé le | Révision |', '|---|---|---|');
+    for (const c of validated) {
+      const r = p.chapters[c.n];
+      const rev = !r ? '–' : r.toReview ? '**à revoir**' : r.due <= today ? 'due aujourd’hui' : `prochaine le ${r.due.split('-').reverse().join('/')}`;
+      L.push(`| ${c.n}. ${c.title} | ${r ? fmtDate(r.validatedAt) : '–'} | ${rev} |`);
+    }
+    L.push('');
+  }
+  if (tried.length) {
+    L.push('### Meilleurs scores', '', '| Niveau | Exercice | Meilleur score | Réussites / épreuves | Validé |', '|---|---|---|---|---|');
+    for (const l of tried) {
+      const lp = p.levels[l.id];
+      const need = passesNeeded(l.test);
+      L.push(`| ${l.id} | ${l.title} | ${lp.best ?? '–'} | ${lp.passes} / ${lp.attempts}${need > 1 ? ` (il en faut ${need})` : ''} | ${lp.validated && need ? 'oui' : 'non'} |`);
+    }
+    L.push('');
+  }
+  const weak = weakestSquares(stats, 10, 2);
+  L.push('### Mes 10 cases les plus faibles', '', 'Faiblesse = 70 % taux d’erreur + 30 % lenteur (au-delà de 1,5 s en moyenne) ; cases vues au moins 2 fois.', '');
+  if (!weak.length) L.push('Pas encore assez de réponses.', '');
+  else {
+    L.push('| Case | Couleur | Erreurs / réponses | Temps moyen | Faiblesse |', '|---|---|---|---|---|');
+    for (const w of weak) L.push(`| ${w.square} | ${squareColor(w.square)} | ${w.stat.err} / ${w.stat.n} | ${(w.stat.ms / w.stat.n / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} s | ${Math.round(100 * w.weakness)} % |`);
+    L.push('');
+  }
+  return L;
+}
+
+export function buildReport({ now, period, games, allGames, cards, rep = {}, repertoire = [], board }: ReportInput): string {
   const order = [...allGames].sort((a, b) => a.date - b.date);
   const numberOf = (g: Game) => order.findIndex((x) => x.id === g.id) + 1;
   const L: string[] = [];
@@ -356,5 +398,6 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
     }
     push('');
   }
+  if (board) push(...boardSection(board));
   return L.join('\n');
 }

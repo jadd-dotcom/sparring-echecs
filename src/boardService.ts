@@ -15,10 +15,15 @@ export async function getBoardStats(): Promise<SquareStats> {
   return ((await db.meta.get(S_KEY))?.value as SquareStats | undefined) ?? {};
 }
 
-/** Une réponse sur une case (statistiques par case). */
-export async function saveSquareAnswer(square: string, ok: boolean, ms: number) {
-  const s = await getBoardStats();
-  await db.meta.put({ key: S_KEY, value: recordAnswer(s, square, ok, ms) });
+let chain: Promise<unknown> = Promise.resolve();
+
+/** Une réponse sur une case (statistiques par case). Les écritures sont enchaînées : aucune réponse perdue. */
+export function saveSquareAnswer(square: string, ok: boolean, ms: number): Promise<unknown> {
+  chain = chain.then(async () => {
+    const s = await getBoardStats();
+    await db.meta.put({ key: S_KEY, value: recordAnswer(s, square, ok, ms) });
+  }).catch(console.error);
+  return chain;
 }
 
 /** Une épreuve terminée (hors révision). */

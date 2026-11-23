@@ -10,6 +10,10 @@ import Report from './screens/Report';
 import Mates from './screens/Mates';
 import OpeningLessonScreen from './screens/OpeningLesson';
 import RepertoireEditor from './screens/RepertoireEditor';
+import BoardMastery, { BoardLessonScreen } from './screens/BoardMastery';
+import BoardExercise from './screens/BoardExercise';
+import BoardWarmup from './screens/BoardWarmup';
+import { BoardBlindGame, BoardReplay } from './screens/BoardBlind';
 import { ensureOpenings } from './openings';
 import './selftest';
 import { go, parse, type Route } from './router';
@@ -44,6 +48,12 @@ export default function App() {
         {route.name === 'report' && <Report />}
         {route.name === 'lesson' && <OpeningLessonScreen key={route.id} id={route.id} />}
         {route.name === 'mates' && <Mates key={`${route.level}-${route.mode}`} level={route.level} mode={route.mode} />}
+        {route.name === 'board' && !route.view && <BoardMastery />}
+        {route.name === 'board' && route.view === 'lesson' && <BoardLessonScreen key={route.chapter} chapter={route.chapter!} />}
+        {route.name === 'board' && route.view === 'ex' && <BoardExercise key={`${route.id}-${route.mode}`} id={route.id!} mode={route.mode ?? 'test'} />}
+        {route.name === 'board' && route.view === 'warmup' && <BoardWarmup />}
+        {route.name === 'board' && route.view === 'replay' && <BoardReplay />}
+        {route.name === 'board' && route.view === 'blind' && <BoardBlindGame />}
       </>}</main>
     </div>
   );

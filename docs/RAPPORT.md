@@ -243,3 +243,21 @@
   Progression « Analyse : X/Y », avancement de la partie en cours et temps restant estimé (d'après la vitesse observée,
   en demi-coups analysés). Exemple sur les parties de lightning_light : 30 parties analysées automatiquement (≈ 20 min),
   138 plus anciennes à la demande.
+
+## Maîtrise de l'échiquier (23/11)
+- **7 chapitres, 17 niveaux** (`src/lib/board/levels.ts`) débloqués dans l'ordre : repères vus des Blancs (colonnes, rangées,
+  trouver une case avec et sans coordonnées, nommer une case au clavier), vus des Noirs, couleur des cases, diagonales,
+  pièces (cases du cavalier, fou, distance du cavalier), visualisation (2, 4, 6, 8 demi-coups), aveugle (rejouer de tête des
+  parties courtes, partie contre Maia pièces cachées). Leçons (méthode + astuce + exemples) : `docs/LECONS-ECHIQUIER.md`.
+- **Maîtrise** : ch. 1-2, épreuve de 30 s (≥ 25 bonnes, ≤ 1 erreur) réussie 3 fois par niveau ; ch. 3-5, 20 questions,
+  ≥ 19 justes, temps médian ≤ 3 s (par case pour les réponses à plusieurs cases) ; ch. 6, 10 questions, ≥ 9 justes ;
+  ch. 7, partie à l'aveugle finie avec ≤ 3 coups d'œil (abandon compté après 20 coups joués).
+- **Adaptatif** : erreurs et temps par case ; faiblesse = 70 % erreurs + 30 % lenteur ; tirage pondéré (une case faible sort
+  jusqu'à 7 fois plus) ; carte de chaleur. **Révisions** J+1, J+3, J+7 puis tous les 7 jours ; ratée → « à revoir ».
+  **Échauffement (3 min)** à l'accueil : révisions du jour, sinon cases faibles.
+- **Ergonomie** : tout au toucher (cases et touches ≥ 48 px, échiquier d'exercice en pleine largeur sur téléphone), son court
+  et légère vibration sur erreur (réglage Sons), hors ligne.
+- **Rapport pour Claude** : section 5 « Échiquier » (chapitres validés et révisions, meilleurs scores, 10 cases les plus faibles).
+- **Tests** : `src/lib/board/*.test.ts` (questions vérifiées par des calculs indépendants et chess.js : cases, couleurs,
+  diagonales, distances du cavalier ; critères ; révisions ; tirage adaptatif) et `tests/board.cjs` (parcours complet, dont une
+  vraie partie à l'aveugle gagnée contre Maia avec 1 coup d'œil).

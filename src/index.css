@@ -241,3 +241,58 @@ table.classes td:first-child, table.classes th:first-child { text-align: left; }
 .stats .tile .big { font-size: 2.4rem; }
 .source-line { margin: 0 0 8px; }
 details > summary { cursor: pointer; min-height: 48px; display: flex; align-items: center; font-weight: 700; }
+
+/* Maîtrise de l'échiquier */
+.board-mastery { max-width: 860px; margin: 0 auto; }
+.tapboard { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; max-width: min(100%, calc(100dvh - 300px)); min-width: 280px;
+  margin: 0 auto 12px; border-radius: 6px; overflow: hidden; box-shadow: var(--board-shadow); touch-action: manipulation; }
+.tapboard.compact { max-width: min(100%, calc(100dvh - 400px)); }
+.tb-sq { aspect-ratio: 1; min-height: 0; padding: 0; margin: 0; border-radius: 0; box-shadow: none; position: relative; transition: none; }
+.tb-sq:active:not(:disabled) { transform: none; box-shadow: none; filter: brightness(.9); }
+.tb-sq:disabled { opacity: 1; }
+.tb-sq.light { background: #ecebd5; } .tb-sq.dark { background: #7c9a5e; }
+.tb-sq.hl { box-shadow: inset 0 0 0 5px #3b7fdc; background-image: linear-gradient(rgba(59,127,220,.35), rgba(59,127,220,.35)); }
+.tb-sq.fl-good { background-image: linear-gradient(rgba(70,180,70,.75), rgba(70,180,70,.75)); }
+.tb-sq.fl-bad { background-image: linear-gradient(rgba(220,50,40,.75), rgba(220,50,40,.75)); }
+.tb-sq.fl-show { box-shadow: inset 0 0 0 5px #2f9e5b; background-image: linear-gradient(rgba(47,158,91,.45), rgba(47,158,91,.45)); }
+.tb-num, .tb-let { position: absolute; font-size: clamp(8px, 1.6vmin, 12px); font-weight: 700; line-height: 1; opacity: .9; pointer-events: none; }
+.tb-num { top: 2px; left: 3px; } .tb-let { bottom: 2px; right: 3px; }
+.tb-sq.light .tb-num, .tb-sq.light .tb-let { color: #7c9a5e; } .tb-sq.dark .tb-num, .tb-sq.dark .tb-let { color: #ecebd5; }
+.board-ex .prompt { font-size: 1.6rem; font-weight: 800; text-align: center; margin: 6px 0 12px; letter-spacing: -.01em; }
+.ex-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.timer { font-size: 2rem; font-weight: 850; font-variant-numeric: tabular-nums; }
+.score { color: var(--muted); }
+.keypad { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.kp-row { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.kp-row button { min-height: 56px; font-size: 1.35rem; padding: 0; }
+.kp-row button.on { background: var(--blue); color: #fff; box-shadow: 0 4px 0 var(--blue-edge); }
+.kp-entry { min-height: 48px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 800; }
+.kp-cur { font-size: 1.8rem; letter-spacing: .05em; }
+.chip { min-height: 48px; padding: 4px 12px; font-size: 1.1rem; }
+.choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
+.choices button { min-height: 72px; font-size: 1.3rem; }
+.choices.many { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.choices.many button { min-height: 56px; font-size: 1.02rem; }
+.heatmap { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; max-width: 420px; margin: 0 auto; }
+.hm-sq { aspect-ratio: 1; min-height: 44px; padding: 0; margin: 0; font-size: .8rem; font-weight: 700; border-radius: 6px; background: var(--surface-2); color: #fff; box-shadow: none; }
+.hm-sq:not([style]) { color: var(--muted); }
+.hm-sq.sel { outline: 3px solid var(--ink); }
+.level-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.pill { padding: 4px 10px; border-radius: 999px; background: var(--surface-2); font-weight: 700; font-size: .9rem; }
+.pill.ok { background: color-mix(in srgb, var(--accent) 30%, var(--surface-2)); }
+.board-chapter.locked, section.locked { opacity: .6; }
+.tag.st-good { background: var(--accent); } .tag.st-bad { background: var(--danger); } .tag.st-due { background: #c98a12; }
+.tag.st-cur { background: var(--blue); } .tag.st-locked { background: var(--raised); color: var(--muted); }
+.announce { font-size: 1.25rem; font-weight: 700; min-height: 1.6em; margin: 4px 0 8px; }
+.piece-hidden { width: 100%; height: 100%; }
+.lesson-card ol, .lesson-card ul { padding-left: 1.3em; }
+/* Téléphone : échiquier d'exercice et carte de chaleur en pleine largeur (cases d'au moins 48 px sur un iPhone 13). */
+@media (max-width: 520px) {
+  .tapboard:not(.compact) { width: calc(100vw - 6px); max-width: none; min-width: 0; margin-left: calc(50% - 50vw + 3px); border-radius: 4px; }
+  .heatmap { width: calc(100vw - 6px); max-width: none; margin-left: calc(50% - 50vw + 3px); gap: 0; }
+  .heatmap .hm-sq { border-radius: 0; min-height: 0; }
+  /* Clavier a-h / 1-8 sur deux lignes de 4 : touches d'au moins 48 px. */
+  .kp-row { grid-template-columns: repeat(4, 1fr); }
+  .kp-row button { min-height: 52px; }
+  .tapboard.compact { max-width: min(100%, calc(100dvh - 470px)); min-width: 200px; }
+}

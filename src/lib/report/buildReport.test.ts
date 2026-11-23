@@ -154,3 +154,26 @@ describe('parties Chess.com et répertoire', () => {
     expect(repText({ ...exitMe, ply: 0 })).toBe('hors répertoire dès le 1er coup (a3 au lieu de g3)');
   });
 });
+
+describe('section « Échiquier »', () => {
+  it('chapitres validés, meilleurs scores, 10 cases les plus faibles', async () => {
+    const { boardSection } = await import('./buildReport');
+    const { emptyProgress, recordTest } = await import('../board/levels');
+    const { recordAnswer } = await import('../board/stats');
+    let p = emptyProgress();
+    for (const id of ['1a', '1b', '1c', '1d', '1e']) for (let i = 0; i < 3; i++) p = recordTest(p, id, true, `2${i + 6} bonnes réponses, 0 erreur en 30 s`, 26 + i, '2026-11-20');
+    p = recordTest(p, '2c', false, '20 bonnes réponses, 3 erreurs en 30 s', 5, '2026-11-20');
+    let s = {};
+    for (let i = 0; i < 3; i++) s = recordAnswer(s, 'c6', false, 3000);
+    s = recordAnswer(s, 'e4', true, 800); s = recordAnswer(s, 'e4', true, 800);
+    const md = boardSection({ progress: p, stats: s, today: '2026-11-20' }).join('\n');
+    expect(md).toContain('## 5. Échiquier');
+    expect(md).toContain('Chapitres validés : **1 / 7** (1)');
+    expect(md).toContain('prochaine le 21/11/2026');
+    expect(md).toContain('| 1a | Colonnes | 28 bonnes réponses, 0 erreur en 30 s | 3 / 3 (il en faut 3) | oui |');
+    expect(md).toContain('| 2c | Trouver une case (coordonnées affichées) | 20 bonnes réponses, 3 erreurs en 30 s | 0 / 1 (il en faut 3) | non |');
+    expect(md).toMatch(/\| c6 \| claire \| 3 \/ 3 \| 3 s \| \d+ % \|/);
+    expect(md.indexOf('| c6 |')).toBeLessThan(md.indexOf('| e4 |'));
+    expect(boardSection({ progress: emptyProgress(), stats: {}, today: '2026-11-20' }).join('\n')).toContain('Mode pas encore commencé.');
+  });
+});

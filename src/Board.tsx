@@ -22,6 +22,10 @@ interface Props {
   lastMove?: { from: string; to: string } | null;
   /** Tap sur l'échiquier quand il est bloqué (ex. revenir à la position actuelle). */
   onTap?: () => void;
+  /** Partie à l'aveugle : pièces cachées (cases visibles), aucune aide (cases possibles, échec) ; on joue en touchant
+   *  la case de départ puis la case d'arrivée, n'importe lesquelles ; un coup impossible appelle `onIllegal`. */
+  hidePieces?: boolean;
+  onIllegal?: (from: string, to: string) => void;
 }
 
 // Couleurs de l'échiquier (propres à l'appli).
@@ -41,6 +45,8 @@ function piecesFor(set: PieceSet) {
   }
   return r;
 }
+/** Pièces invisibles (partie à l'aveugle) : la case reste cliquable. */
+const HIDDEN_PIECES: Record<string, () => React.JSX.Element> = Object.fromEntries(CODES.map((c) => [c, () => <div className="piece-hidden" />]));
 const PROMO: [string, string][] = [['q', 'Dame'], ['r', 'Tour'], ['b', 'Fou'], ['n', 'Cavalier']];
 const COORD: React.CSSProperties = {
   // Taille proportionnelle à l'échiquier (cqw : .board-wrap est un conteneur) : ~15 % de la case.
@@ -48,7 +54,7 @@ const COORD: React.CSSProperties = {
   opacity: 0.9, userSelect: 'none', pointerEvents: 'none',
 };
 
-export default function Board({ fen, orientation, movable, onMove, arrows = [], highlight = {}, badges = {}, lastMove, onTap }: Props) {
+export default function Board({ fen, orientation, movable, onMove, arrows = [], highlight = {}, badges = {}, lastMove, onTap, hidePieces, onIllegal }: Props) {
   const { pieces: pieceSet } = usePrefs();
   const [selected, setSelected] = useState<string | null>(null);
   const [promo, setPromo] = useState<{ from: string; to: string } | null>(null);
@@ -56,9 +62,9 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
   const canMove = movable !== null && chess.turn() === movable && !chess.isGameOver();
 
   const targets = useMemo(() => {
-    if (!selected || !canMove) return [] as string[];
+    if (!selected || !canMove || hidePieces) return [] as string[];
     return chess.moves({ square: selected as Square, verbose: true }).map((m) => m.to);
-  }, [selected, chess, canMove]);
+  }, [selected, chess, canMove, hidePieces]);
 
   function tryMove(from: string, to: string): boolean {
     if (!canMove) return false;
@@ -72,6 +78,14 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
 
   function onSquareClick(square: string) {
     if (!canMove) { onTap?.(); return; }
+    if (hidePieces) {
+      // À l'aveugle : 1er toucher = case de départ (quelle qu'elle soit), 2e = case d'arrivée.
+      if (!selected) { setSelected(square); return; }
+      if (square === selected) { setSelected(null); return; }
+      const from = selected;
+      if (!tryMove(from, square)) { setSelected(null); onIllegal?.(from, square); }
+      return;
+    }
     const p = chess.get(square as Square);
     if (selected && targets.includes(square)) { tryMove(selected, square); return; }
     if (p && p.color === movable) setSelected(square === selected ? null : square);
@@ -94,7 +108,7 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
         : 'radial-gradient(rgba(0,0,0,.25) 22%, transparent 24%)',
     };
   }
-  if (chess.inCheck()) {
+  if (chess.inCheck() && !hidePieces) {
     const king = chess.board().flat().find((p) => p && p.type === 'k' && p.color === chess.turn());
     if (king) squareStyles[king.square] = { background: 'radial-gradient(rgba(220,0,0,.75), transparent 75%)' };
   }
@@ -105,7 +119,7 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
         options={{
           position: fen,
           boardOrientation: orientation === 'w' ? 'white' : 'black',
-          allowDragging: canMove,
+          allowDragging: canMove && !hidePieces,
           allowDrawingArrows: false,
           canDragPiece: ({ piece }) => canMove && piece.pieceType[0] === movable,
           onPieceDrop: ({ sourceSquare, targetSquare }) => (targetSquare ? tryMove(sourceSquare, targetSquare) : false),
@@ -115,7 +129,7 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
           arrows: arrows.map((a) => ({ startSquare: a.from, endSquare: a.to, color: a.color })),
           lightSquareStyle: { backgroundColor: LIGHT },
           darkSquareStyle: { backgroundColor: DARK },
-          pieces: piecesFor(pieceSet),
+          pieces: hidePieces ? HIDDEN_PIECES : piecesFor(pieceSet),
           // Bords arrondis (l'ombre est sur .board-wrap).
           boardStyle: { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', overflow: 'hidden', width: '100%', height: '100%', position: 'relative', borderRadius: 6 },
           // Coordonnées discrètes, petites, tout au coin des cases du bord et au premier plan ; les pièces occupent

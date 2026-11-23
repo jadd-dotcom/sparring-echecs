@@ -189,3 +189,13 @@ export function reviewLevel(p: BoardProgress, chapter: number): string {
   const i = last ? ls.indexOf(last) : -1;
   return ls[(i + 1) % ls.length];
 }
+
+/** Consigne d'épreuve d'un niveau, en clair. */
+export function testRule(l: Level): string {
+  const t = l.test;
+  if (t.type === 'timed') return `Épreuve : ${t.seconds} s, au moins ${t.minCorrect} bonnes réponses et au plus ${t.maxErrors} erreur ; à réussir ${t.passesNeeded} fois.`;
+  if (t.type === 'count') return `Épreuve : ${t.questions} questions, au moins ${t.minCorrect} justes${t.maxMedianMs ? `, temps médian ≤ ${t.maxMedianMs / 1000} s par question (par case pour les réponses à plusieurs cases)` : ''}.`;
+  if (t.type === 'blind') return `Épreuve : finir une partie à l’aveugle avec au plus ${t.maxPeeks} coups d’œil (un abandon ne compte qu’après ${t.minMovesIfResign} coups joués).`;
+  return 'Entraînement libre.';
+}
+

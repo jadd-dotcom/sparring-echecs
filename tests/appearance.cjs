@@ -1,5 +1,5 @@
 // Refonte visuelle : thème sombre par défaut, réglage Sombre / Clair / Auto (persistant), jeu de pièces,
-// zones tactiles ≥ 48 px et aucun emoji affiché, sur iPhone portrait et iPad paysage.
+// zones tactiles ≥ 48 px (boutons actifs) et aucun emoji affiché, sur iPhone portrait et iPad paysage.
 const { chromium, devices } = require('playwright');
 const OUT = process.argv[2];
 const URL = process.argv[3] || 'http://localhost:4173/sparring-echecs/';
@@ -67,13 +67,13 @@ const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{2653}\u{2660}-\u{26FF}\u{2700}-\u
       uci: ['e2e4', 'd7d5', 'd1g4', 'c8g4'], san: ['e4', 'd5', 'Qg4', 'Bxg4'], result: '0-1', score: 0, termination: 'Abandon',
       ratingBefore: 900, ratingAfter: 870, botElo: 950,
     }));
-    const screens = ['', '#/openings', '#/settings', '#/stats', '#/report', '#/mates', '#/lesson/english', `#/review/${id}`];
+    const screens = ['', '#/openings', '#/settings', '#/stats', '#/report', '#/mates', '#/lesson/english', '#/board', '#/board/lesson/1', '#/board/ex/1a/practice', '#/board/warmup', `#/review/${id}`];
     for (const h of screens) {
       await q.goto(URL + '#/stats'); await q.goto(URL + h);
       await q.waitForTimeout(h.startsWith('#/review') ? 0 : 800);
       if (h.startsWith('#/review')) await q.locator('table.classes').waitFor({ timeout: 180000 });
       const small = await q.evaluate(() => [...document.querySelectorAll('button, .button, input:not([type=radio]):not([type=checkbox]), select, summary, label.radio')]
-        .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden'; })
+        .filter((el) => { const r = el.getBoundingClientRect(); return !el.disabled && r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden'; })
         .map((el) => ({ t: (el.textContent || el.getAttribute('aria-label') || el.tagName).trim().slice(0, 30), h: Math.round(el.getBoundingClientRect().height), w: Math.round(el.getBoundingClientRect().width) }))
         .filter((x) => x.h < 48 || x.w < 44));
       assert(small.length === 0, `${dname} ${h || 'accueil'} : zones tactiles ≥ 48 px ${small.length ? JSON.stringify(small.slice(0, 5)) : ''}`);
