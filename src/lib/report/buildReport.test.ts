@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Chess } from 'chess.js';
 import type { Card, Game, MoveAnalysis } from '../../db';
-import { annotatedPgn, buildReport, selectGames, worstErrors } from './buildReport';
+import { annotatedPgn, buildReport, costliestMoves, gamesToShow, repText, selectGames, worstErrors } from './buildReport';
 import { parsePgn } from '../repertoire';
 
 const DAY = 86400000;
@@ -76,10 +76,14 @@ describe('rapport complet', () => {
     expect(md).toContain('Début : **901** → fin : **913** (+12)');
     expect(md).toContain('Victoires / nulles / défaites : **1 / 0 / 2**');
     expect(md).toContain('| Pièce laissée en prise | 4 |');
-    expect(md).toContain('## 2. Mes 4 pires erreurs');
+    expect(md).toContain('## 2. Mes coups les plus coûteux (5, tri par chute de win%)');
+    expect(md).toContain('complété par mes 1 imprécision les plus coûteuses');
+    expect(md).toContain('### 5. Partie n°1, coup 3. Bc4?! — imprécision (−12 pts)');
     expect(md).toContain('### 1. Partie n°2, coup 1… d5?? — gaffe (−45 pts)');
     expect(md).toContain('- Ce que je pensais : « Je voulais développer vite. »');
-    expect(md).toContain('## 3. Parties perdues (2)');
+    expect(md).toContain('## 3. Mes parties (les 3 : défaites, puis nulles, puis victoires)');
+    expect(md.indexOf('### Partie n°3 — défaite')).toBeLessThan(md.indexOf('### Partie n°1 — défaite'));
+    expect(md.indexOf('### Partie n°1 — défaite')).toBeLessThan(md.indexOf('### Partie n°2 — victoire'));
     expect(md).toContain('Cartes vues : **1** (3 tentatives) ; réussite : **33 %**');
     expect(md).toMatch(/\| `rnbqkbnr\/pppppppp\/8\/8\/8\/8\/PPPPPPPP\/RNBQKBNR w KQkq - 0 1` \| Blancs \| e4 \| 2 \/ 3 \|/);
   });
@@ -90,5 +94,63 @@ describe('rapport complet', () => {
   it('plateau ASCII avec ma couleur en bas (Noirs pour la partie 2)', () => {
     const block = md.split('### 1. Partie n°2')[1].split('```')[1];
     expect(block.trim().split('\n')[1]).toMatch(/^1 \| R N B K Q B N R \|$/);
+  });
+});
+
+describe('coups les plus coûteux et « Mes parties »', () => {
+  it('au moins 5 erreurs + gaffes : pas d’imprécision ; sinon complétées jusqu’à 5', () => {
+    const many = game(9, NOW, ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Nf6', 'd3', 'Be7'], 'w', 0, { 0: [40, 'blunder'], 2: [25, 'mistake'], 4: [21, 'mistake'], 6: [15, 'inaccuracy'] });
+    expect(costliestMoves([many, G2], (g) => g.id!, 10, 5).map((r) => r.a.severity)).toEqual(['blunder', 'blunder', 'mistake', 'mistake', 'mistake']);
+    expect(costliestMoves([G3], (g) => g.id!, 10, 5).map((r) => r.a.severity)).toEqual(['blunder']);  // pas d'imprécision à ajouter
+    expect(costliestMoves([G1], (g) => g.id!, 10, 5).map((r) => [r.a.ply, r.a.severity])).toEqual([[2, 'mistake'], [4, 'inaccuracy']]);
+  });
+  it('au plus 5 parties : défaites, puis nulles, puis victoires (les plus récentes d’abord)', () => {
+    const mk = (id: number, d: number, score: 0 | 0.5 | 1) => ({ ...G1, id, date: NOW - d * DAY, score });
+    const gs = [mk(1, 9, 1), mk(2, 8, 0), mk(3, 7, 0.5), mk(4, 6, 1), mk(5, 5, 0), mk(6, 4, 0.5), mk(7, 3, 1)];
+    expect(gamesToShow(gs, 5).map((g) => g.id)).toEqual([5, 2, 6, 3, 7]);
+  });
+});
+
+describe('parties Chess.com et répertoire', () => {
+  const CC: Game = {
+    ...game(4, NOW - DAY / 2, ['c4', 'e5', 'Nc3', 'Nf6', 'a3', 'd5'], 'w', 0.5, { 4: [11, 'inaccuracy'] }),
+    source: 'chesscom', externalId: 'https://www.chess.com/game/live/1', ratingBefore: undefined, ratingAfter: undefined, botElo: undefined,
+    termination: 'Nulle par accord',
+    ext: { site: 'chess.com', url: 'https://www.chess.com/game/live/1', timeClass: 'rapid', timeControl: '600', me: { name: 'lightning_light', rating: 330 }, opp: { name: 'Adversaire42', rating: 310 } },
+  };
+  const exitMe = { ply: 4, by: 'me' as const, playedSan: 'a3', expectedSan: ['g3'], fenBefore: '', fenAfter: '' };
+  const { games, period } = selectGames([G1, G2, G3, CC], 'since-last', null, NOW);
+  const md = buildReport({
+    now: NOW, period, games, allGames: [G1, G2, G3, CC], cards: [],
+    rep: { 1: { exit: undefined }, 2: { exit: null, name: 'Système …c5 / …g6' }, 3: { exit: { ...exitMe, ply: 1, by: 'opponent', playedSan: 'c5', expectedSan: ['e5'] }, name: 'Anglaise' }, 4: { exit: exitMe, name: 'Anglaise' } },
+    repertoire: [{ name: 'Anglaise', color: 'w' }, { name: 'Système …c5 / …g6', color: 'b' }],
+  });
+  it('source, adversaire, niveau Maia seulement', () => {
+    expect(md).toContain('*Chess.com* = partie importée');
+    expect(md).toContain('Début : **901** → fin : **913** (+12)');          // la partie Chess.com ne change pas le niveau
+    expect(md).toContain('Classement Chess.com (pour information) : 330 → 330.');
+    expect(md).toMatch(/\| n°4 \| [^|]+ \| Chess.com \| Blancs \| Adversaire42 \(310\) \| Nulle \(1\/2-1\/2\) \| Nulle par accord \| \*\*sorti au coup 3\.\*\* \(a3 au lieu de g3\) \| – \|/);
+    expect(md).toContain('| Maia | 3 | 1 / 0 / 2 |');
+    expect(md).toContain('| Chess.com | 1 | 0 / 1 / 0 |');
+  });
+  it('par ouverture et % resté dans le répertoire jusqu’au coup 8', () => {
+    expect(md).toContain('| Anglaise | 2 | 0 / 1 / 1 | 0 | 1 | 1 |');
+    expect(md).toContain('| Système …c5 / …g6 | 1 | 1 / 0 / 0 | 1 | 0 | 0 |');
+    expect(md).toContain('**Resté dans mon répertoire jusqu’au coup 8 : 1 / 3 parties (33 %)** — sorti moi-même avant : 1 (33 %) ; l’adversaire en est sorti avant : 1 (33 %).');
+    expect(md).toContain('- Contre Maia : 1 / 2 (50 %) · sur Chess.com : 0 / 1 (0 %).');
+  });
+  it('PGN annoté Chess.com : joueurs, lien, cadence', () => {
+    const pgn = annotatedPgn(CC, 4);
+    expect(pgn).toContain('[Event "Chess.com — partie n°4"]');
+    expect(pgn).toContain('[Site "https://www.chess.com/game/live/1"]');
+    expect(pgn).toContain('[White "Moi (lightning_light, 330)"]');
+    expect(pgn).toContain('[Black "Adversaire42 (310)"]');
+    expect(parsePgn(pgn).games).toBe(1);
+    expect(md).toContain('### Partie n°4 — nulle, Chess.com contre Adversaire42 (310) · répertoire : sorti au coup 3. (a3 au lieu de g3)');
+  });
+  it('libellés du suivi de répertoire', () => {
+    expect(repText(undefined)).toBe('–');
+    expect(repText(null)).toBe('suivi jusqu’au bout');
+    expect(repText({ ...exitMe, ply: 0 })).toBe('hors répertoire dès le 1er coup (a3 au lieu de g3)');
   });
 });

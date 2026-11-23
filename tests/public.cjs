@@ -53,10 +53,10 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
 
   // Revue façon Chess.com et leçon d'ouverture
   assert(await p.locator('table.classes').count() === 1 && await p.locator('.mv .ic').count() >= 10, 'revue : bilan par catégorie et icônes sur les coups');
-  await p.goto(URL + '#/lesson/london');
+  await p.goto(URL + '#/lesson/english');
   await p.getByRole('button', { name: /Coup suivant/ }).tap();
   await p.getByText(/Mot nouveau — centre/).waitFor();
-  assert(true, 'leçon Londres : 1er coup expliqué, « centre » défini');
+  assert(true, 'leçon Anglaise : 1er coup expliqué, « centre » défini');
 
   // Mats élémentaires en ligne : leçon (figurines) + exercice joué jusqu'au mat (mon camp : Stockfish via le plateau)
   await p.goto(URL + '#/mates/kq/lesson');

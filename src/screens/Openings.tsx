@@ -4,7 +4,7 @@ import { db, DUE_NEW, type Opening } from '../db';
 import { go } from '../router';
 import { lines, parsePgn } from '../lib/repertoire';
 import { dayKey } from '../lib/srs';
-import { getLessonProgress, syncDrillCards, type LessonProgress } from '../openings';
+import { getLessonProgress, setArchived, syncDrillCards, type LessonProgress } from '../openings';
 import { BUILTIN_OPENINGS } from '../data/openings';
 import { OPENING_LESSONS } from '../data/openingLessons';
 
@@ -15,6 +15,7 @@ export default function Openings() {
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ name: '', color: 'w' as 'w' | 'b', forced: '' });
   const [err, setErr] = useState<string | null>(null);
+  const [tab, setTab] = useState<'active' | 'archives'>('active');
 
   async function load() {
     const today = dayKey();
@@ -30,7 +31,7 @@ export default function Openings() {
         lesson: progress[o.id],
       });
     }
-    // Ordre conseillé : Londres, puis GDR, puis Française ; ensuite les ouvertures ajoutées.
+    // Ordre conseillé : celui des ouvertures pré-chargées (Anglaise, puis système …c5/…g6) ; ensuite les ouvertures ajoutées.
     const rank = (o: Opening) => { const i = BUILTIN_OPENINGS.findIndex((b) => b.id === o.id); return i < 0 ? 99 : i; };
     out.sort((a, b) => rank(a.o) - rank(b.o) || a.o.name.localeCompare(b.o.name));
     setRows(out);
@@ -49,13 +50,29 @@ export default function Openings() {
   }
 
   if (!rows) return null;
+  const shown = rows.filter((r) => (tab === 'archives') === !!r.o.archived);
+  const nArch = rows.filter((r) => r.o.archived).length;
+  async function toggleArchive(o: Opening) {
+    await setArchived(o.id, !o.archived);
+    await load();
+  }
   return (
     <div className="openings">
       <h2>Ouvertures</h2>
-      <p className="notice">Ordre conseillé pour chaque ouverture : <b>1. Leçon → 2. Drill → 3. Partie à thème</b>.
-        {' '}Commence par le Système de Londres, puis le Gambit Dame refusé, puis la Défense française.</p>
-      {rows.map(({ o, lines: n, due, fresh, holes, lesson }) => (
-        <section key={o.id} className="card opening">
+      <div className="row tabs" role="tablist">
+        <button role="tab" aria-selected={tab === 'active'} className={tab === 'active' ? 'primary' : ''} onClick={() => setTab('active')}>Mon répertoire</button>
+        <button role="tab" aria-selected={tab === 'archives'} className={tab === 'archives' ? 'primary' : ''} onClick={() => setTab('archives')}>Archives{nArch ? ` (${nArch})` : ''}</button>
+      </div>
+      {tab === 'active' ? (
+        <p className="notice">Ordre conseillé pour chaque ouverture : <b>1. Leçon → 2. Drill → 3. Partie à thème</b>.
+          {' '}Commence par l’Anglaise (Blancs), puis le système …c5/…g6 (Noirs).</p>
+      ) : (
+        <p className="notice">Ouvertures rangées : tu peux relire leur leçon et leur répertoire. Elles ne comptent plus
+          {' '}dans le drill du jour, le « livre » de la revue ni les parties à thème.</p>
+      )}
+      {shown.length === 0 && <p className="muted">Aucune ouverture ici.</p>}
+      {shown.map(({ o, lines: n, due, fresh, holes, lesson }) => (
+        <section key={o.id} className="card opening" data-opening={o.id}>
           <div className="opening-head">
             <h3>{o.name}</h3>
             <span className="muted">{o.color === 'w' ? 'Blancs' : 'Noirs'} · {n} ligne{n > 1 ? 's' : ''}
@@ -63,21 +80,26 @@ export default function Openings() {
           </div>
           <div className="row">
             {OPENING_LESSONS.some((l) => l.openingId === o.id) && (
-              <button className={lesson?.done ? '' : 'primary'} onClick={() => go({ name: 'lesson', id: o.id })}>
-                1. Leçon{lesson?.done ? ' ✓' : lesson?.blocksDone ? ` (${lesson.blocksDone} bloc${lesson.blocksDone > 1 ? 's' : ''})` : ''}
+              <button className={lesson?.done || o.archived ? '' : 'primary'} onClick={() => go({ name: 'lesson', id: o.id })}>
+                {o.archived ? 'Leçon' : '1. Leçon'}{lesson?.done ? ' ✓' : lesson?.blocksDone ? ` (${lesson.blocksDone} bloc${lesson.blocksDone > 1 ? 's' : ''})` : ''}
               </button>
             )}
-            <button disabled={due + fresh === 0} onClick={() => go({ name: 'revise', opening: o.id })}>
-              2. Drill · {due} à revoir{fresh ? ` · ${fresh} nouvelles` : ''}
-            </button>
-            <button className={lesson?.done ? 'primary' : ''} disabled={n === 0} onClick={() => go({ name: 'play', opening: o.id })}>3. Partie à thème</button>
+            {!o.archived && (
+              <>
+                <button disabled={due + fresh === 0} onClick={() => go({ name: 'revise', opening: o.id })}>
+                  2. Drill · {due} à revoir{fresh ? ` · ${fresh} nouvelles` : ''}
+                </button>
+                <button className={lesson?.done ? 'primary' : ''} disabled={n === 0} onClick={() => go({ name: 'play', opening: o.id })}>3. Partie à thème</button>
+              </>
+            )}
             <button onClick={() => go({ name: 'repertoire', id: o.id })}>
               Répertoire{holes ? ` · ${holes} trou${holes > 1 ? 's' : ''}` : ''}
             </button>
+            <button onClick={() => toggleArchive(o)}>{o.archived ? 'Remettre dans mon répertoire' : 'Archiver'}</button>
           </div>
         </section>
       ))}
-      {!adding ? (
+      {tab === 'archives' ? null : !adding ? (
         <button onClick={() => setAdding(true)}>+ Ajouter une ouverture</button>
       ) : (
         <section className="card col">

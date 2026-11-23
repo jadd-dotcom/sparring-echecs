@@ -16,6 +16,8 @@ import {
 import { Chess } from 'chess.js';
 
 /** « Ce que je pensais » : 1-2 phrases, enregistrées automatiquement. */
+const TIME_CLASS: Record<string, string> = { bullet: 'bullet', blitz: 'blitz', rapid: 'rapide', daily: 'par jour' };
+
 function ThoughtBox({ game, ply, onSaved }: { game: Game; ply: number; onSaved: (t: Record<number, string>) => void }) {
   const [text, setText] = useState(game.thoughts?.[ply] ?? '');
   const [saved, setSaved] = useState(true);
@@ -51,6 +53,7 @@ export default function Review({ id }: { id: number }) {
   // « Réessayer » : je cherche un meilleur coup dans la position d'une de mes erreurs.
   const [retry, setRetry] = useState<{ ply: number; tries: number; checking: boolean; result: null | { ok: boolean; text: string }; solution: boolean } | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [openingNames, setOpeningNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -59,8 +62,10 @@ export default function Review({ id }: { id: number }) {
       if (!g) { setErr('Partie introuvable'); return; }
       setGame(g);
       // Phase « livre » : coups de mon répertoire depuis le début (l'ouverture de la partie à thème,
-      // sinon toutes mes ouvertures de cette couleur).
-      const openings = (await db.openings.toArray()).filter((o) => (g.openingId ? o.id === g.openingId : o.color === g.myColor));
+      // sinon toutes mes ouvertures actives de cette couleur).
+      const allOpenings = await db.openings.toArray();
+      if (!cancelled) setOpeningNames(Object.fromEntries(allOpenings.map((o) => [o.id, o.name])));
+      const openings = allOpenings.filter((o) => (g.openingId ? o.id === g.openingId : o.color === g.myColor && !o.archived));
       if (!cancelled) setBookLen(bookLength(mergeIndexes(openings.map((o) => buildIndex(treeOf(o)))), g.startFen, g.uci));
       if (g.openingId && g.bookExit === undefined) {
         const withExit = await recordBookExit(id);
@@ -158,6 +163,9 @@ export default function Review({ id }: { id: number }) {
   const summary = classSummary(plies, game.myColor, bookLen, game.startFen.split(' ')[1] === 'w');
   const errorsPlies = game.analysis.filter((x) => x.severity !== 'ok').map((x) => x.ply);
   const mine = (i: number) => byPly.has(i);
+  const imported = game.source === 'chesscom';
+  const opp = imported ? game.ext?.opp.name ?? 'l’adversaire' : 'Maia';
+  const repName = game.repOpeningId ? openingNames[game.repOpeningId] : undefined;
 
   return (
     <div className="play">
@@ -173,7 +181,7 @@ export default function Review({ id }: { id: number }) {
         <p className="move-sentence">
           {pe && cls ? <><span className="ic-inline" style={{ background: CLASS_COLOR[cls] }}>{CLASS_ICON[cls]}</span>{' '}
             {moveSentence(fig(pe.san), cls, pe.bestSan ? fig(pe.bestSan) : null, mine(ply) ? reason : null, mine(ply) && reason && a?.detail ? MOTIF_LABEL[a.detail.motif] : null)}{' '}
-            <span className="muted small">({mine(ply) ? 'ton coup' : 'Maia'})</span></>
+            <span className="muted small">({mine(ply) ? 'ton coup' : opp})</span></>
             : <span className="muted">Touche un coup ou utilise les flèches.</span>}
         </p>
         <div className="nav row">
@@ -186,12 +194,17 @@ export default function Review({ id }: { id: number }) {
       </div>
       <aside className="side-col">
         <div className="card">
+          {imported && (
+            <p className="source-line"><span className="tag chesscom-tag">{game.ext?.site === 'pgn' ? 'PGN importé' : 'Chess.com'}</span>{' '}
+              contre <b>{opp}</b>{game.ext?.opp.rating ? ` (${game.ext.opp.rating})` : ''}{game.ext?.timeClass ? ` · ${TIME_CLASS[game.ext.timeClass] ?? game.ext.timeClass}` : ''}
+              {' '}· <span className="muted small">sans effet sur ton niveau Maia</span></p>
+          )}
           <b>{game.result}</b> · {game.termination} · tu avais les {game.myColor === 'w' ? 'Blancs' : 'Noirs'}{game.unrated ? ' · non comptée' : ''}
           <div className="accuracy" aria-label="Précision (formule Lichess)">
-            <span>Précision : <b>toi {fmtAcc(acc?.me)}</b></span><span>Maia {fmtAcc(acc?.maia)}</span>
+            <span>Précision : <b>toi {fmtAcc(acc?.me)}</b></span><span>{imported ? 'Adversaire' : 'Maia'} {fmtAcc(acc?.maia)}</span>
           </div>
           <table className="classes">
-            <thead><tr><th></th><th>Moi</th><th>Maia</th></tr></thead>
+            <thead><tr><th></th><th>Moi</th><th>{imported ? 'Adversaire' : 'Maia'}</th></tr></thead>
             <tbody>
               {CLASS_ORDER.map((c) => (
                 <tr key={c}>
@@ -205,6 +218,22 @@ export default function Review({ id }: { id: number }) {
         <div className="card">
           <EvalCurve wpWhite={bars.map((b) => b.wpWhite)} current={ply + 1} onPick={(i) => { setRetry(null); setPly(i - 1); }} />
         </div>
+        {imported && game.bookExit !== undefined && (
+          <div className="card book" data-testid="book-info">
+            {game.bookExit === null && <span>📖 Partie entièrement dans ton répertoire{repName ? ` (${repName})` : ''}.</span>}
+            {exit && exit.ply === 0 && exit.by === 'me' && <span>Hors répertoire dès ton 1er coup : tu as joué <b>{fig(exit.playedSan)}</b>, ton répertoire prévoit <b>{fig(exit.expectedSan.join(' ou '))}</b>.</span>}
+            {exit && exit.ply === 0 && exit.by !== 'me' && <span>Hors répertoire dès le 1er coup : l’adversaire a joué <b>{fig(exit.playedSan)}</b>, que ton répertoire ne couvre pas.</span>}
+            {exit && exit.ply > 0 && exit.by === 'end' && <span>📖 Resté dans ton répertoire{repName ? ` (${repName})` : ''} jusqu’au bout de la ligne (coup {Math.floor(exit.ply / 2) + 1}).</span>}
+            {exit && exit.ply > 0 && exit.by === 'me' && (
+              <span>📖 {repName ? `${repName} : ` : ''}<b>sorti du répertoire</b> au coup {Math.floor(exit.ply / 2) + 1}{exit.ply % 2 ? '…' : '.'} : tu as joué <b>{fig(exit.playedSan)}</b>,
+                {' '}ton répertoire prévoit <b>{fig(exit.expectedSan.join(' ou '))}</b> (flèche bleue).{' '}
+                <button className="small" onClick={() => setPly(exit.ply)}>Voir</button></span>
+            )}
+            {exit && exit.ply > 0 && exit.by === 'opponent' && (
+              <span>📖 {repName ? `${repName} : ` : ''}tu es resté dans ton répertoire ; l’adversaire l’a quitté avec <b>{fig(exit.playedSan)}</b> (coup {Math.floor(exit.ply / 2) + 1}{exit.ply % 2 ? '…' : '.'}).</span>
+            )}
+          </div>
+        )}
         {game.openingId && (
           <div className="card book">
             {exit === null && <span>📖 Partie entièrement dans ton répertoire.</span>}
@@ -222,7 +251,7 @@ export default function Review({ id }: { id: number }) {
         )}
         {(a || pe) && (
           <div className="card explain">
-            {pe && <span className="muted small">Chances de gain {mine(ply) ? 'pour toi' : 'pour Maia'} : {Math.round(pe.wpBefore)} % → {Math.round(pe.wpAfter)} %{pe.drop >= 1 ? ` (−${Math.round(pe.drop)} pts)` : ''}</span>}
+            {pe && <span className="muted small">Chances de gain {mine(ply) ? 'pour toi' : `pour ${opp}`} : {Math.round(pe.wpBefore)} % → {Math.round(pe.wpAfter)} %{pe.drop >= 1 ? ` (−${Math.round(pe.drop)} pts)` : ''}</span>}
             {isMyExit && <><br /><span>📖 Répertoire : <b>{fig(exit!.expectedSan.join(' ou '))}</b> (flèche bleue) au lieu de {fig(exit!.playedSan)}.</span></>}
             {a?.detail && <>
               <br />Motif : <b>{MOTIF_LABEL[a.detail.motif]}</b>

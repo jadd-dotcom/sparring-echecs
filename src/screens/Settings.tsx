@@ -3,6 +3,7 @@ import { exportAll, getCurrent, getProfile, importAll, setProfile, type Profile 
 import { colorModeOf, withManualRating, type ColorMode } from '../lib/profile';
 import { CALIBRATION_GAMES, K_CALIBRATION, RATING_MAX, RATING_MIN } from '../lib/rating';
 import { loadSoundSetting, playSound, setSoundEnabled } from '../sound';
+import ChesscomImport from '../ChesscomImport';
 
 export default function Settings() {
   const [msg, setMsg] = useState<string | null>(null);
@@ -103,6 +104,8 @@ export default function Settings() {
           ))}
         </div>
       </section>
+
+      <ChesscomImport />
 
       <section className="card">
         <h2>Sauvegarde</h2>

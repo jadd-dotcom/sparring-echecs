@@ -1,5 +1,5 @@
 // V1.5 — 3 parties de test (moi = Maia 600 joué au toucher), analyse, « ce que je pensais »,
-// révisions ratées, puis génération du rapport → docs/exemple-rapport.md
+// révisions ratées, 2 parties Chess.com (PGN enregistrés), puis génération du rapport → docs/exemple-rapport.md
 const { chromium, devices } = require('playwright');
 const { Chess } = require('chess.js');
 const fs = require('fs');
@@ -106,6 +106,18 @@ const THOUGHTS = [
     assert(after.attempts.filter((t) => !t.ok).length === 2, 'révisions faites : 1 carte ratée 2 fois');
   }
 
+  // 2 parties Chess.com (réponses enregistrées, collées en PGN : aucun réseau) : une défaite avec les Blancs, une victoire avec les Noirs
+  const FX = require('./fixtures/chesscom/games-2026-11.json').games;
+  const pgns = ['https://www.chess.com/game/live/186577292142', 'https://www.chess.com/game/live/187493069154'].map((u) => FX.find((g) => g.url === u).pgn);
+  await p.goto(URL + '#/settings');
+  await p.getByLabel('Mon pseudo Chess.com').fill('lightning_light');
+  await p.getByText('Plan B : coller un PGN').tap();
+  await p.getByLabel('PGN à importer').fill(pgns.join('\n\n'));
+  await p.getByRole('button', { name: 'Importer ce PGN' }).tap();
+  await p.getByTestId('cc-msg').filter({ hasText: /2 parties importées/ }).waitFor();
+  await p.getByRole('button', { name: 'Arrêter l’analyse' }).tap().catch(() => {});
+  assert(true, '2 parties Chess.com importées (PGN collé)');
+
   // Rapport
   await p.goto(URL);
   await p.getByRole('button', { name: 'Rapport pour Claude' }).tap();
@@ -116,9 +128,11 @@ const THOUGHTS = [
   const [dl] = await Promise.all([p.waitForEvent('download'), p.getByRole('button', { name: 'Télécharger .md' }).tap()]);
   const md = fs.readFileSync(await dl.path(), 'utf8');
   fs.writeFileSync(DEST, md);
-  for (const h of ['## 1. Résumé de la période', '### Par phase', '### Motifs des erreurs et gaffes', '## 2. Mes', '## 3. Parties perdues', '## 4. Positions du paquet ratées']) assert(md.includes(h), 'section « ' + h + ' »');
+  for (const h of ['## 1. Résumé de la période', '### Par source', '### Par ouverture', '### Par phase', '### Motifs des erreurs et gaffes', '## 2. Mes coups les plus coûteux', '## 3. Mes parties', '## 4. Positions du paquet ratées']) assert(md.includes(h), 'section « ' + h + ' »');
+  assert(/\| Chess.com \| 2 \|/.test(md) && /Resté dans mon répertoire jusqu’au coup 8 : \d+ \/ \d+ parties/.test(md), 'parties Chess.com et suivi du répertoire dans le rapport');
+  assert(/\[Event "Chess.com — partie n°\d+"\]/.test(md), 'PGN annoté d’une partie Chess.com');
   assert(/Ce que je pensais : « /.test(md), '« ce que je pensais » présent dans le rapport');
-  assert(/```pgn/.test(md) || !/Défaite/.test(md), 'PGN annoté des parties perdues');
+  assert((md.match(/```pgn/g) ?? []).length === 5, '« Mes parties » : 5 PGN annotés (défaites, puis nulles, puis victoires)');
   const last = await p.evaluate(() => window.__db.meta.get('lastReportAt').then((m) => m?.value));
   assert(typeof last === 'number', 'date du dernier rapport mémorisée');
   await p.goto(URL); await p.goto(URL + '#/report');

@@ -6,8 +6,9 @@ import type { MoveClass } from './lib/moveClass';
 import type { MateLevelId, MateOutcome, MoveFlag } from './lib/mates';
 import { RATING_START, type Score } from './lib/rating';
 import type { ProfileData } from './lib/profile';
+import type { ExternalMeta } from './lib/chesscom';
 
-/** Origine d'une partie — prévu pour l'import Chess.com (V2). */
+/** Origine d'une partie : contre Maia dans l'appli, ou importée de Chess.com (sans effet sur le niveau). */
 export type GameSource = 'app' | 'chesscom';
 export type Color = 'w' | 'b';
 
@@ -44,7 +45,9 @@ export interface EvalBarPoint { wpWhite: number; label: string }
 export interface Game {
   id?: number;
   source: GameSource;
-  externalId?: string;  // ex. URL Chess.com (V2)
+  externalId?: string;  // URL Chess.com de la partie (ou identifiant d'un PGN collé)
+  /** Partie importée : site, cadence, joueurs et classements, ouverture selon Chess.com. */
+  ext?: ExternalMeta;
   date: number;
   myColor: Color;
   startFen: string;
@@ -65,6 +68,8 @@ export interface Game {
   /** Partie à thème : ouverture choisie et première sortie du répertoire. */
   openingId?: string;
   bookExit?: BookExit | null;
+  /** Partie importée : ouverture de mon répertoire suivie (la sortie est dans `bookExit`). */
+  repOpeningId?: string;
   /** Partie non comptée (sans effet sur le niveau). */
   unrated?: boolean;
   /** « Ce que je pensais », saisi pendant la revue : demi-coup → texte. */
@@ -130,6 +135,8 @@ export interface Opening {
   forced: string[];
   pgn: string;
   builtin: boolean;
+  /** Ouverture rangée dans les Archives : consultable, mais hors drill quotidien, Livre et parties à thème. */
+  archived?: boolean;
   /** Vérif Stockfish de mes coups : clé = fenKey + ' ' + uci. */
   checks: Record<string, MoveCheck>;
   updatedAt: number;

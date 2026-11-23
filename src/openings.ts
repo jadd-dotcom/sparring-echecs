@@ -4,7 +4,7 @@ import { db, DUE_NEW, type Card, type Game, type Hole, type MoveCheck, type Open
 import { BUILTIN_OPENINGS } from './data/openings';
 import builtinChecks from './data/repertoire-checks.json';
 import {
-  buildIndex, drillPositions, fenKey, findBookExit, myMoves, parsePgn, toPgn, type RepNode,
+  buildIndex, drillPositions, fenKey, findBookExit, myMoves, parsePgn, toPgn, type BookExit, type RepNode,
 } from './lib/repertoire';
 import { stockfish } from './engines/stockfish';
 import { evalToCp, type Eval } from './lib/winpct';
@@ -19,22 +19,50 @@ export function treeOf(o: Opening): RepNode {
   return parsePgn(o.pgn).root;
 }
 
-/** Crée les ouvertures pré-chargées au premier lancement (et après une mise à jour de l'appli). */
+/**
+ * Crée les ouvertures pré-chargées au premier lancement (et après une mise à jour de l'appli),
+ * et range une seule fois dans les Archives celles qui y sont passées (on peut ensuite les en ressortir).
+ */
 export async function ensureOpenings() {
   const seeded = (await db.meta.get('openingsSeeded'))?.value as string[] | undefined;
+  const archivedOnce = new Set(((await db.meta.get('openingsArchived'))?.value as string[] | undefined) ?? []);
   const done = new Set(seeded ?? []);
   let changed = false;
+  let archChanged = false;
   for (const def of BUILTIN_OPENINGS) {
-    if (done.has(def.id)) continue;
-    if (!(await db.openings.get(def.id))) {
-      const checks = (builtinChecks as Record<string, Record<string, MoveCheck>>)[def.id] ?? {};
-      await db.openings.put({ ...def, builtin: true, checks, updatedAt: Date.now() });
-      await syncDrillCards(def.id);
+    const { archived, ...rest } = def;
+    if (!done.has(def.id)) {
+      if (!(await db.openings.get(def.id))) {
+        const checks = (builtinChecks as Record<string, Record<string, MoveCheck>>)[def.id] ?? {};
+        await db.openings.put({ ...rest, builtin: true, checks, updatedAt: Date.now(), ...(archived ? { archived: true } : {}) });
+        await syncDrillCards(def.id);
+      }
+      done.add(def.id);
+      changed = true;
     }
-    done.add(def.id);
-    changed = true;
+    if (archived && !archivedOnce.has(def.id)) {
+      await db.openings.update(def.id, { archived: true });
+      archivedOnce.add(def.id);
+      archChanged = true;
+    }
   }
   if (changed) await db.meta.put({ key: 'openingsSeeded', value: [...done] });
+  if (archChanged) await db.meta.put({ key: 'openingsArchived', value: [...archivedOnce] });
+}
+
+/** Range une ouverture dans les Archives, ou l'en ressort. */
+export async function setArchived(id: string, archived: boolean) {
+  await db.openings.update(id, { archived });
+}
+
+/** Identifiants des ouvertures archivées. */
+export async function archivedIds(): Promise<Set<string>> {
+  return new Set((await db.openings.toArray()).filter((o) => o.archived).map((o) => o.id));
+}
+
+/** Mes ouvertures actives (hors Archives), éventuellement d'une couleur. */
+export async function activeOpenings(color?: 'w' | 'b'): Promise<Opening[]> {
+  return (await db.openings.toArray()).filter((o) => !o.archived && (!color || o.color === color));
 }
 
 /** Enregistre un nouvel arbre pour une ouverture et resynchronise cartes et trous. */
@@ -103,10 +131,44 @@ export async function reviewQueue(openingId?: string): Promise<Card[]> {
   if (openingId) {
     due = due.filter((c) => c.openingId === openingId);
     fresh = fresh.filter((c) => c.openingId === openingId);
+  } else {
+    // Le drill quotidien ignore les ouvertures archivées.
+    const arch = await archivedIds();
+    due = due.filter((c) => !c.openingId || !arch.has(c.openingId));
+    fresh = fresh.filter((c) => !c.openingId || !arch.has(c.openingId));
   }
   fresh.sort((a, b) => (a.openingId ?? '').localeCompare(b.openingId ?? '') || (a.order ?? 0) - (b.order ?? 0));
   const quota = openingId ? NEW_DRILL_PER_DAY : Math.max(0, NEW_DRILL_PER_DAY - (await introducedToday()));
   return [...due, ...fresh.slice(0, quota)];
+}
+
+// ---------------------------------------------------------------- suivi du répertoire (toutes les parties)
+
+export interface RepertoireInfo {
+  /** Ouverture de mon répertoire suivie (au moins un coup du livre), sinon absent. */
+  repOpeningId?: string;
+  /** Première sortie du répertoire (null : toute la partie dans le livre) ; absent si je n'ai pas de répertoire de cette couleur. */
+  bookExit?: BookExit | null;
+}
+
+/**
+ * Jusqu'où une partie a suivi mon répertoire actif de sa couleur. S'il y a plusieurs ouvertures,
+ * on garde celle suivie le plus longtemps.
+ */
+export function repertoireInfoWith(openings: Opening[], g: Pick<Game, 'startFen' | 'uci' | 'myColor'>): RepertoireInfo {
+  let best: RepertoireInfo | null = null;
+  let bestLen = -1;
+  for (const o of openings) {
+    if (o.archived || o.color !== g.myColor) continue;
+    const exit = findBookExit(buildIndex(treeOf(o)), g.startFen, g.uci, o.color);
+    const len = exit === null ? Infinity : exit.ply;
+    if (len > bestLen) { bestLen = len; best = { bookExit: exit, ...(len > 0 ? { repOpeningId: o.id } : {}) }; }
+  }
+  return best ?? {};
+}
+
+export async function repertoireInfo(g: Pick<Game, 'startFen' | 'uci' | 'myColor'>): Promise<RepertoireInfo> {
+  return repertoireInfoWith(await db.openings.toArray(), g);
 }
 
 // ---------------------------------------------------------------- partie à thème

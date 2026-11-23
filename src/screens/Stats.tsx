@@ -1,3 +1,5 @@
+import { fig } from '../lib/notation';
+import { bookLabel, stayedUntil } from '../lib/bookLabel';
 import { useEffect, useState } from 'react';
 import { db, getProfile, type Game, type Opening } from '../db';
 import { openingStats } from '../lib/openingStats';
@@ -109,11 +111,15 @@ function AccuracyChart({ games }: { games: Game[] }) {
 
 export default function Stats() {
   const [games, setGames] = useState<Game[] | null>(null);
+  const [imported, setImported] = useState<Game[]>([]);
   const [rating, setRating] = useState(RATING_START);
   const [openings, setOpenings] = useState<Opening[]>([]);
   useEffect(() => {
     db.openings.toArray().then(setOpenings);
-    db.games.orderBy('date').toArray().then((g) => setGames(g.filter((x) => x.source === 'app')));
+    db.games.orderBy('date').toArray().then((g) => {
+      setGames(g.filter((x) => x.source === 'app'));
+      setImported(g.filter((x) => x.source === 'chesscom'));
+    });
     getProfile().then((p) => setRating(p.rating));
   }, []);
   if (!games) return null;
@@ -139,11 +145,11 @@ export default function Stats() {
         <table className="games">
           <thead><tr><th>Ouverture</th><th>Parties</th><th>Victoires</th><th>Sorties de répertoire</th><th>Gaffes / partie</th></tr></thead>
           <tbody>
-            {openings.map((o) => {
+            {openings.filter((o) => !o.archived || perOpening[o.id]).map((o) => {
               const st = perOpening[o.id];
               return (
                 <tr key={o.id}>
-                  <td>{o.name} <span className="muted">({o.color === 'w' ? 'B' : 'N'})</span></td>
+                  <td>{o.name} <span className="muted">({o.color === 'w' ? 'B' : 'N'}){o.archived ? ' · archivée' : ''}</span></td>
                   <td>{st?.games ?? 0}</td>
                   <td>{st ? fmt(st.winPct, 0) + ' %' : '–'}</td>
                   <td>{st ? <>{st.myExits} <span className="muted">par moi</span> · {st.oppExits} <span className="muted">par l’adversaire</span></> : '–'}</td>
@@ -156,6 +162,7 @@ export default function Stats() {
       </section>
       <section className="card">
         <h3>Mes parties</h3>
+        {imported.length > 0 && <p className="muted small">Parties contre Maia. Tes parties Chess.com sont plus bas.</p>}
         {games.length === 0 && <p className="muted">Pas encore de partie.</p>}
         <table className="games">
           <thead><tr><th>Date</th><th>Couleur</th><th>Résultat</th><th>Niveau</th><th>Gaffes</th><th></th></tr></thead>
@@ -173,6 +180,40 @@ export default function Stats() {
           </tbody>
         </table>
       </section>
+      {imported.length > 0 && <ImportedList games={imported} openings={openings} />}
     </div>
+  );
+}
+
+/** Parties Chess.com importées : sans effet sur le niveau Maia ; suivi du répertoire. */
+function ImportedList({ games, openings }: { games: Game[]; openings: Opening[] }) {
+  const w = games.filter((g) => g.score === 1).length;
+  const dr = games.filter((g) => g.score === 0.5).length;
+  const l = games.filter((g) => g.score === 0).length;
+  const withRep = games.filter((g) => g.bookExit !== undefined);
+  const stayed = withRep.filter((g) => stayedUntil(g.bookExit, 8) === 'yes').length;
+  const last = games[games.length - 1]?.ext?.me.rating;
+  return (
+    <section className="card" data-testid="chesscom-games">
+      <h3>Mes parties Chess.com <span className="muted">({games.length}, sans effet sur ton niveau Maia)</span></h3>
+      <p>{w} victoire{w > 1 ? 's' : ''} · {dr} nulle{dr > 1 ? 's' : ''} · {l} défaite{l > 1 ? 's' : ''}{last ? ` · dernier classement Chess.com : ${last}` : ''}
+        {withRep.length > 0 && <> · resté dans mon répertoire jusqu’au coup 8 : <b>{Math.round((100 * stayed) / withRep.length)} %</b></>}</p>
+      <table className="games">
+        <thead><tr><th>Date</th><th>Couleur</th><th>Résultat</th><th>Adversaire</th><th>Répertoire</th><th>Gaffes</th><th></th></tr></thead>
+        <tbody>
+          {[...games].reverse().map((g) => (
+            <tr key={g.id}>
+              <td>{new Date(g.date).toLocaleDateString('fr-FR')}</td>
+              <td>{g.myColor === 'w' ? 'Blancs' : 'Noirs'}</td>
+              <td>{g.score === 1 ? 'Victoire' : g.score === 0 ? 'Défaite' : 'Nulle'} <span className="muted">({g.termination})</span></td>
+              <td>{g.ext?.opp.name ?? '–'}{g.ext?.opp.rating ? <span className="muted"> ({g.ext.opp.rating})</span> : null}</td>
+              <td className="small">{fig(bookLabel(g.bookExit) ?? '–')}{g.repOpeningId && <div className="muted">{openings.find((o) => o.id === g.repOpeningId)?.name}</div>}</td>
+              <td>{g.counts ? g.counts.blunder : '–'}</td>
+              <td><button className="small" onClick={() => go({ name: 'review', id: g.id! })}>{g.analysis ? 'Revoir' : 'Analyser'}</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
   );
 }
