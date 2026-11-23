@@ -10,8 +10,9 @@ permissions:
   pages: write
   id-token: write
 
+# Un groupe par branche : une poussée sur la branche de travail n'annule plus le déploiement de main.
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
