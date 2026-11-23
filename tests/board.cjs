@@ -46,7 +46,10 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
     }
     for (let i = 0; i < 100; i++) {
       if (await p.getByTestId('board-result').count() || await p.getByTestId('explain').count()) return;
-      if ((await ex().count()) && Number(await ex().getAttribute('data-answered')) > n && await ex().getAttribute('data-busy') === '0') return;
+      try {
+        if ((await ex().count()) && Number(await ex().getAttribute('data-answered', { timeout: 500 })) > n
+          && await ex().getAttribute('data-busy', { timeout: 500 }) === '0') return;
+      } catch { return; }   // exercice terminé entre deux lectures
       await p.waitForTimeout(30);
     }
   }

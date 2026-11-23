@@ -1,6 +1,6 @@
 # Rapport d’entraînement aux échecs — pour Claude
 
-Généré par l’appli Sparring Échecs le 23/11/2026 19:53. Période : toutes les parties (premier rapport) — 5 parties.
+Généré par l’appli Sparring Échecs le 23/11/2026 23:01. Période : toutes les parties (premier rapport) — 5 parties.
 
 **Demande :** je suis débutant. À partir de ces données (calculées automatiquement, pas devinées), diagnostique mes lacunes principales, explique-les simplement et propose-moi 3 axes de travail concrets.
 
@@ -33,8 +33,8 @@ Classement Chess.com (pour information) : 346 → 362.
 |---|---|---|---|---|---|---|---|---|
 | n°1 | 05/11/2026 | Chess.com | Blancs | yar100r (845) | Défaite (0-1) | Échec et mat | suivi ; adversaire sorti au coup 1… (g6) | – |
 | n°2 | 18/11/2026 | Chess.com | Noirs | smarts00001 (315) | Victoire (0-1) | Échec et mat | suivi ; adversaire sorti au coup 4. (e5) | – |
-| n°3 | 23/11/2026 | Maia | Blancs | Maia-3 (950) | Défaite (0-1) | Échec et mat | hors répertoire dès le 1er coup (d4 au lieu de c4) | 866 |
-| n°4 | 23/11/2026 | Maia | Noirs | Maia-3 (916) | Défaite (1-0) | Échec et mat | **sorti au coup 1…** (d5 au lieu de Nf6) | 831 |
+| n°3 | 23/11/2026 | Maia | Blancs | Maia-3 (950) | Défaite (0-1) | Échec et mat | hors répertoire dès le 1er coup (e4 au lieu de c4) | 866 |
+| n°4 | 23/11/2026 | Maia | Noirs | Maia-3 (916) | Défaite (1-0) | Échec et mat | **sorti au coup 1…** (e5 au lieu de c5) | 831 |
 | n°5 | 23/11/2026 | Maia | Blancs | Maia-3 (881) | Défaite (0-1) | Échec et mat | hors répertoire dès le 1er coup (e4 au lieu de c4) | 797 |
 
 ### Résultats
@@ -45,8 +45,8 @@ Victoires / nulles / défaites : **1 / 0 / 4**.
 
 | Source | Parties | V / N / D | Précision moyenne | Erreurs par partie | Gaffes par partie |
 |---|---|---|---|---|---|
-| Maia | 3 | 0 / 0 / 3 | 61,6 % | 0,3 | 1,7 |
-| Chess.com | 2 | 1 / 0 / 1 | 72,2 % | 0 | 1 |
+| Maia | 3 | 0 / 0 / 3 | 75,9 % | 0,3 | 1 |
+| Chess.com | 2 | 1 / 0 / 1 | 72,5 % | 0 | 1 |
 
 ### Par ouverture
 
@@ -64,32 +64,32 @@ Victoires / nulles / défaites : **1 / 0 / 4**.
 
 | Partie | Mes coups | Précision | Imprécisions | Erreurs | Gaffes |
 |---|---|---|---|---|---|
-| n°1 | 25 | 72,3 % | 1 | 0 | 1 |
-| n°2 | 20 | 72,1 % | 2 | 0 | 1 |
-| n°3 | 34 | 64,7 % | 4 | 1 | 1 |
-| n°4 | 32 | 46,6 % | 3 | 0 | 2 |
-| n°5 | 34 | 73,4 % | 2 | 0 | 2 |
-| **Moyenne par partie** | 29 | 65,8 % | 2,4 | 0,2 | 1,4 |
+| n°1 | 25 | 72,7 % | 1 | 0 | 1 |
+| n°2 | 20 | 72,3 % | 1 | 0 | 1 |
+| n°3 | 15 | 66,2 % | 0 | 0 | 1 |
+| n°4 | 39 | 76,9 % | 1 | 0 | 2 |
+| n°5 | 37 | 84,5 % | 1 | 1 | 0 |
+| **Moyenne par partie** | 27,2 | 74,5 % | 0,8 | 0,2 | 1 |
 
 ### Par phase
 
 | Phase | Mes coups | Imprécisions | Erreurs | Gaffes | Erreurs + gaffes pour 10 coups |
 |---|---|---|---|---|---|
-| Ouverture | 50 | 7 | 0 | 2 | 0,4 |
-| Milieu | 80 | 3 | 1 | 5 | 0,8 |
-| Finale | 15 | 2 | 0 | 0 | 0 |
+| Ouverture | 50 | 4 | 1 | 5 | 1,2 |
+| Milieu | 64 | 0 | 0 | 0 | 0 |
+| Finale | 22 | 0 | 0 | 0 | 0 |
 
 ### Motifs des erreurs et gaffes
 
-Sur 8 erreurs et gaffes :
+Sur 6 erreurs et gaffes :
 
 | Motif | Nombre |
 |---|---|
 | Mat raté | 0 |
 | Mat ouvert | 0 |
-| Menace ignorée | 1 |
-| Pièce laissée en prise | 4 |
-| Autre | 3 |
+| Menace ignorée | 0 |
+| Pièce laissée en prise | 2 |
+| Autre | 4 |
 
 ### Révision (paquet de positions)
 
@@ -97,114 +97,9 @@ Cartes vues : **2** (3 tentatives) ; réussite : **33 %**.
 - Positions issues de mes erreurs : 3 tentatives, réussite 33 %.
 - Drill d’ouvertures : 0 tentatives, réussite –.
 
-## 2. Mes coups les plus coûteux (8, tri par chute de win%)
+## 2. Mes coups les plus coûteux (6, tri par chute de win%)
 
-### 1. Partie n°4, coup 25… Qxc3?? — gaffe (−78 pts)
-
-- Source : Maia · adversaire : Maia-3 (916)
-- Ma couleur : Noirs · phase : milieu · motif : **Pièce laissée en prise**
-- Dernier coup adverse : 25. R1e3
-- FEN avant mon coup : `6nr/p1p3kp/5p2/2p5/4RP2/2P1R2P/1q3PP1/6K1 b - - 1 25`
-
-```
-  +-----------------+
-1 | . K . . . . . . |
-2 | . P P . . . q . |
-3 | P . . R . P . . |
-4 | . . P R . . . . |
-5 | . . . . . p . . |
-6 | . . p . . . . . |
-7 | p k . . . p . p |
-8 | r n . . . . . . |
-  +-----------------+
-    h g f e d c b a
-```
-
-- Mon coup : **25… Qxc3** → win% 88 → 11
-- Meilleur coup : **Kf7** — suite : 25… Kf7 26. Re8 Qc1+ 27. Kh2 Qd2 — bilan matériel au bout : +7
-- Réfutation de mon coup : 26. Rxc3 c6 27. Rxc5 a5 28. Rxc6 — bilan matériel au bout : -3
-- Ce que je pensais : « Je pensais que ma pièce était protégée. »
-
-### 2. Partie n°4, coup 26… Kf7?? — gaffe (−76 pts)
-
-- Source : Maia · adversaire : Maia-3 (916)
-- Ma couleur : Noirs · phase : milieu · motif : **Pièce laissée en prise**
-- Dernier coup adverse : 26. Rg3+
-- FEN avant mon coup : `6nr/p1p3kp/5p2/2p5/4RP2/2q3RP/5PP1/6K1 b - - 1 26`
-
-```
-  +-----------------+
-1 | . K . . . . . . |
-2 | . P P . . . . . |
-3 | P R . . . q . . |
-4 | . . P R . . . . |
-5 | . . . . . p . . |
-6 | . . p . . . . . |
-7 | p k . . . p . p |
-8 | r n . . . . . . |
-  +-----------------+
-    h g f e d c b a
-```
-
-- Mon coup : **26… Kf7** → win% 88 → 12
-- Meilleur coup : **Qxg3** — suite : 26… Qxg3 27. fxg3 Kf7 28. Rc4 Ne7 — bilan matériel au bout : +4
-- Réfutation de mon coup : 27. Rxc3 Ne7 28. Ra4 c6 29. Rxa7 — bilan matériel au bout : -2
-- Ce que je pensais : (non renseigné)
-
-### 3. Partie n°3, coup 19. Bd3?? — gaffe (−62 pts)
-
-- Source : Maia · adversaire : Maia-3 (950)
-- Ma couleur : Blancs · phase : milieu · motif : **Pièce laissée en prise**
-- Dernier coup adverse : 18… Bf5
-- FEN avant mon coup : `2kr3r/pp3ppp/4qn2/5b2/2N5/2P1B3/PPQ1BPPP/R3R1K1 w - - 9 19`
-
-```
-  +-----------------+
-8 | . . k r . . . r |
-7 | p p . . . p p p |
-6 | . . . . q n . . |
-5 | . . . . . b . . |
-4 | . . N . . . . . |
-3 | . . P . B . . . |
-2 | P P Q . B P P P |
-1 | R . . . R . K . |
-  +-----------------+
-    a b c d e f g h
-```
-
-- Mon coup : **19. Bd3** → win% 96 → 34
-- Meilleur coup : **Qa4** — suite : 19. Qa4 Ng4 20. Qxa7 Nxe3 21. Nxe3 — bilan matériel au bout : +5
-- Réfutation de mon coup : 19… Bxd3 20. Qa4 Qxc4 21. Qxa7 Qa6 — bilan matériel au bout : -1
-- Menace avant mon coup (si l’adversaire rejouait) : 19… Bxc2 20. Bxa7 Nd5 21. b3 Qh6
-- Ce que je pensais : « Je voulais attaquer vite, je n’ai pas regardé ce que sa pièce menaçait. »
-
-### 4. Partie n°5, coup 21. g4?? — gaffe (−43 pts)
-
-- Source : Maia · adversaire : Maia-3 (881)
-- Ma couleur : Blancs · phase : milieu · motif : **Autre**
-- Dernier coup adverse : 20… Bc1
-- FEN avant mon coup : `4k2r/p1p2p2/2pp1p2/4p2p/2q1P3/2P2QP1/P3RP1P/2bN2K1 w k - 1 21`
-
-```
-  +-----------------+
-8 | . . . . k . . r |
-7 | p . p . . p . . |
-6 | . . p p . p . . |
-5 | . . . . p . . p |
-4 | . . q . P . . . |
-3 | . . P . . Q P . |
-2 | P . . . R P . P |
-1 | . . b N . . K . |
-  +-----------------+
-    a b c d e f g h
-```
-
-- Mon coup : **21. g4** → win% 57 → 14
-- Meilleur coup : **Rc2** — suite : 21. Rc2 Bf4 22. Nb2 Qa6 23. c4 — bilan matériel au bout : -2
-- Réfutation de mon coup : 21… Rg8 22. h3 hxg4 23. hxg4 Qe6 — bilan matériel au bout : -2
-- Ce que je pensais : (non renseigné)
-
-### 5. Partie n°2, coup 8… a6?? — gaffe (−43 pts)
+### 1. Partie n°2, coup 8… a6?? — gaffe (−42 pts)
 
 - Source : Chess.com · adversaire : smarts00001 (315)
 - Ma couleur : Noirs · phase : ouverture · motif : **Autre**
@@ -225,12 +120,12 @@ Cartes vues : **2** (3 tentatives) ; réussite : **33 %**.
     h g f e d c b a
 ```
 
-- Mon coup : **8… a6** → win% 87 → 45
-- Meilleur coup : **Qa5+** — suite : 8… Qa5+ 9. c3 Qxb5 10. cxd4 Qb6 — bilan matériel au bout : +3
+- Mon coup : **8… a6** → win% 88 → 45
+- Meilleur coup : **Qa5+** — suite : 8… Qa5+ 9. c3 Qxb5 10. cxd4 b6 — bilan matériel au bout : +3
 - Réfutation de mon coup : 9. Bxc6+ bxc6 10. Qxd4 a5 11. Nd3 — bilan matériel au bout : 0
 - Ce que je pensais : (non renseigné)
 
-### 6. Partie n°1, coup 8. d4?? — gaffe (−41 pts)
+### 2. Partie n°1, coup 8. d4?? — gaffe (−40 pts)
 
 - Source : Chess.com · adversaire : yar100r (845)
 - Ma couleur : Blancs · phase : ouverture · motif : **Autre**
@@ -251,63 +146,114 @@ Cartes vues : **2** (3 tentatives) ; réussite : **33 %**.
     a b c d e f g h
 ```
 
-- Mon coup : **8. d4** → win% 52 → 10
-- Meilleur coup : **cxd5** — suite : 8. cxd5 cxd5 9. e5 Ne4 10. d4 — bilan matériel au bout : 0
+- Mon coup : **8. d4** → win% 51 → 11
+- Meilleur coup : **cxd5** — suite : 8. cxd5 cxd5 9. e5 Nfd7 10. d4 — bilan matériel au bout : 0
 - Réfutation de mon coup : 8… dxe4 9. Nxe4 Nxe4 10. Qb3 Nd6 — bilan matériel au bout : -3
 - Ce que je pensais : (non renseigné)
 
-### 7. Partie n°5, coup 19. c3?? — gaffe (−39 pts)
+### 3. Partie n°4, coup 5… d5?? — gaffe (−32 pts)
 
-- Source : Maia · adversaire : Maia-3 (881)
-- Ma couleur : Blancs · phase : milieu · motif : **Menace ignorée** (aussi : Pièce laissée en prise)
-- Dernier coup adverse : 18… Qb4
-- FEN avant mon coup : `4k2r/p1p2p2/2pp1p2/4p2p/1qB1Pb2/5Q2/P1P1RPPP/3N2K1 w k - 2 19`
+- Source : Maia · adversaire : Maia-3 (916)
+- Ma couleur : Noirs · phase : ouverture · motif : **Autre**
+- Dernier coup adverse : 5. Nc3
+- FEN avant mon coup : `rnb1kbnr/pppp1ppp/2q5/4P3/3Q4/2N5/PPP2PPP/R1B1KBNR b KQkq - 2 5`
 
 ```
   +-----------------+
-8 | . . . . k . . r |
-7 | p . p . . p . . |
-6 | . . p p . p . . |
-5 | . . . . p . . p |
-4 | . q B . P b . . |
-3 | . . . . . Q . . |
-2 | P . P . R P P P |
-1 | . . . N . . K . |
+1 | R N B K . B . R |
+2 | P P P . . P P P |
+3 | . . . . . N . . |
+4 | . . . . Q . . . |
+5 | . . . P . . . . |
+6 | . . . . . q . . |
+7 | p p p . p p p p |
+8 | r n b k . b n r |
   +-----------------+
-    a b c d e f g h
+    h g f e d c b a
 ```
 
-- Mon coup : **19. c3** → win% 87 → 48
-- Meilleur coup : **Qd3** — suite : 19. Qd3 Ke7 20. c3 Qa5 21. g3 — bilan matériel au bout : +1
-- Réfutation de mon coup : 19… Qxc4 20. g3 Rg8 21. Qxh5 Ke7 — bilan matériel au bout : -1
-- Menace avant mon coup (si l’adversaire rejouait) : 19… Qxc4 20. g3 Bc1 21. h4 Ke7
-- Ce que je pensais : « Je cherchais à échanger les dames pour simplifier. »
+- Mon coup : **5… d5** → win% 42 → 10
+- Meilleur coup : **Bc5** — suite : 5… Bc5 6. Qg4 Qg6 7. Qf4 d6 — bilan matériel au bout : 0
+- Réfutation de mon coup : 6. Bb5 Ne7 7. Bxc6+ Nbxc6 8. Qd3 — bilan matériel au bout : -6
+- Ce que je pensais : « Je pensais que ma pièce était protégée. »
 
-### 8. Partie n°3, coup 22. Qxd3? — erreur (−26 pts)
+### 4. Partie n°3, coup 7. Nxe5?? — gaffe (−31 pts)
 
 - Source : Maia · adversaire : Maia-3 (950)
-- Ma couleur : Blancs · phase : milieu · motif : **Pièce laissée en prise**
-- Dernier coup adverse : 21… Qh4
-- FEN avant mon coup : `2kr3r/pp3ppp/5n2/8/7q/1PPbB3/P2Q1PPP/R3R1K1 w - - 1 22`
+- Ma couleur : Blancs · phase : ouverture · motif : **Pièce laissée en prise**
+- Dernier coup adverse : 6… Qxd7
+- FEN avant mon coup : `rn2kbnr/pppq2pp/3p4/4p3/4P3/5N2/PPP2PPP/RNBQK2R w KQkq - 0 7`
 
 ```
   +-----------------+
-8 | . . k r . . . r |
-7 | p p . . . p p p |
-6 | . . . . . n . . |
-5 | . . . . . . . . |
-4 | . . . . . . . q |
-3 | . P P b B . . . |
-2 | P . . Q . P P P |
-1 | R . . . R . K . |
+8 | r n . . k b n r |
+7 | p p p q . . p p |
+6 | . . . p . . . . |
+5 | . . . . p . . . |
+4 | . . . . P . . . |
+3 | . . . . . N . . |
+2 | P P P . . P P P |
+1 | R N B Q K . . R |
   +-----------------+
     a b c d e f g h
 ```
 
-- Mon coup : **22. Qxd3** → win% 36 → 11
-- Meilleur coup : **Bf4** — suite : 22. Bf4 Qg4 23. Qe3 Qf5 24. Bg3 — bilan matériel au bout : -2
-- Réfutation de mon coup : 22… Rxd3 23. Bxa7 Nd5 24. Bd4 Nf4 — bilan matériel au bout : -7
+- Mon coup : **7. Nxe5** → win% 54 → 23
+- Meilleur coup : **Nc3** — suite : 7. Nc3 Nf6 8. h3 Nc6 9. Qd3 — bilan matériel au bout : 0
+- Réfutation de mon coup : 7… dxe5 8. Qh5+ Kd8 9. Qxe5 Bb4+ — bilan matériel au bout : -1
+- Ce que je pensais : « Je voulais attaquer vite, je n’ai pas regardé ce que sa pièce menaçait. »
+
+### 5. Partie n°4, coup 6… cxd6?? — gaffe (−31 pts)
+
+- Source : Maia · adversaire : Maia-3 (916)
+- Ma couleur : Noirs · phase : ouverture · motif : **Autre**
+- Dernier coup adverse : 6. exd6
+- FEN avant mon coup : `rnb1kbnr/ppp2ppp/2qP4/8/3Q4/2N5/PPP2PPP/R1B1KBNR b KQkq - 0 6`
+
+```
+  +-----------------+
+1 | R N B K . B . R |
+2 | P P P . . P P P |
+3 | . . . . . N . . |
+4 | . . . . Q . . . |
+5 | . . . . . . . . |
+6 | . . . . P q . . |
+7 | p p p . . p p p |
+8 | r n b k . b n r |
+  +-----------------+
+    h g f e d c b a
+```
+
+- Mon coup : **6… cxd6** → win% 40 → 9
+- Meilleur coup : **Qxd6** — suite : 6… Qxd6 7. Qxd6 Bxd6 8. Nb5 Nc6 — bilan matériel au bout : 0
+- Réfutation de mon coup : 7. Bb5 Be6 8. Bxc6+ Nxc6 9. Qa4 — bilan matériel au bout : -6
 - Ce que je pensais : (non renseigné)
+
+### 6. Partie n°5, coup 10. Bxe6? — erreur (−23 pts)
+
+- Source : Maia · adversaire : Maia-3 (881)
+- Ma couleur : Blancs · phase : ouverture · motif : **Pièce laissée en prise**
+- Dernier coup adverse : 9… Bxf2
+- FEN avant mon coup : `1rb1k2r/pp3ppp/2p1pn2/8/2B1P3/2N2N2/PPP2bPP/R2K3R w k - 0 10`
+
+```
+  +-----------------+
+8 | . r b . k . . r |
+7 | p p . . . p p p |
+6 | . . p . p n . . |
+5 | . . . . . . . . |
+4 | . . B . P . . . |
+3 | . . N . . N . . |
+2 | P P P . . b P P |
+1 | R . . K . . . R |
+  +-----------------+
+    a b c d e f g h
+```
+
+- Mon coup : **10. Bxe6** → win% 32 → 9
+- Meilleur coup : **e5** — suite : 10. e5 Nd5 11. Ne4 Bb6 12. Kd2 — bilan matériel au bout : -1
+- Réfutation de mon coup : 10… Bxe6 11. e5 Nh5 12. a4 Rd8+ — bilan matériel au bout : -3
+- Ce que je pensais : « Je cherchais à échanger les dames pour simplifier. »
 
 ## 3. Mes parties (les 5 : défaites, puis nulles, puis victoires)
 
@@ -323,10 +269,10 @@ Sur la période : 4 défaites, 0 nulle, 1 victoire.
 [Result "0-1"]
 [Termination "Échec et mat"]
 
-1. e4 {win% 52} 1... e5 2. d4 {win% 50} 2... d6 3. Nf3 {win% 55} 3... Nc6 4. Nc3 {win% 56} 4... Nf6 5. Bc4 {win% 53} 5... Be6 6. d5 {win% 88} 6... Bg4 7. dxc6 {win% 90} 7... Bxf3 8. Qxf3 {win% 91} 8... bxc6 9. O-O {win% 91} 9... Rb8 10. Bg5 {win% 90} 10... h6 11. Bxf6 {win% 91} 11... gxf6 12. Rfe1 {win% 92} 12... h5 13. Rad1 {win% 91} 13... Rxb2 14. Rd2 {win% 90} 14... Bh6 15. Rde2 {win% 88} 15... Bf4 16. Rb1 {win% 87} 16... Qb8 17. Rxb2 {win% 89} 17... Qxb2 18. Nd1 {win% 87} 18... Qb4 19. c3?? {win% 87→48, meilleur : Qd3. Je pensais : Je cherchais à échanger les dames pour simplifier.} 19... Qxc4 20. g3 {win% 47} 20... Bc1 21. g4?? {win% 57→14, meilleur : Rc2} 21... hxg4 22. Qxg4 {win% 17} 22... f5 23. Qxf5 {win% 10} 23... Qxe2 24. Qc8+ {win% 10} 24... Ke7 25. Qxh8 {win% 9} 25... Qxd1+ 26. Kg2 {win% 10} 26... Qg4+ 27. Kf1 {win% 9} 27... Qd1+ 28. Kg2 {win% 9} 28... Qg4+ 29. Kf1 {win% 8} 29... d5 30. exd5 {win% 9} 30... cxd5 31. a4 {win% 9} 31... d4 32. a5?! {win% 18→6, meilleur : Qxe5+} 32... d3 33. a6?! {win% 13→2, meilleur : Qxe5+} 33... d2 34. h3 {win% 2} 34... d1=Q# 0-1
+1. e4 {win% 53} 1... c6 2. Nf3 {win% 52} 2... d5 3. d3 {win% 53} 3... dxe4 4. dxe4 {win% 53} 4... Qxd1+ 5. Kxd1 {win% 53} 5... Nf6 6. Nc3 {win% 51} 6... e6 7. Bf4 {win% 51} 7... Bc5 8. Bxb8 {win% 45} 8... Rxb8 9. Bc4?! {win% 45→32, meilleur : Ke1} 9... Bxf2 10. Bxe6? {win% 32→9, meilleur : e5. Je pensais : Je cherchais à échanger les dames pour simplifier.} 10... Bxe6 11. Ne5 {win% 6} 11... Bd4 12. Ne2 {win% 2} 12... Bxe5 13. Rf1 {win% 2} 13... Rd8+ 14. Ke1 {win% 2} 14... Bxb2 15. Rb1 {win% 2} 15... Bd4 16. Rxb7 {win% 3} 16... Nxe4 17. Nxd4 {win% 4} 17... Rxd4 18. Rxa7 {win% 3} 18... O-O 19. Raxf7 {win% 2} 19... Rxf7 20. Rxf7 {win% 2} 20... Kxf7 21. c3 {win% 2} 21... Rd2 22. c4 {win% 2} 22... Rxa2 23. c5 {win% 2} 23... Rxg2 24. h4 {win% 2} 24... Bg4 25. h5 {win% 2} 25... Rh2 26. h6 {win% 2} 26... Rxh6 27. Kf1 {win% 2} 27... Rh2 28. Kg1 {win% 2} 28... Rc2 29. Kf1 {win% 2} 29... Rxc5 30. Ke1 {win% 2} 30... Rd5 31. Kf1 {win% 2} 31... c5 32. Kg2 {win% 2} 32... c4 33. Kh2 {win% 2} 33... c3 34. Kg2 {win% 2} 34... c2 35. Kh2 {win% 2} 35... c1=Q 36. Kg2 {win% 2} 36... Qc2+ 37. Kh1 {win% 2} 37... Rd1# 0-1
 ```
 
-### Partie n°4 — défaite, Maia contre Maia-3 (916) · répertoire : sorti au coup 1… (d5 au lieu de Nf6)
+### Partie n°4 — défaite, Maia contre Maia-3 (916) · répertoire : sorti au coup 1… (e5 au lieu de c5)
 
 ```pgn
 [Event "Sparring Échecs — partie n°4"]
@@ -336,10 +282,10 @@ Sur la période : 4 défaites, 0 nulle, 1 victoire.
 [Result "1-0"]
 [Termination "Échec et mat"]
 
-1. d4 d5 {win% 48} 2. Nf3 e5?! {win% 49→37, meilleur : Nf6} 3. Nxe5 f6 {win% 33} 4. Nd3 Nc6 {win% 33} 5. Bf4 Bf5?! {win% 46→31, meilleur : Nxd4} 6. Nc5 Bxc5 {win% 46} 7. dxc5 Nb4?! {win% 48→34, meilleur : g5} 8. c3 Nc2+ {win% 70} 9. Qxc2 Bxc2 {win% 90} 10. e3 b6 {win% 86} 11. Bb5+ Kf7 {win% 88} 12. Bc6 Rc8 {win% 90} 13. O-O g5 {win% 90} 14. Nd2 gxf4 {win% 92} 15. exf4 bxc5 {win% 93} 16. Rac1 Be4 {win% 88} 17. Nxe4 dxe4 {win% 87} 18. Rcd1 Qf8 {win% 86} 19. Bd5+ Kg7 {win% 86} 20. Rfe1 Re8 {win% 87} 21. Bxe4 Rxe4 {win% 89} 22. Rxe4 Qf7 {win% 86} 23. Rde1 Qxa2 {win% 89} 24. h3 Qxb2 {win% 86} 25. R1e3 Qxc3?? {win% 88→11, meilleur : Kf7. Je pensais : Je pensais que ma pièce était protégée.} 26. Rg3+ Kf7?? {win% 88→12, meilleur : Qxg3} 27. Rxc3 Ne7 {win% 13} 28. Rxc5 Rb8 {win% 7} 29. Rxc7 Rb1+ {win% 3} 30. Kh2 a5 {win% 2} 31. Rexe7+ Kf8 {win% 2} 32. Rxh7 a4 {win% 2} 33. Rc8# 1-0
+1. e4 e5 {win% 47} 2. d4 exd4 {win% 51} 3. Qxd4 Qf6 {win% 45} 4. e5 Qc6?! {win% 52→39, meilleur : Nc6} 5. Nc3 d5?? {win% 42→10, meilleur : Bc5. Je pensais : Je pensais que ma pièce était protégée.} 6. exd6 cxd6?? {win% 40→9, meilleur : Qxd6} 7. Bb5 Qxb5 {win% 5} 8. Nxb5 Bd7 {win% 3} 9. Nc7+ Kd8 {win% 5} 10. Nxa8 Nc6 {win% 4} 11. Bg5+ Be7 {win% 2} 12. Bxe7+ Kxe7 {win% 2} 13. Qxg7 Nh6 {win% 2} 14. Qxh8 Ke6 {win% 2} 15. Qxh7 Nf5 {win% 2} 16. O-O-O Ncd4 {win% 2} 17. Nf3 Nxf3 {win% 2} 18. gxf3 Ke5 {win% 2} 19. Rhe1+ Kf4 {win% 2} 20. Qxf7 Kxf3 {win% 2} 21. Qxd7 Nh4 {win% 2} 22. Qxb7+ Kxf2 {win% 2} 23. Qf7+ Nf3 {win% 2} 24. Nc7 Kg2 {win% 2} 25. Qg7+ Kf2 {win% 2} 26. Qg1+ Nxg1 {win% 2} 27. Rxg1 d5 {win% 2} 28. Rgf1+ Ke2 {win% 2} 29. h4 d4 {win% 2} 30. h5 d3 {win% 2} 31. Rxd3 Kxf1 {win% 2} 32. h6 Kg1 {win% 2} 33. h7 Kg2 {win% 2} 34. h8=Q Kf2 {win% 2} 35. Qf8+ Ke2 {win% 2} 36. Qe7+ Kf2 {win% 2} 37. Qf7+ Kg2 {win% 2} 38. Qf3+ Kh2 {win% 2} 39. Rd2+ Kg1 {win% 2} 40. Qd1# 1-0
 ```
 
-### Partie n°3 — défaite, Maia contre Maia-3 (950) · répertoire : hors répertoire dès le 1er coup (d4 au lieu de c4)
+### Partie n°3 — défaite, Maia contre Maia-3 (950) · répertoire : hors répertoire dès le 1er coup (e4 au lieu de c4)
 
 ```pgn
 [Event "Sparring Échecs — partie n°3"]
@@ -349,7 +295,7 @@ Sur la période : 4 défaites, 0 nulle, 1 victoire.
 [Result "0-1"]
 [Termination "Échec et mat"]
 
-1. d4 {win% 53} 1... d5 2. Nc3 {win% 51} 2... Nc6 3. e4 {win% 53} 3... e5 4. Nf3 {win% 51} 4... Bg4 5. Be2 {win% 52} 5... exd4 6. Nxd5 {win% 57} 6... Bb4+ 7. c3 {win% 62} 7... Ba5 8. O-O {win% 71} 8... Qd6 9. Bf4 {win% 86} 9... Qe6 10. Nxc7+?! {win% 93→76, meilleur : Nxd4} 10... Bxc7 11. Bxc7?! {win% 76→66, meilleur : Nxd4} 11... Qxe4 12. Re1 {win% 87} 12... Ne5 13. Bxe5 {win% 98} 13... O-O-O 14. Bxd4 {win% 94} 14... Nf6 15. Nd2 {win% 93} 15... Qf4 16. Be3 {win% 93} 16... Qe5 17. Nc4?! {win% 98→85, meilleur : Bxg4+} 17... Qe6 18. Qc2 {win% 92} 18... Bf5 19. Bd3?? {win% 96→34, meilleur : Qa4. Je pensais : Je voulais attaquer vite, je n’ai pas regardé ce que sa pièce menaçait.} 19... Bxd3 20. Qd2?! {win% 36→20, meilleur : Qa4} 20... Qxc4 21. b3 {win% 21} 21... Qh4 22. Qxd3? {win% 36→11, meilleur : Bf4} 22... Rxd3 23. Bxa7 {win% 10} 23... Rxc3 24. Red1 {win% 11} 24... Ne4 25. g3 {win% 9} 25... Qg5 26. Rd4 {win% 7} 26... Rc1+ 27. Rxc1+ {win% 2} 27... Qxc1+ 28. Kg2 {win% 2} 28... Qc6 29. Rxe4 {win% 2} 29... Qxe4+ 30. Kh3 {win% 2} 30... Qf5+ 31. Kg2 {win% 2} 31... Rd8 32. h3 {win% 2} 32... Rd2 33. g4 {win% 2} 33... Qxf2+ 34. Kh1 {win% 2} 34... Qg2# 0-1
+1. e4 {win% 53} 1... e5 2. Nf3 {win% 54} 2... d6 3. d4 {win% 54} 3... f6 4. dxe5 {win% 54} 4... fxe5 5. Bb5+ {win% 57} 5... Bd7 6. Bxd7+ {win% 53} 6... Qxd7 7. Nxe5?? {win% 54→23, meilleur : Nc3. Je pensais : Je voulais attaquer vite, je n’ai pas regardé ce que sa pièce menaçait.} 7... dxe5 8. Qxd7+ {win% 13} 8... Nxd7 9. Nc3 {win% 13} 9... Bb4 10. a3 {win% 10} 10... Bxc3+ 11. bxc3 {win% 11} 11... O-O-O 12. a4 {win% 11} 12... Nc5 13. Rb1 {win% 7} 13... Nxe4 14. Rb5 {win% 8} 14... Nxc3 15. Rxe5 {win% 2} 15... Rd1# 0-1
 ```
 
 ### Partie n°1 — défaite, Chess.com contre yar100r (845) · répertoire : suivi ; adversaire sorti au coup 1… (g6)
@@ -364,7 +310,7 @@ Sur la période : 4 défaites, 0 nulle, 1 victoire.
 [Termination "Échec et mat"]
 [TimeControl "900+10"]
 
-1. c4 {win% 51} 1... g6 2. Nc3 {win% 51} 2... Bg7 3. g3 {win% 51} 3... Nf6 4. Bg2 {win% 52} 4... O-O 5. e4 {win% 49} 5... c6 6. Nf3 {win% 53} 6... d5 7. O-O?! {win% 53→36, meilleur : cxd5} 7... Bg4 8. d4?? {win% 52→10, meilleur : cxd5} 8... dxe4 9. Ne5 {win% 9} 9... Bxd1 10. Nxd1 {win% 6} 10... Qxd4 11. Bf4 {win% 5} 11... g5 12. Bxg5 {win% 4} 12... Qxe5 13. Bh4 {win% 3} 13... Nbd7 14. f4 {win% 2} 14... exf3 15. Bxf3 {win% 2} 15... Qd4+ 16. Ne3 {win% 2} 16... Qxe3+ 17. Kg2 {win% 2} 17... Ne4 18. Rae1 {win% 2} 18... Qd2+ 19. Rf2 {win% 2} 19... Qxe1 20. Bxe4 {win% 2} 20... Bd4 21. Bxe7 {win% 2} 21... Qxf2+ 22. Kh3 {win% 2} 22... Rfe8 23. Bf6 {win% 2} 23... Rxe4 24. Bxd4 {win% 2} 24... Rxd4 25. g4 {win% 2} 25... Rd3# 0-1
+1. c4 {win% 51} 1... g6 2. Nc3 {win% 51} 2... Bg7 3. g3 {win% 51} 3... Nf6 4. Bg2 {win% 53} 4... O-O 5. e4 {win% 49} 5... c6 6. Nf3 {win% 54} 6... d5 7. O-O?! {win% 54→36, meilleur : cxd5} 7... Bg4 8. d4?? {win% 51→11, meilleur : cxd5} 8... dxe4 9. Ne5 {win% 9} 9... Bxd1 10. Nxd1 {win% 5} 10... Qxd4 11. Bf4 {win% 5} 11... g5 12. Bxg5 {win% 4} 12... Qxe5 13. Bh4 {win% 3} 13... Nbd7 14. f4 {win% 2} 14... exf3 15. Bxf3 {win% 3} 15... Qd4+ 16. Ne3 {win% 2} 16... Qxe3+ 17. Kg2 {win% 2} 17... Ne4 18. Rae1 {win% 2} 18... Qd2+ 19. Rf2 {win% 2} 19... Qxe1 20. Bxe4 {win% 2} 20... Bd4 21. Bxe7 {win% 2} 21... Qxf2+ 22. Kh3 {win% 2} 22... Rfe8 23. Bf6 {win% 2} 23... Rxe4 24. Bxd4 {win% 2} 24... Rxd4 25. g4 {win% 2} 25... Rd3# 0-1
 ```
 
 ### Partie n°2 — victoire, Chess.com contre smarts00001 (315) · répertoire : suivi ; adversaire sorti au coup 4. (e5)
@@ -379,11 +325,15 @@ Sur la période : 4 défaites, 0 nulle, 1 victoire.
 [Termination "Échec et mat"]
 [TimeControl "900+10"]
 
-1. e4 c5 {win% 47} 2. Nf3 Nc6 {win% 48} 3. Nc3 g6 {win% 45} 4. e5 Bg7 {win% 61} 5. d4 cxd4 {win% 60} 6. Nd5 e6?! {win% 89→77, meilleur : Qa5+} 7. Nf4 d5?! {win% 76→65, meilleur : d6} 8. Bb5 a6?? {win% 87→45, meilleur : Qa5+} 9. Bxc6+ bxc6 {win% 46} 10. O-O h5 {win% 42} 11. Nxd4 Bb7 {win% 42} 12. b4 Bxe5 {win% 54} 13. Nde2 g5 {win% 74} 14. Nd3 Bxa1 {win% 75} 15. Bxg5 Qxg5 {win% 85} 16. Qxa1 Nf6 {win% 84} 17. Nc5 O-O {win% 79} 18. Nxb7 Kh7 {win% 75} 19. Nd4 Rg8 {win% 75} 20. Nxc6 Qxg2# {win% 98} 0-1
+1. e4 c5 {win% 46} 2. Nf3 Nc6 {win% 46} 3. Nc3 g6 {win% 49} 4. e5 Bg7 {win% 61} 5. d4 cxd4 {win% 60} 6. Nd5 e6 {win% 78} 7. Nf4 d5?! {win% 77→61, meilleur : d6} 8. Bb5 a6?? {win% 88→45, meilleur : Qa5+} 9. Bxc6+ bxc6 {win% 45} 10. O-O h5 {win% 42} 11. Nxd4 Bb7 {win% 43} 12. b4 Bxe5 {win% 54} 13. Nde2 g5 {win% 75} 14. Nd3 Bxa1 {win% 75} 15. Bxg5 Qxg5 {win% 85} 16. Qxa1 Nf6 {win% 83} 17. Nc5 O-O {win% 79} 18. Nxb7 Kh7 {win% 77} 19. Nd4 Rg8 {win% 73} 20. Nxc6 Qxg2# {win% 98} 0-1
 ```
 
 ## 4. Positions du paquet ratées au moins 2 fois
 
 | FEN | Trait | Bon coup | Échecs / tentatives | Origine |
 |---|---|---|---|---|
-| `2kr3r/pp3ppp/4qn2/5b2/2N5/2P1B3/PPQ1BPPP/R3R1K1 w - - 9 19` | Blancs | Qa4 | 2 / 2 | erreur (j’avais joué Bd3) |
+| `rn2kbnr/pppq2pp/3p4/4p3/4P3/5N2/PPP2PPP/RNBQK2R w KQkq - 0 7` | Blancs | Nc3 | 2 / 2 | erreur (j’avais joué Nxe5) |
+
+## 5. Échiquier (mode « Maîtrise de l’échiquier »)
+
+Mode pas encore commencé.
