@@ -35,13 +35,18 @@ function piecesFor(set: PieceSet) {
   let r = piecesCache.get(set);
   if (!r) {
     r = Object.fromEntries(CODES.map((c) => [c, () => (
-      <img src={pieceUrl(set, c)} alt="" draggable={false} className="piece-img" />
+      <img src={pieceUrl(set, c)} alt="" draggable={false} className="piece-img" data-set={set} />
     )]));
     piecesCache.set(set, r);
   }
   return r;
 }
 const PROMO: [string, string][] = [['q', 'Dame'], ['r', 'Tour'], ['b', 'Fou'], ['n', 'Cavalier']];
+const COORD: React.CSSProperties = {
+  // Taille proportionnelle à l'échiquier (cqw : .board-wrap est un conteneur) : ~15 % de la case.
+  fontSize: 'clamp(7px, 1.8cqw, 12px)', fontWeight: 700, lineHeight: 1, position: 'absolute', zIndex: 3,
+  opacity: 0.9, userSelect: 'none', pointerEvents: 'none',
+};
 
 export default function Board({ fen, orientation, movable, onMove, arrows = [], highlight = {}, badges = {}, lastMove, onTap }: Props) {
   const { pieces: pieceSet } = usePrefs();
@@ -113,11 +118,12 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
           pieces: piecesFor(pieceSet),
           // Bords arrondis (l'ombre est sur .board-wrap).
           boardStyle: { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', overflow: 'hidden', width: '100%', height: '100%', position: 'relative', borderRadius: 10 },
-          // Coordonnées discrètes dans les cases du bord.
+          // Coordonnées discrètes, petites, tout au coin des cases du bord et au premier plan ; les pièces occupent
+          // 87 % de la case (.piece-img) : les deux ne se chevauchent pas (vérifié au pixel par tests/coords.cjs).
           lightSquareNotationStyle: { color: DARK },
           darkSquareNotationStyle: { color: LIGHT },
-          alphaNotationStyle: { fontSize: 'clamp(9px, 1.5vmin, 13px)', fontWeight: 700, position: 'absolute', bottom: 1, right: 3, opacity: 0.9, userSelect: 'none' },
-          numericNotationStyle: { fontSize: 'clamp(9px, 1.5vmin, 13px)', fontWeight: 700, position: 'absolute', top: 1, left: 3, opacity: 0.9, userSelect: 'none' },
+          alphaNotationStyle: { ...COORD, bottom: 0, right: 1 },
+          numericNotationStyle: { ...COORD, top: 0, left: 1 },
           // Pièce saisie : un peu plus grande, avec une ombre.
           draggingPieceStyle: { transform: 'scale(1.22)', filter: 'drop-shadow(0 10px 8px rgba(0,0,0,.45))' },
           draggingPieceGhostStyle: { opacity: 0.35 },

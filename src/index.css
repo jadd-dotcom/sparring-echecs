@@ -87,7 +87,7 @@ button.small { min-height: 48px; padding: 6px 12px; font-size: .92rem; }
 .rating-num { font-size: 4.2rem; }
 .play { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
 .board-col { min-width: 0; }
-.board-wrap { position: relative; border-radius: 10px; box-shadow: var(--board-shadow); width: 100%; max-width: min(100%, calc(100dvh - 170px)); margin: 0 auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+.board-wrap { container-type: inline-size; position: relative; border-radius: 10px; box-shadow: var(--board-shadow); width: 100%; max-width: min(100%, calc(100dvh - 170px)); margin: 0 auto; touch-action: none; user-select: none; -webkit-user-select: none; }
 .player-line { display: flex; justify-content: space-between; align-items: center; padding: 8px 2px; font-weight: 700; }
 .who { display: inline-flex; align-items: center; gap: 8px; }
 .avatar { width: 34px; height: 34px; border-radius: 10px; display: inline-grid; place-items: center; background: var(--raised); box-shadow: 0 2px 0 var(--raised-edge); }
@@ -211,7 +211,15 @@ table.classes td:first-child, table.classes th:first-child { text-align: left; }
 .retry-card.good { box-shadow: inset 0 0 0 3px var(--accent); } .retry-card.bad { box-shadow: inset 0 0 0 3px var(--danger); }
 
 /* Pièces (images SVG du jeu choisi) */
-.piece-img { width: 100%; height: 100%; display: block; pointer-events: none; -webkit-user-drag: none; }
+.piece-img {
+  /* 88 % de la case, mais au moins --reserve px de marge en tout pour les coordonnées des coins (petits échiquiers). */
+  --reserve: 8px;
+  width: min(88%, calc(100% - var(--reserve))); height: min(88%, calc(100% - var(--reserve)));
+  position: relative; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  display: block; pointer-events: none; -webkit-user-drag: none;
+}
+.piece-img[data-set="merida"] { --reserve: 9px; }     /* pièces qui remplissent davantage leur cadre */
+.piece-img[data-set="cburnett"] { --reserve: 6px; }   /* pièces plus fines : moins de marge nécessaire */
 
 /* Onglets (segmenté) */
 .tabs { background: var(--surface-2); padding: 5px; border-radius: 14px; margin-bottom: 12px; gap: 6px; }
