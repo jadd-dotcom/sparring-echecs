@@ -2,7 +2,7 @@
 // pour chacun de MES coups, perte = éval(meilleur coup) − éval(mon coup), même position,
 // même profondeur (UCI « searchmoves »). Seuil : 50 centipions (0,5 pion).
 // Sorties : docs/REPERTOIRE.md et src/data/repertoire-checks.json
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { Chess } from 'chess.js';
 import { BUILTIN_OPENINGS } from '../src/data/openings';
@@ -38,11 +38,23 @@ const san = (fen: string, uci: string) => new Chess(fen).move({ from: uci.slice(
 
 async function main() {
   send('uci'); send('setoption name Hash value 64'); send('isready');
-  const checks: Record<string, Record<string, { loss: number; best: string; bestSan: string; depth: number }>> = {};
+  type Checks = Record<string, Record<string, { loss: number; best: string; bestSan: string; depth: number }>>;
+  // Les ouvertures archivées gardent leur vérification précédente (ARCHIVES=1 pour les recalculer).
+  const previous: Checks = JSON.parse(readFileSync('src/data/repertoire-checks.json', 'utf8'));
+  const checks: Checks = {};
+  const archivedMd: string[] = [];
   let md = `# Répertoire pré-chargé et vérification Stockfish\n\nStockfish 19 lite (single-thread), profondeur ${DEPTH}, en Node.\n` +
     `Perte d'un de mes coups = éval du meilleur coup − éval de mon coup (même position, \`searchmoves\`). Seuil : ${MAX_LOSS} cp (0,5 pion).\n\n`;
   let allOk = true;
   for (const o of BUILTIN_OPENINGS) {
+    const only = process.env.ONLY?.split(',');
+    if (only && !only.includes(o.id) && previous[o.id]) { checks[o.id] = previous[o.id]; continue; }
+    if (o.archived && !process.env.ARCHIVES && previous[o.id]) {
+      checks[o.id] = previous[o.id];
+      const worst = Math.max(0, ...Object.values(previous[o.id]).map((v) => v.loss));
+      archivedMd.push(`- ${o.name} (${o.color === 'w' ? 'Blancs' : 'Noirs'}) : ${Object.keys(previous[o.id]).length} coups vérifiés en V2, perte max ${worst} cp.`);
+      continue;
+    }
     const { root } = parsePgn(o.pgn);
     const res: (typeof checks)[string] = {};
     const t0 = Date.now();
@@ -82,6 +94,7 @@ async function main() {
     console.log(o.name, 'ok', ((Date.now() - t0) / 1000).toFixed(0) + 's');
   }
   md += allOk ? '**Toutes les lignes passent le seuil.**\n' : '**Certaines lignes dépassent le seuil (voir ❌).**\n';
+  if (archivedMd.length) md += `\n## Archives (ancien répertoire)\n\nConsultables dans l’onglet « Archives » de l’écran Ouvertures ; vérification conservée :\n\n${archivedMd.join('\n')}\n`;
   writeFileSync('docs/REPERTOIRE.md', md);
   writeFileSync('src/data/repertoire-checks.json', JSON.stringify(checks, null, 1) + '\n');
   console.log(allOk ? 'TOUT OK' : 'ÉCHECS DÉTECTÉS');

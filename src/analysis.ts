@@ -95,10 +95,10 @@ export async function analysePlies(gameId: number, onProgress?: (d: number, t: n
 
 export const isError = (a: MoveAnalysis) => a.severity === 'mistake' || a.severity === 'blunder';
 
-/** Complète les erreurs/gaffes sans détail (suites Stockfish, motifs). */
-export async function addErrorDetails(g: Pick<Game, 'startFen' | 'uci' | 'myColor'>, analysis: MoveAnalysis[], onProgress?: (d: number, t: number) => void) {
+/** Complète les erreurs/gaffes sans détail (suites Stockfish, motifs) ; `plies` : aussi ces coups (imprécisions du rapport). */
+export async function addErrorDetails(g: Pick<Game, 'startFen' | 'uci' | 'myColor'>, analysis: MoveAnalysis[], onProgress?: (d: number, t: number) => void, plies: number[] = []) {
   const { fens } = replay(g.startFen, g.uci);
-  const todo = analysis.filter((a) => isError(a) && !a.detail);
+  const todo = analysis.filter((a) => (isError(a) || plies.includes(a.ply)) && !a.detail);
   let done = 0;
   for (const a of todo) {
     a.detail = await computeErrorDetail(browserEngine, fens[a.ply], a.uci, g.myColor, undefined, a.bestUci);

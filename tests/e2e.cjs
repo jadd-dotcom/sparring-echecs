@@ -117,7 +117,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.goto(URL + '#/settings');
   const [dl] = await Promise.all([p.waitForEvent('download'), p.getByRole('button', { name: /Exporter/ }).tap()]);
   const json = JSON.parse(require('fs').readFileSync(await dl.path(), 'utf8'));
-  assert(json.games.length === 1 && json.cards.filter((c) => c.kind !== 'drill').length === nCards && json.openings.length === 3, 'export JSON complet (parties, cartes, ouvertures)');
+  assert(json.games.length === 1 && json.cards.filter((c) => c.kind !== 'drill').length === nCards && json.openings.length === 5, 'export JSON complet (parties, cartes, 5 ouvertures dont 3 archivées)');
 
   // Portrait
   await p.setViewportSize({ width: 768, height: 1024 });

@@ -1,4 +1,5 @@
 // Leçons d'ouvertures (mode Leçon) : ligne principale du répertoire, une phrase par coup, le plan, une partie type.
+// Répertoire actuel : Anglaise (Blancs) puis système …c5/…g6 (Noirs) ; les leçons Londres, GDR et Française restent (Archives).
 // Les mots techniques sont notés [[clé]] ou [[clé|texte affiché]] ; ils sont expliqués (GLOSSARY) à leur 1re apparition.
 // Parties types : suite de la ligne principale jouée par Stockfish 16 (1 s par coup, les deux camps) — aucun vrai joueur.
 // Coups en notation anglaise standard (l'affichage les convertit en figurines).
@@ -27,9 +28,101 @@ export const GLOSSARY: Record<string, string> = {
   'pions pendants': 'deux pions voisins (ici c5 et d5) sans autre pion à côté pour les soutenir.',
   'roques opposés': 'les deux rois sont roqués de côtés différents : chacun attaque avec les pions de l’aile où se trouve le roi adverse.',
   'mauvais fou': 'fou gêné par ses propres pions placés sur des cases de sa couleur.',
+  'grande diagonale': 'la plus longue diagonale (a1-h8 ou h1-a8) ; un fou en fianchetto y surveille le centre et l’autre aile.',
 };
 
 export const OPENING_LESSONS: OpeningLesson[] = [
+  {
+    openingId: 'english',
+    intro: 'L’Anglaise (1.c4) est une ouverture tranquille pour les Blancs : avec le système fermé, tu places tes pièces aux mêmes cases contre presque toutes les défenses.',
+    moves: [
+      { san: 'c4', why: 'Le pion c4 surveille la case d5 du [[centre]] sans s’y montrer : c’est l’Anglaise.' },
+      { san: 'e5', why: 'Les Noirs occupent le centre avec leur pion e.' },
+      { san: 'Nc3', why: 'Ton cavalier se [[développer|développe]] et surveille lui aussi les cases d5 et e4.' },
+      { san: 'Nc6', why: 'Les Noirs développent leur cavalier, qui soutient le pion e5.' },
+      { san: 'g3', why: 'Le pion g3 prépare le [[fianchetto]] de ton fou f1.' },
+      { san: 'g6', why: 'Les Noirs font la même chose de leur côté.' },
+      { san: 'Bg2', why: 'Ton fou se place sur la [[grande diagonale]] h1-a8, d’où il vise le centre et l’aile dame.' },
+      { san: 'Bg7', why: 'Le fou noir se place lui aussi sur une grande diagonale.' },
+      { san: 'd3', why: 'Le pion d3 ouvre la diagonale de ton fou c1 et protège la case e4.' },
+      { san: 'd6', why: 'Les Noirs ouvrent eux aussi la diagonale de leur fou c8.' },
+      { san: 'e4', why: 'Le pion e4 prend de l’espace : avec c4, tes deux pions tiennent la case d5.' },
+      { san: 'Nge7', why: 'Le cavalier noir sort en e7 pour laisser son pion f libre d’avancer.' },
+      { san: 'Nge2', why: 'Ton second cavalier sort en e2 et non en f3 : ainsi il ne bloque pas ton pion f.' },
+      { san: 'O-O', why: 'Les Noirs roquent : leur roi est à l’abri.' },
+      { san: 'O-O', why: 'Tu fais le petit [[roque]] : ton roi est à l’abri derrière le fou g2.' },
+      { san: 'Be6', why: 'Le fou noir vise la case d5 et ton pion c4.' },
+      { san: 'Nd5', why: 'Ton cavalier saute en d5, un [[avant-poste]] protégé par tes pions c4 et e4.' },
+      { san: 'Qd7', why: 'La dame noire prépare …Bh3 pour échanger ton fou g2.' },
+      { san: 'Be3', why: 'Ton dernier fou se développe : tes tours peuvent maintenant venir sur l’aile dame.' },
+      { san: 'f5', why: 'Les Noirs attaquent ton pion e4 avec leur pion f : c’est leur plan sur l’aile roi.' },
+    ],
+    plan: [
+      'Tes pièces vont presque toujours aux mêmes cases : pions c4, d3 et e4 (ou e3), fou en g2, cavaliers en c3 et e2, petit roque.',
+      'Au milieu de partie, joue sur l’aile dame : avance tes pions b et a (b4, b5), avec une tour sur la colonne b ou c.',
+      'Ton cavalier d5 est ta meilleure pièce : garde-le, et réponds à …f5 en prenant (exf5) pour ouvrir la diagonale de ton fou g2.',
+    ],
+    model: {
+      moves: ['b4', 'Rae8', 'Rc1', 'Nc8', 'b5', 'Nd8', 'exf5', 'Bxf5', 'Nec3', 'c6', 'Nb4', 'Bh3', 'Bxh3', 'Qxh3', 'Ne4', 'Ne6'],
+      notes: {
+        0: 'Les Blancs lancent leur pion b : c’est le plan typique de l’Anglaise fermée, l’attaque sur l’aile dame.',
+        2: 'La tour vient sur la colonne c, qui s’ouvrira quand les pions s’échangeront.',
+        4: 'Le pion b5 gagne de l’espace et chasse les pièces noires de l’aile dame.',
+        6: 'Les Blancs prennent en f5 : la diagonale du fou g2 s’ouvre et la case e4 se libère pour un cavalier.',
+        8: 'Le cavalier e2 revient en c3 pour soutenir le cavalier d5.',
+        12: 'Les Noirs ont échangé les fous de cases blanches, comme prévu avec …Qd7 et …Bh3.',
+        14: 'Le cavalier s’installe en e4, une belle case centrale d’où il vise d6 et f6.',
+      },
+      end: 'Position un peu meilleure pour les Blancs : leur jeu sur l’aile dame avance et leurs cavaliers sont bien placés.',
+    },
+  },
+  {
+    openingId: 'g6-system',
+    intro: 'Avec les Noirs, tu joues le même système que l’Anglaise, inversé : …c5, …Nc6, …g6, …Bg7 et …d6. Contre 1.e4 puis 2.Nf3 et 3.d4, cela donne le Dragon accéléré.',
+    moves: [
+      { san: 'e4', why: 'Les Blancs occupent le [[centre]] avec leur pion e.' },
+      { san: 'c5', why: 'Ton pion c5 surveille la case d4 sans t’exposer : c’est la Défense sicilienne.' },
+      { san: 'Nf3', why: 'Le cavalier blanc se [[développer|développe]] et prépare d4.' },
+      { san: 'Nc6', why: 'Ton cavalier se développe et surveille les cases d4 et e5.' },
+      { san: 'd4', why: 'Les Blancs ouvrent le centre en attaquant ton pion c5.' },
+      { san: 'cxd4', why: 'Tu échanges ton pion c contre le pion d blanc : il te reste deux pions au centre (d et e).' },
+      { san: 'Nxd4', why: 'Le cavalier blanc reprend le pion et s’installe au centre.' },
+      { san: 'g6', why: 'Tu prépares tout de suite le [[fianchetto]] de ton fou f8 : c’est le Dragon accéléré.' },
+      { san: 'Nc3', why: 'Le second cavalier blanc protège le pion e4.' },
+      { san: 'Bg7', why: 'Ton fou se place sur la [[grande diagonale]] et vise le cavalier d4 et l’aile dame.' },
+      { san: 'Be3', why: 'Le fou blanc protège le cavalier d4.' },
+      { san: 'Nf6', why: 'Ton second cavalier se développe et attaque le pion e4.' },
+      { san: 'Bc4', why: 'Le fou blanc vise ton pion f7, le point faible près de ton roi.' },
+      { san: 'O-O', why: 'Tu fais le petit [[roque]] : ton roi est à l’abri derrière le fou g7.' },
+      { san: 'Bb3', why: 'Le fou blanc se met à l’abri en b3, d’où il vise toujours f7.' },
+      { san: 'd6', why: 'Le pion d6 ouvre la diagonale de ton fou c8 et surveille la case e5.' },
+      { san: 'f3', why: 'Le pion f3 protège e4 et empêche ton cavalier de venir en g4.' },
+      { san: 'Bd7', why: 'Ton fou se développe : tes deux tours peuvent maintenant se rejoindre.' },
+      { san: 'Qd2', why: 'La dame blanche se développe et prépare le grand roque.' },
+      { san: 'Nxd4', why: 'Tu échanges les cavaliers pour te libérer.' },
+      { san: 'Bxd4', why: 'Le fou blanc reprend au centre, face à ton fou g7.' },
+      { san: 'b5', why: 'Ton pion b lance l’attaque sur l’aile dame, là où le roi blanc veut roquer.' },
+    ],
+    plan: [
+      'Tes pièces vont presque toujours aux mêmes cases : pions c5, d6 et g6, fou en g7, cavaliers en c6 et f6, petit roque.',
+      'Ton fou g7 est ta meilleure pièce : garde-le, car sur la grande diagonale il vise le centre et l’aile dame.',
+      'Au milieu de partie, attaque sur l’aile dame avec …b5, une tour sur la [[colonne semi-ouverte|colonne c]] et ta dame en a5 ou c7.',
+    ],
+    model: {
+      moves: ['a4', 'bxa4', 'Bxa4', 'Qc7', 'Bxd7', 'Qxd7', 'O-O', 'Rfc8', 'b3', 'Qc7', 'Ra4', 'e5', 'Rc4', 'Qa5', 'Be3', 'Rxc4', 'bxc4', 'Rc8'],
+      notes: {
+        0: 'Les Blancs attaquent ton pion b5 avec leur pion a.',
+        1: 'Tu prends : la colonne b s’ouvre pour tes tours.',
+        3: 'Ta dame vient sur la colonne c, ta colonne d’attaque dans la Sicilienne.',
+        6: 'Les Blancs ne font pas le grand roque : avec ton jeu sur l’aile dame, leur roi y serait en danger.',
+        7: 'Ta tour f8 rejoint ta dame sur la colonne c.',
+        11: 'Ton pion e5 chasse le fou d4 et prend de l’espace au centre.',
+        15: 'Tu échanges une paire de tours sur la case c4.',
+        17: 'Ta dernière tour reprend la colonne c et vise le pion c4.',
+      },
+      end: 'Position équilibrée : tu as gardé ton fou g7 et ta colonne c, ton jeu est actif.',
+    },
+  },
   {
     openingId: 'london',
     intro: 'Le Système de Londres est une ouverture tranquille pour les Blancs : on place presque toujours les mêmes pièces aux mêmes cases, quoi que fassent les Noirs.',

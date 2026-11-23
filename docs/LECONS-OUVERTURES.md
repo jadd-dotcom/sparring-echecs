@@ -1,8 +1,10 @@
 # Leçons d'ouvertures (mode Leçon)
 
-Contenu affiché dans l'appli, généré depuis `src/data/openingLessons.ts` (`npm run lessons-doc`). Ordre conseillé : Londres, puis Gambit Dame refusé, puis Défense française ; pour chacune : 1. Leçon → 2. Drill → 3. Partie à thème.
+Contenu affiché dans l'appli, généré depuis `src/data/openingLessons.ts` (`npm run lessons-doc`). Ordre conseillé : l’Anglaise (Blancs), puis le système …c5/…g6 (Noirs) ; pour chacune : 1. Leçon → 2. Drill → 3. Partie à thème. Les leçons de l’ancien répertoire (Londres, Gambit Dame refusé, Défense française) restent consultables dans l’onglet « Archives » ; elles sont reprises en fin de document.
 
 Déroulé d'une leçon : (1) la ligne principale par blocs de 3 coups, une phrase par coup ; (2) après chaque bloc, l'élève rejoue ses coups (1re erreur : case de départ surlignée ; 2e : solution) ; (3) le plan en 3 phrases ; (4) une partie type commentée. Les coups appris entrent dans le drill (1re révision le lendemain).
+
+Toutes les lignes du répertoire et leur vérification Stockfish : `docs/REPERTOIRE.md`.
 
 Les parties types prolongent la ligne principale avec Stockfish 16 (1 s par coup, les deux camps) : ce ne sont pas des parties de joueurs réels.
 
@@ -20,8 +22,136 @@ Les parties types prolongent la ligne principale avec Stockfish 16 (1 s par coup
 - **pions pendants** : deux pions voisins (ici c5 et d5) sans autre pion à côté pour les soutenir.
 - **roques opposés** : les deux rois sont roqués de côtés différents : chacun attaque avec les pions de l’aile où se trouve le roi adverse.
 - **mauvais fou** : fou gêné par ses propres pions placés sur des cases de sa couleur.
+- **grande diagonale** : la plus longue diagonale (a1-h8 ou h1-a8) ; un fou en fianchetto y surveille le centre et l’autre aile.
 
-## Système de Londres (Blancs)
+## Anglaise (système fermé) (Blancs)
+
+L’Anglaise (1.c4) est une ouverture tranquille pour les Blancs : avec le système fermé, tu places tes pièces aux mêmes cases contre presque toutes les défenses.
+
+### 1-2. Ligne principale, par blocs
+
+**Bloc 1**
+
+- 1. c4 — Le pion c4 surveille la case d5 du centre sans s’y montrer : c’est l’Anglaise. _(mot expliqué : centre)_
+- 1... e5 — Les Noirs occupent le centre avec leur pion e.
+- 2. Nc3 — Ton cavalier se développe et surveille lui aussi les cases d5 et e4. _(mot expliqué : développer)_
+- 2... Nc6 — Les Noirs développent leur cavalier, qui soutient le pion e5.
+- 3. g3 — Le pion g3 prépare le fianchetto de ton fou f1. _(mot expliqué : fianchetto)_
+- 3... g6 — Les Noirs font la même chose de leur côté.
+
+**Bloc 2**
+
+- 4. Bg2 — Ton fou se place sur la grande diagonale h1-a8, d’où il vise le centre et l’aile dame. _(mot expliqué : grande diagonale)_
+- 4... Bg7 — Le fou noir se place lui aussi sur une grande diagonale.
+- 5. d3 — Le pion d3 ouvre la diagonale de ton fou c1 et protège la case e4.
+- 5... d6 — Les Noirs ouvrent eux aussi la diagonale de leur fou c8.
+- 6. e4 — Le pion e4 prend de l’espace : avec c4, tes deux pions tiennent la case d5.
+- 6... Nge7 — Le cavalier noir sort en e7 pour laisser son pion f libre d’avancer.
+
+**Bloc 3**
+
+- 7. Nge2 — Ton second cavalier sort en e2 et non en f3 : ainsi il ne bloque pas ton pion f.
+- 7... O-O — Les Noirs roquent : leur roi est à l’abri.
+- 8. O-O — Tu fais le petit roque : ton roi est à l’abri derrière le fou g2. _(mot expliqué : roque)_
+- 8... Be6 — Le fou noir vise la case d5 et ton pion c4.
+- 9. Nd5 — Ton cavalier saute en d5, un avant-poste protégé par tes pions c4 et e4. _(mot expliqué : avant-poste)_
+- 9... Qd7 — La dame noire prépare …Bh3 pour échanger ton fou g2.
+
+**Bloc 4**
+
+- 10. Be3 — Ton dernier fou se développe : tes tours peuvent maintenant venir sur l’aile dame.
+- 10... f5 — Les Noirs attaquent ton pion e4 avec leur pion f : c’est leur plan sur l’aile roi.
+
+### 3. Le plan
+
+1. Tes pièces vont presque toujours aux mêmes cases : pions c4, d3 et e4 (ou e3), fou en g2, cavaliers en c3 et e2, petit roque.
+2. Au milieu de partie, joue sur l’aile dame : avance tes pions b et a (b4, b5), avec une tour sur la colonne b ou c.
+3. Ton cavalier d5 est ta meilleure pièce : garde-le, et réponds à …f5 en prenant (exf5) pour ouvrir la diagonale de ton fou g2.
+
+### 4. Partie type (Stockfish contre lui-même)
+
+Coups : 11. b4 11... Rae8 12. Rc1 12... Nc8 13. b5 13... Nd8 14. exf5 14... Bxf5 15. Nec3 15... c6 16. Nb4 16... Bh3 17. Bxh3 17... Qxh3 18. Ne4 18... Ne6
+
+Moments clés :
+
+- 11. b4 — Les Blancs lancent leur pion b : c’est le plan typique de l’Anglaise fermée, l’attaque sur l’aile dame.
+- 12. Rc1 — La tour vient sur la colonne c, qui s’ouvrira quand les pions s’échangeront.
+- 13. b5 — Le pion b5 gagne de l’espace et chasse les pièces noires de l’aile dame.
+- 14. exf5 — Les Blancs prennent en f5 : la diagonale du fou g2 s’ouvre et la case e4 se libère pour un cavalier.
+- 15. Nec3 — Le cavalier e2 revient en c3 pour soutenir le cavalier d5.
+- 17. Bxh3 — Les Noirs ont échangé les fous de cases blanches, comme prévu avec …Qd7 et …Bh3.
+- 18. Ne4 — Le cavalier s’installe en e4, une belle case centrale d’où il vise d6 et f6.
+
+Fin : Position un peu meilleure pour les Blancs : leur jeu sur l’aile dame avance et leurs cavaliers sont bien placés.
+
+## Système …c5 / …g6 (Dragon accéléré) (Noirs)
+
+Avec les Noirs, tu joues le même système que l’Anglaise, inversé : …c5, …Nc6, …g6, …Bg7 et …d6. Contre 1.e4 puis 2.Nf3 et 3.d4, cela donne le Dragon accéléré.
+
+### 1-2. Ligne principale, par blocs
+
+**Bloc 1**
+
+- 1. e4 — Les Blancs occupent le centre avec leur pion e. _(mot expliqué : centre)_
+- 1... c5 — Ton pion c5 surveille la case d4 sans t’exposer : c’est la Défense sicilienne.
+- 2. Nf3 — Le cavalier blanc se développe et prépare d4. _(mot expliqué : développer)_
+- 2... Nc6 — Ton cavalier se développe et surveille les cases d4 et e5.
+- 3. d4 — Les Blancs ouvrent le centre en attaquant ton pion c5.
+- 3... cxd4 — Tu échanges ton pion c contre le pion d blanc : il te reste deux pions au centre (d et e).
+
+**Bloc 2**
+
+- 4. Nxd4 — Le cavalier blanc reprend le pion et s’installe au centre.
+- 4... g6 — Tu prépares tout de suite le fianchetto de ton fou f8 : c’est le Dragon accéléré. _(mot expliqué : fianchetto)_
+- 5. Nc3 — Le second cavalier blanc protège le pion e4.
+- 5... Bg7 — Ton fou se place sur la grande diagonale et vise le cavalier d4 et l’aile dame. _(mot expliqué : grande diagonale)_
+- 6. Be3 — Le fou blanc protège le cavalier d4.
+- 6... Nf6 — Ton second cavalier se développe et attaque le pion e4.
+
+**Bloc 3**
+
+- 7. Bc4 — Le fou blanc vise ton pion f7, le point faible près de ton roi.
+- 7... O-O — Tu fais le petit roque : ton roi est à l’abri derrière le fou g7. _(mot expliqué : roque)_
+- 8. Bb3 — Le fou blanc se met à l’abri en b3, d’où il vise toujours f7.
+- 8... d6 — Le pion d6 ouvre la diagonale de ton fou c8 et surveille la case e5.
+- 9. f3 — Le pion f3 protège e4 et empêche ton cavalier de venir en g4.
+- 9... Bd7 — Ton fou se développe : tes deux tours peuvent maintenant se rejoindre.
+
+**Bloc 4**
+
+- 10. Qd2 — La dame blanche se développe et prépare le grand roque.
+- 10... Nxd4 — Tu échanges les cavaliers pour te libérer.
+- 11. Bxd4 — Le fou blanc reprend au centre, face à ton fou g7.
+- 11... b5 — Ton pion b lance l’attaque sur l’aile dame, là où le roi blanc veut roquer.
+
+### 3. Le plan
+
+1. Tes pièces vont presque toujours aux mêmes cases : pions c5, d6 et g6, fou en g7, cavaliers en c6 et f6, petit roque.
+2. Ton fou g7 est ta meilleure pièce : garde-le, car sur la grande diagonale il vise le centre et l’aile dame.
+3. Au milieu de partie, attaque sur l’aile dame avec …b5, une tour sur la colonne c et ta dame en a5 ou c7. _(mot expliqué : colonne semi-ouverte)_
+
+### 4. Partie type (Stockfish contre lui-même)
+
+Coups : 12. a4 12... bxa4 13. Bxa4 13... Qc7 14. Bxd7 14... Qxd7 15. O-O 15... Rfc8 16. b3 16... Qc7 17. Ra4 17... e5 18. Rc4 18... Qa5 19. Be3 19... Rxc4 20. bxc4 20... Rc8
+
+Moments clés :
+
+- 12. a4 — Les Blancs attaquent ton pion b5 avec leur pion a.
+- 12... bxa4 — Tu prends : la colonne b s’ouvre pour tes tours.
+- 13... Qc7 — Ta dame vient sur la colonne c, ta colonne d’attaque dans la Sicilienne.
+- 15. O-O — Les Blancs ne font pas le grand roque : avec ton jeu sur l’aile dame, leur roi y serait en danger.
+- 15... Rfc8 — Ta tour f8 rejoint ta dame sur la colonne c.
+- 17... e5 — Ton pion e5 chasse le fou d4 et prend de l’espace au centre.
+- 19... Rxc4 — Tu échanges une paire de tours sur la case c4.
+- 20... Rc8 — Ta dernière tour reprend la colonne c et vise le pion c4.
+
+Fin : Position équilibrée : tu as gardé ton fou g7 et ta colonne c, ton jeu est actif.
+
+---
+
+# Archives (ancien répertoire)
+
+## Système de Londres (Blancs) — archivée
 
 Le Système de Londres est une ouverture tranquille pour les Blancs : on place presque toujours les mêmes pièces aux mêmes cases, quoi que fassent les Noirs.
 
@@ -82,7 +212,7 @@ Moments clés :
 
 Fin : Position équilibrée : les Blancs ont suivi leur plan (cavalier en e5, attaque sur l’aile roi).
 
-## Gambit Dame refusé (Noirs)
+## Gambit Dame refusé (Noirs) — archivée
 
 Le Gambit Dame refusé est une défense solide contre 1.d4 : tu tiens le centre avec tes pions d5 et e6, sans prendre le pion offert.
 
@@ -145,7 +275,7 @@ Moments clés :
 
 Fin : Finale équilibrée : les Noirs ont atteint leur but, égaliser grâce à …c5 et aux échanges.
 
-## Défense française (Noirs)
+## Défense française (Noirs) — archivée
 
 La Défense française répond à 1.e4 par …e6 puis …d5 : une défense solide où tu attaques ensuite la chaîne de pions blanche.
 

@@ -5,8 +5,10 @@ import { firstAppearances, GLOSSARY, lessonBlocks, lessonTexts, OPENING_LESSONS,
 import { drillPositions, fenKey, parsePgn } from '../lib/repertoire';
 
 describe('leçons d’ouvertures', () => {
-  it('ordre conseillé : Londres, GDR, Française', () => {
-    expect(OPENING_LESSONS.map((l) => l.openingId)).toEqual(['london', 'qgd', 'french']);
+  it('ordre conseillé : Anglaise, système …c5/…g6 ; puis les leçons archivées (Londres, GDR, Française)', () => {
+    expect(OPENING_LESSONS.map((l) => l.openingId)).toEqual(['english', 'g6-system', 'london', 'qgd', 'french']);
+    const arch = BUILTIN_OPENINGS.filter((o) => o.archived).map((o) => o.id);
+    expect(arch).toEqual(['london', 'qgd', 'french']);
   });
   it('corrections de la relecture : 7.Bg3 (Londres), 7.Bh4 (GDR)', () => {
     const why = (id: string, ply: number) => OPENING_LESSONS.find((l) => l.openingId === id)!.moves[ply];
