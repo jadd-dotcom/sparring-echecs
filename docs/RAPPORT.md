@@ -232,10 +232,12 @@
 
 ## Ajustements : coordonnées et analyse des parties importées (23/11)
 - **Coordonnées jamais sous les pièces** : coordonnées plus petites (≈ 15 % de la case), tout au coin, au premier plan ;
-  pièces à 88 % de la case, avec une marge minimale pour les coins sur les petits échiquiers (iPad : 88 % ; iPhone : 74 à 86 %
-  selon le jeu, Merida étant le plus large). Vérifié au pixel (`tests/coords.cjs`) : les 12 pièces × 16 coordonnées,
-  sans aucun pixel de pièce sous le texte, pour Celtic, Merida et Cburnett, sur iPhone SE, iPhone 13 (portrait et paysage)
-  et iPad (paysage et portrait), côté Blancs et côté Noirs.
+  pièces centrées à 88 % de la case, avec une marge minimale pour les coins sur les petits échiquiers (iPad : 88 % ;
+  iPhone : 74 à 86 % selon le jeu, Merida étant le plus large). Arrondi de l'échiquier ramené à 6 px ; les deux seules
+  coordonnées situées dans un coin arrondi (cases a8 et h1) sont un peu décalées vers l'intérieur, et la pièce de ces deux
+  cases garde un peu plus de marge. Vérifié au pixel (`tests/coords.cjs`, 61 contrôles) : pièces centrées, aucune
+  coordonnée rognée par l'arrondi, et pour les 12 pièces × 16 coordonnées aucun pixel de pièce sous le texte — Celtic,
+  Merida, Cburnett × iPhone SE, iPhone 13 (portrait, paysage), iPad (paysage, portrait) × côté Blancs et Noirs.
 - **Analyse des parties importées** : les plus récentes d'abord ; automatiquement seulement celles jouées depuis le
   16/11/2026 ; les plus anciennes restent importées sans analyse, avec un bouton « Analyser aussi les anciennes (N) ».
   Progression « Analyse : X/Y », avancement de la partie en cours et temps restant estimé (d'après la vitesse observée,
