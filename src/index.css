@@ -87,7 +87,7 @@ button.small { min-height: 48px; padding: 6px 12px; font-size: .92rem; }
 .rating-num { font-size: 4.2rem; }
 .play { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
 .board-col { min-width: 0; }
-.board-wrap { container-type: inline-size; position: relative; border-radius: 10px; box-shadow: var(--board-shadow); width: 100%; max-width: min(100%, calc(100dvh - 170px)); margin: 0 auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+.board-wrap { container-type: inline-size; position: relative; border-radius: 6px; box-shadow: var(--board-shadow); width: 100%; max-width: min(100%, calc(100dvh - 170px)); margin: 0 auto; touch-action: none; user-select: none; -webkit-user-select: none; }
 .player-line { display: flex; justify-content: space-between; align-items: center; padding: 8px 2px; font-weight: 700; }
 .who { display: inline-flex; align-items: center; gap: 8px; }
 .avatar { width: 34px; height: 34px; border-radius: 10px; display: inline-grid; place-items: center; background: var(--raised); box-shadow: 0 2px 0 var(--raised-edge); }
@@ -214,10 +214,17 @@ table.classes td:first-child, table.classes th:first-child { text-align: left; }
 .piece-img {
   /* 88 % de la case, mais au moins --reserve px de marge en tout pour les coordonnées des coins (petits échiquiers). */
   --reserve: 8px;
-  width: min(88%, calc(100% - var(--reserve))); height: min(88%, calc(100% - var(--reserve)));
-  position: relative; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  --size: min(88%, calc(100% - var(--reserve) - var(--corner, 0px)));
+  /* Centrée par des marges (les % de marge se rapportent à la largeur de la case, qui est carrée). */
+  width: var(--size); height: auto; aspect-ratio: 1; margin: calc((100% - var(--size)) / 2) auto 0;
   display: block; pointer-events: none; -webkit-user-drag: none;
 }
+/* Coins arrondis de l'échiquier (6 px) : seules les coordonnées de a8 et de h1 y tombent (côté Blancs comme côté Noirs) ;
+   on les décale un peu vers l'intérieur pour qu'elles ne soient pas rognées, et la pièce de ces deux cases garde un peu
+   plus de marge. */
+[data-square="a8"] span[style*="top:"], [data-square="h1"] span[style*="top:"] { transform: translate(2px, 3px); }
+[data-square="a8"] span[style*="bottom:"], [data-square="h1"] span[style*="bottom:"] { transform: translate(-2px, -3px); }
+[data-square="a8"] .piece-img, [data-square="h1"] .piece-img { --corner: 6px; }
 .piece-img[data-set="merida"] { --reserve: 9px; }     /* pièces qui remplissent davantage leur cadre */
 .piece-img[data-set="cburnett"] { --reserve: 6px; }   /* pièces plus fines : moins de marge nécessaire */
 

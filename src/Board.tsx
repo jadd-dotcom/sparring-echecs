@@ -117,7 +117,7 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
           darkSquareStyle: { backgroundColor: DARK },
           pieces: piecesFor(pieceSet),
           // Bords arrondis (l'ombre est sur .board-wrap).
-          boardStyle: { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', overflow: 'hidden', width: '100%', height: '100%', position: 'relative', borderRadius: 10 },
+          boardStyle: { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', overflow: 'hidden', width: '100%', height: '100%', position: 'relative', borderRadius: 6 },
           // Coordonnées discrètes, petites, tout au coin des cases du bord et au premier plan ; les pièces occupent
           // 87 % de la case (.piece-img) : les deux ne se chevauchent pas (vérifié au pixel par tests/coords.cjs).
           lightSquareNotationStyle: { color: DARK },
