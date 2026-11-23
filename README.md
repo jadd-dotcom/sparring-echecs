@@ -12,8 +12,12 @@ Appli web (PWA) d'entraînement aux échecs pour tablette, 100 % dans le navigat
   Stockfish, PGN annotés, cartes ratées) à copier ou partager. Exemple : `docs/exemple-rapport.md`.
 - **Mats élémentaires** : D+R, deux tours (échelle), T+R (boîte), deux fous — leçon en 5 étapes puis exercices contre
   Stockfish en défense maximale, validation par niveau, positions ratées dans le paquet de révision.
-- **Ouvertures (V2)** : répertoire en PGN à variantes (Londres, GDR, Française pré-chargés, vérifiés par Stockfish),
-  parties à thème, sorties signalées en revue, trous du répertoire, drill en répétition espacée, stats par ouverture.
+- **Ouvertures (V2)** : répertoire en PGN à variantes vérifié par Stockfish — Blancs : Anglaise, système fermé ;
+  Noirs : système …c5/…g6 (Dragon accéléré contre 1.e4) ; l'ancien répertoire (Londres, GDR, Française) est dans l'onglet
+  « Archives ». Leçons, parties à thème, sorties signalées en revue, trous du répertoire, drill, stats par ouverture.
+- **Import Chess.com** : pseudo dans Réglages, « Importer mes parties » (API publique, seulement les nouvelles ; plan B :
+  coller un PGN). Parties analysées comme celles contre Maia, marquées « Chess.com », sans effet sur le niveau Maia,
+  avec le suivi de mon répertoire. Incluses dans le rapport pour Claude (par source et par ouverture).
 
 ## Développement
 
@@ -32,7 +36,8 @@ node tests/mates.cjs <dossier-captures>  # onglet Mats élémentaires
 npm run verify-mates                    # 20 positions/niveau, Stockfish joue mon camp → docs/MATS.md
 node tests/settings.cjs <dossier-captures> # réglages : niveau, couleur, alternance
 node tests/cancel.cjs <dossier-captures>   # annulation et partie non comptée
-node tests/lessons.cjs <dossier-captures>  # mode Leçon (Londres)
+node tests/lessons.cjs <dossier-captures>  # mode Leçon (Anglaise) et onglet Archives
+node tests/chesscom.cjs <dossier-captures> # import Chess.com sur des réponses enregistrées (aucun réseau)
 node tests/ingame.cjs <dossier-captures>   # navigation en partie, sons, assistance (non comptée)
 node tests/review2.cjs <dossier-captures>  # revue : raison, Réessayer, courbe, précision
 npm run lessons-doc                     # docs/LECONS-OUVERTURES.md depuis les données

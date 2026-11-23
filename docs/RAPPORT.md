@@ -197,3 +197,21 @@
   prise). Meilleur : exd5 » ; bouton Réessayer sur mes imprécisions, erreurs et gaffes (réussi si le coup est Bon ou mieux,
   solution au 2e essai) ; courbe d'évaluation cliquable ; précision des deux camps (formule publique de Lichess) ; courbe de
   ma précision dans les Stats ; colonne Précision par partie dans le rapport pour Claude.
+
+## Changement de cap : Anglaise, import Chess.com, rapport (23/11)
+- **Nouveau répertoire** (`src/data/openings.ts`, `docs/REPERTOIRE.md`) : Blancs — Anglaise, système fermé (c4, ♘c3, g3, ♗g2,
+  d3, e4 ou e3, ♘ge2, petit roque), 15 lignes contre 1…e5, 1…c5, 1…♘f6, 1…e6, 1…d5 ; Noirs — système …c5, …♘c6, …g6, …♗g7, …d6,
+  29 lignes contre 1.e4 (2.♘f3 et 3.d4 : Dragon accéléré ; 2.♘c3 ; 2.c3 ; aussi 2.d4, 3.♗b5, 3.♗c4), 1.d4, 1.c4, 1.♘f3.
+  Validation Stockfish 19 lite, profondeur 20 : aucun de mes coups ne perd plus de 0,5 pion (pertes max 31 et 30 cp) ;
+  4 coups remplacés par le choix de Stockfish pendant la validation. Contre 2.c3, exception au système : …♘f6 (Alapin classique).
+- **Archives** : Londres, GDR et Française gardent leur leçon et leur répertoire, consultables (onglet « Archives »), mais
+  sortent du drill du jour, du « livre » de la revue et des parties à thème ; bouton pour les remettre dans le répertoire.
+- **Leçons** des deux nouvelles ouvertures (même format), `docs/LECONS-OUVERTURES.md` régénéré.
+- **Import Chess.com** (`src/lib/chesscom.ts`, `src/chesscomImport.ts`) : archives mensuelles demandées une à une avec une pause ;
+  un mois passé déjà importé n'est plus jamais redemandé ; le mois en cours est revalidé par le cache du navigateur (ETag).
+  Doublons évités par l'URL de la partie (aussi pour un PGN collé contenant le lien). Parties analysées une à une (les plus
+  récentes d'abord), interrompables. Tests sur des réponses de l'API enregistrées (`tests/fixtures/chesscom`), sans réseau.
+- **Rapport pour Claude** : colonnes Source / Adversaire / Répertoire ; niveau calculé sur les parties contre Maia seulement ;
+  tableaux par source et par ouverture ; % de parties où je suis resté dans mon répertoire jusqu'au coup 8 ;
+  section 2 « Mes coups les plus coûteux » (complétée par mes imprécisions s'il y a moins de 5 erreurs et gaffes) ;
+  section 3 « Mes parties » (5 au plus : défaites, puis nulles, puis victoires, PGN annotés).
