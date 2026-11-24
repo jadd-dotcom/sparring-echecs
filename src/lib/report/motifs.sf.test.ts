@@ -2,6 +2,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { Chess } from 'chess.js';
 import { computeErrorDetail } from './motifs';
+import { errorReason } from '../reason';
 import { createNodeEngine } from '../../../tests/nodeEngine';
 
 const engine = createNodeEngine();
@@ -36,6 +37,13 @@ describe('motifs sur positions connues (Stockfish)', { timeout: 60000 }, () => {
     const d = await computeErrorDetail(engine, fen, uci, me);
     expect(d.motif).toBe('mat-rate');
     expect(d.bestLine).toBe('4. Qxf7#');
+  });
+  it('gain raté : 1.e4 e5 2.Nf3 Bc5 3.Nc3 Bxf2+ 4.Ke2?! (au lieu de Kxf2)', async () => {
+    const { fen, uci, me } = setup(['e4', 'e5', 'Nf3', 'Bc5', 'Nc3', 'Bxf2+'], 'Ke2');
+    const d = await computeErrorDetail(engine, fen, uci, me);
+    expect(d.motif).toBe('gain-rate');
+    expect(d.bestLine).toMatch(/^4\. Kxf2/);
+    expect(errorReason(d, fen, uci)).toBe(`tu pouvais prendre le ♗f2 avec ♔xf2 (${d.bestLine.replace(/K/g, '♔').replace(/N/g, '♘').replace(/B/g, '♗').replace(/Q/g, '♕').replace(/R/g, '♖')})`);
   });
   it('mat ouvert : 1.f3 e5 2.g4?? (Qh4#)', async () => {
     const { fen, uci, me } = setup(['f3', 'e5'], 'g4');

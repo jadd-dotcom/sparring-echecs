@@ -1,6 +1,6 @@
 import { Chess } from 'chess.js';
 import { browserEngine, stockfish } from './engines/stockfish';
-import { computeErrorDetail } from './lib/report/motifs';
+import { computeErrorDetail, DETAIL_VERSION } from './lib/report/motifs';
 import { classify, winPercent, type Eval } from './lib/winpct';
 import { newCard, dayKey } from './lib/srs';
 import { db, type Card, type Color, type EvalBarPoint, type Game, type MoveAnalysis, type PlyEval } from './db';
@@ -95,10 +95,13 @@ export async function analysePlies(gameId: number, onProgress?: (d: number, t: n
 
 export const isError = (a: MoveAnalysis) => a.severity === 'mistake' || a.severity === 'blunder';
 
+/** Détail absent ou calculé par une version plus ancienne (sans le motif « Gain raté »). */
+export const needsDetail = (a: MoveAnalysis) => !a.detail || (a.detail.v ?? 1) < DETAIL_VERSION;
+
 /** Complète les erreurs/gaffes sans détail (suites Stockfish, motifs) ; `plies` : aussi ces coups (imprécisions du rapport). */
 export async function addErrorDetails(g: Pick<Game, 'startFen' | 'uci' | 'myColor'>, analysis: MoveAnalysis[], onProgress?: (d: number, t: number) => void, plies: number[] = []) {
   const { fens } = replay(g.startFen, g.uci);
-  const todo = analysis.filter((a) => (isError(a) || plies.includes(a.ply)) && !a.detail);
+  const todo = analysis.filter((a) => (isError(a) || plies.includes(a.ply)) && needsDetail(a));
   let done = 0;
   for (const a of todo) {
     a.detail = await computeErrorDetail(browserEngine, fens[a.ply], a.uci, g.myColor, undefined, a.bestUci);

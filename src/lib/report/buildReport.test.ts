@@ -76,6 +76,9 @@ describe('rapport complet', () => {
     expect(md).toContain('Début : **901** → fin : **913** (+12)');
     expect(md).toContain('Victoires / nulles / défaites : **1 / 0 / 2**');
     expect(md).toContain('| Pièce laissée en prise | 4 |');
+    expect(md).toContain('| Gain raté | 0 |');
+    expect(md.indexOf('| Gain raté |')).toBeLessThan(md.indexOf('| Autre |'));
+    expect(md).toContain('*Gain raté* : je pouvais gagner au moins 2 points');
     expect(md).toContain('## 2. Mes coups les plus coûteux (5, tri par chute de win%)');
     expect(md).toContain('complété par mes 1 imprécision les plus coûteuses');
     expect(md).toContain('### 5. Partie n°1, coup 3. Bc4?! — imprécision (−12 pts)');

@@ -110,7 +110,9 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
   }
   if (chess.inCheck() && !hidePieces) {
     const king = chess.board().flat().find((p) => p && p.type === 'k' && p.color === chess.turn());
-    if (king) squareStyles[king.square] = { background: 'radial-gradient(rgba(220,0,0,.75), transparent 75%)' };
+    // Échec : halo rouge, posé par-dessus un éventuel surlignage (ex. indice « pièce à jouer » sur le roi).
+    const hl = king ? highlight[king.square] : undefined;
+    if (king) squareStyles[king.square] = { background: `radial-gradient(rgba(220,0,0,.75), transparent 75%)${hl ? `, ${hl}` : ''}` };
   }
 
   return (

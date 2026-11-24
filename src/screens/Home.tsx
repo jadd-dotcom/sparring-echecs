@@ -59,6 +59,7 @@ export default function Home() {
           ? total === 0 ? 'Aucune position à revoir pour l’instant' : 'Rien à revoir aujourd’hui'
           : `${due} position${due > 1 ? 's' : ''} à revoir aujourd’hui`}
       </button>
+      {total > 0 && <button className="ghost small all-cards" onClick={() => go({ name: 'cards' })}>Voir toutes mes cartes</button>}
       <div className="row">
         <button className="huge" onClick={() => go({ name: 'openings' })}><BookOpen aria-hidden className="ico" />Ouvertures</button>
         <button className="huge" onClick={() => go({ name: 'mates' })}><Crown aria-hidden className="ico" />Mats élémentaires</button>

@@ -3,6 +3,7 @@ import Home from './screens/Home';
 import Play from './screens/Play';
 import Review from './screens/Review';
 import Revise from './screens/Revise';
+import Cards from './screens/Cards';
 import Stats from './screens/Stats';
 import Settings from './screens/Settings';
 import Openings from './screens/Openings';
@@ -41,6 +42,7 @@ export default function App() {
         {route.name === 'play' && <Play key={`${route.opening ?? ''}-${route.unrated ? 'nc' : ''}`} opening={route.opening} unrated={route.unrated} />}
         {route.name === 'review' && <Review key={route.id} id={route.id} />}
         {route.name === 'revise' && <Revise key={route.opening ?? ''} opening={route.opening} />}
+        {route.name === 'cards' && <Cards />}
         {route.name === 'openings' && <Openings />}
         {route.name === 'repertoire' && <RepertoireEditor key={route.id} id={route.id} />}
         {route.name === 'stats' && <Stats />}

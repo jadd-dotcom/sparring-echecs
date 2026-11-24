@@ -102,7 +102,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
     const card = await p.evaluate(() => window.__db.cards.filter((c) => c.kind !== 'drill').toArray().then((a) => a.sort((x, y) => x.due < y.due ? -1 : 1)[0]));
     await sq(card.bestUci.slice(0, 2)).tap(); await sq(card.bestUci.slice(2, 4)).tap();
     if (card.bestUci.length === 5) await p.getByRole('button', { name: /Dame/ }).tap();
-    await p.getByText(/Juste !/).waitFor({ timeout: 20000 });
+    await p.getByText(/Bien joué/).waitFor({ timeout: 20000 });
     await p.screenshot({ path: OUT + '/6-revision.png' });
     const after = await p.evaluate((id) => window.__db.cards.get(id), card.id);
     assert(after.step === 1 && after.attempts.length === 1, `carte réussie → prochaine échéance ${after.due} (J+3)`);
