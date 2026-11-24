@@ -10,14 +10,15 @@ sur une erreur (désactivables avec le réglage Sons).
 
 - **Validation d’un chapitre** : tous ses niveaux validés (le 7a, « rejouer de tête », est un entraînement non noté).
   Les niveaux d’un chapitre se débloquent aussi dans l’ordre.
-- **Ch. 1-2** : chaque niveau (1a … 1e, 2c … 2e) a son épreuve de 30 s (au moins 25 bonnes réponses, au plus 1 erreur),
-  à réussir 3 fois (pas forcément de suite).
+- **Ch. 1-2** : chaque niveau (1a … 1e, 2c … 2e) a son épreuve de 30 s, à réussir 3 fois (pas forcément de suite) :
+  au moins 25 bonnes réponses et au plus 1 erreur ; pour 1e et 2e (nommer une case au clavier, deux touches par réponse),
+  au moins 20 bonnes réponses et au plus 1 erreur.
 - **Ch. 3-5** : 20 questions, au moins 19 justes, temps médian ≤ 3 s par question. Pour une réponse à plusieurs cases
   (« cite les cases entre… », « toutes les cases du cavalier »), le temps compte **par case donnée** (temps ÷ nombre de cases).
-- **Ch. 6** : 10 questions à la longueur visée, au moins 9 justes ; longueurs 2, 4, 6 puis 8 **demi-coups**
-  (« 1.e4 e5 » = 2 demi-coups), un niveau par longueur.
+- **Ch. 6** : 10 questions à la longueur visée, au moins 9 justes ; longueurs 2, 4, 6, 8, puis 12 et 16 **demi-coups**
+  (« 1.e4 e5 » = 2 demi-coups ; 16 demi-coups = 8 coups complets), un niveau par longueur.
 - **Ch. 7** : partie à l’aveugle finie avec au plus 3 coups d’œil ; finie = mat, pat ou nulle, ou abandon après au moins
-  20 de mes coups (pour qu’un abandon immédiat ne valide pas le chapitre). Contre Maia au niveau choisi ; sans effet sur mon niveau.
+  30 de mes coups (pour qu’un abandon rapide ne valide pas le chapitre). Contre Maia au niveau choisi ; sans effet sur mon niveau.
 - **Révisions** des chapitres validés : J+1, J+3, J+7, puis tous les 7 jours. Une révision = une épreuve d’un
   niveau du chapitre, à tour de rôle (chapitre 7 : rejouer une partie courte avec au plus 2 erreurs et
   1 coup d’œil). Révision ratée → chapitre « à revoir », de nouveau dû le lendemain ; une fois réussie,
@@ -58,7 +59,7 @@ Coupe l’échiquier en deux : colonnes a-d à gauche (côté de la dame), e-h �
   - Exemples de questions : « Touche la case d6 » → d6 ; « Touche la case d7 » → d7 ; « Touche la case c3 » → c3
 - **1d. Trouver une case (coordonnées cachées)** — Une case est demandée : touche-la. Les coordonnées sont cachées. _Épreuve : 30 s, au moins 25 bonnes réponses et au plus 1 erreur ; à réussir 3 fois._
   - Exemples de questions : « Touche la case c1 » → c1 ; « Touche la case f1 » → f1 ; « Touche la case a6 » → a6
-- **1e. Nommer une case** — Une case est surlignée : tape sa colonne (a-h) puis sa rangée (1-8). _Épreuve : 30 s, au moins 25 bonnes réponses et au plus 1 erreur ; à réussir 3 fois._
+- **1e. Nommer une case** — Une case est surlignée : tape sa colonne (a-h) puis sa rangée (1-8). _Épreuve : 30 s, au moins 20 bonnes réponses et au plus 1 erreur ; à réussir 3 fois._
   - Exemples de questions : « Quelle est cette case ? » → a4 ; « Quelle est cette case ? » → h1 ; « Quelle est cette case ? » → e2
 
 ## Chapitre 2. Vu des Noirs
@@ -86,7 +87,7 @@ Garde un point fixe : les rois sont toujours sur la colonne e, et chaque dame co
   - Exemples de questions : « Touche la case f3 » → f3 ; « Touche la case c4 » → c4 ; « Touche la case d8 » → d8
 - **2d. Trouver une case (coordonnées cachées)** — Une case est demandée : touche-la. Échiquier vu des Noirs, coordonnées cachées. _Épreuve : 30 s, au moins 25 bonnes réponses et au plus 1 erreur ; à réussir 3 fois._
   - Exemples de questions : « Touche la case e5 » → e5 ; « Touche la case a1 » → a1 ; « Touche la case f2 » → f2
-- **2e. Nommer une case** — Une case est surlignée, échiquier vu des Noirs : tape sa colonne puis sa rangée. _Épreuve : 30 s, au moins 25 bonnes réponses et au plus 1 erreur ; à réussir 3 fois._
+- **2e. Nommer une case** — Une case est surlignée, échiquier vu des Noirs : tape sa colonne puis sa rangée. _Épreuve : 30 s, au moins 20 bonnes réponses et au plus 1 erreur ; à réussir 3 fois._
   - Exemples de questions : « Quelle est cette case ? » → b3 ; « Quelle est cette case ? » → c7 ; « Quelle est cette case ? » → f8
 
 ## Chapitre 3. Couleur des cases
@@ -171,7 +172,7 @@ Le cavalier change de couleur de case à chaque coup : entre deux cases de même
 
 1. Pars de la position de départ et joue chaque coup dans ta tête, dans l’ordre. Demande-toi d’où vient chaque pièce : ♘f3 vient de g1, ♗c4 de f1, ♘c6 de b8.
 2. Une prise (x) fait disparaître la pièce qui était sur la case d’arrivée.
-3. La longueur se compte en demi-coups : « 1.e4 e5 » fait 2 demi-coups. On monte de 2 à 4, 6, puis 8 demi-coups.
+3. La longueur se compte en demi-coups : « 1.e4 e5 » fait 2 demi-coups. On monte de 2 à 4, 6, 8, puis 12 et 16 demi-coups (8 coups complets).
 
 ### Astuce
 
@@ -192,6 +193,10 @@ Garde une image simple : les pions du centre, les pièces sorties et la dernièr
   - Exemples de questions : « Après 1.e4 e5 2.♘f3 ♘c6 3.♗c4 ♗c5 : le pion blanc en c2 est-il défendu ? » → Oui ; « Après 1.e4 e5 2.♘f3 ♘c6 3.d4 exd4 : quelle pièce est en d8 ? » → Dame noire ; « Après 1.c4 e5 2.♘c3 ♘c6 3.g3 g6 : quelle pièce est en f8 ? » → Fou noir
 - **6-8. Visualisation : 8 demi-coups** — Pareil avec 8 demi-coups. _Épreuve : 10 questions, au moins 9 justes._
   - Exemples de questions : « Après 1.e4 d5 2.exd5 ♕xd5 3.♘c3 ♕a5 4.♘a4 ♔d8 : le pion noir en a7 est-il défendu ? » → Oui ; « Après 1.e4 c5 2.♘f3 d6 3.d4 cxd4 4.♘c3 dxc3 : le cavalier blanc en f3 est-il défendu ? » → Oui ; « Après 1.d4 d5 2.c4 e6 3.♘c3 ♘f6 4.♗g5 ♗e7 : quelle pièce est en f8 ? » → Aucune
+- **6-12. Visualisation : 12 demi-coups** — Pareil avec 12 demi-coups (6 coups complets). _Épreuve : 10 questions, au moins 9 justes._
+  - Exemples de questions : « Après 1.e4 e5 2.♘f3 ♘c6 3.♗c4 ♗c5 4.c3 ♘f6 5.d3 d6 6.O-O O-O : quelle pièce est en g8 ? » → Roi noir ; « Après 1.e4 c5 2.♘f3 ♘c6 3.d4 cxd4 4.♘xd4 g6 5.♘c3 ♗g7 6.a3 ♔f8 : le pion blanc en e4 est-il défendu ? » → Oui ; « Après 1.e4 c6 2.d4 d5 3.♘c3 dxe4 4.♘xe4 ♗f5 5.♘g3 ♗g6 6.♗a6 ♗h5 : le pion blanc en d4 est-il défendu ? » → Oui
+- **6-16. Visualisation : 16 demi-coups** — Pareil avec 16 demi-coups (8 coups complets). _Épreuve : 10 questions, au moins 9 justes._
+  - Exemples de questions : « Après 1.e4 c5 2.♘f3 ♘c6 3.d4 cxd4 4.♘xd4 g6 5.♘c3 ♗g7 6.♗e3 ♘f6 7.♗c4 O-O 8.♘f5 ♕e8 : quelle pièce est en e1 ? » → Roi blanc ; « Après 1.d4 ♘f6 2.c4 e6 3.♘c3 ♗b4 4.e3 O-O 5.♗d3 d5 6.♘f3 c5 7.O-O ♘c6 8.a3 ♗xc3 : quelle pièce est en c4 ? » → Pion blanc ; « Après 1.e4 e6 2.d4 d5 3.♘c3 ♘f6 4.♗g5 ♗e7 5.e5 ♘fd7 6.♗xe7 ♕xe7 7.f4 a6 8.♘f3 c5 : quelle pièce est en e4 ? » → Aucune
 
 ## Chapitre 7. Aveugle
 
@@ -214,7 +219,7 @@ Après chaque coup adverse, demande-toi : quelle pièce a bougé, d’où, et qu
 ### Exercices
 
 - **7a. Rejouer de tête des parties courtes** — Rejoue de tête une partie courte célèbre (le coup du berger, le mat de Légal, la partie de l’Opéra…). 
-- **7b. Partie à l’aveugle contre Maia** — Partie complète contre Maia, pièces cachées. _Épreuve : finir une partie à l’aveugle avec au plus 3 coups d’œil (un abandon ne compte qu’après 20 coups joués)._
+- **7b. Partie à l’aveugle contre Maia** — Partie complète contre Maia, pièces cachées. _Épreuve : finir une partie à l’aveugle avec au plus 3 coups d’œil (un abandon ne compte qu’après 30 coups joués)._
 
 ## Parties courtes à rejouer (7a)
 

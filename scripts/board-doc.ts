@@ -19,14 +19,15 @@ sur une erreur (désactivables avec le réglage Sons).
 
 - **Validation d’un chapitre** : tous ses niveaux validés (le 7a, « rejouer de tête », est un entraînement non noté).
   Les niveaux d’un chapitre se débloquent aussi dans l’ordre.
-- **Ch. 1-2** : chaque niveau (1a … 1e, 2c … 2e) a son épreuve de 30 s (au moins 25 bonnes réponses, au plus 1 erreur),
-  à réussir 3 fois (pas forcément de suite).
+- **Ch. 1-2** : chaque niveau (1a … 1e, 2c … 2e) a son épreuve de 30 s, à réussir 3 fois (pas forcément de suite) :
+  au moins 25 bonnes réponses et au plus 1 erreur ; pour 1e et 2e (nommer une case au clavier, deux touches par réponse),
+  au moins 20 bonnes réponses et au plus 1 erreur.
 - **Ch. 3-5** : 20 questions, au moins 19 justes, temps médian ≤ 3 s par question. Pour une réponse à plusieurs cases
   (« cite les cases entre… », « toutes les cases du cavalier »), le temps compte **par case donnée** (temps ÷ nombre de cases).
-- **Ch. 6** : 10 questions à la longueur visée, au moins 9 justes ; longueurs 2, 4, 6 puis 8 **demi-coups**
-  (« 1.e4 e5 » = 2 demi-coups), un niveau par longueur.
+- **Ch. 6** : 10 questions à la longueur visée, au moins 9 justes ; longueurs 2, 4, 6, 8, puis 12 et 16 **demi-coups**
+  (« 1.e4 e5 » = 2 demi-coups ; 16 demi-coups = 8 coups complets), un niveau par longueur.
 - **Ch. 7** : partie à l’aveugle finie avec au plus 3 coups d’œil ; finie = mat, pat ou nulle, ou abandon après au moins
-  20 de mes coups (pour qu’un abandon immédiat ne valide pas le chapitre). Contre Maia au niveau choisi ; sans effet sur mon niveau.
+  30 de mes coups (pour qu’un abandon rapide ne valide pas le chapitre). Contre Maia au niveau choisi ; sans effet sur mon niveau.
 - **Révisions** des chapitres validés : J+${REVIEW_DAYS.join(', J+')}, puis tous les 7 jours. Une révision = une épreuve d’un
   niveau du chapitre, à tour de rôle (chapitre 7 : rejouer une partie courte avec au plus ${REPLAY_REVIEW.maxErrors} erreurs et
   ${REPLAY_REVIEW.maxPeeks} coup d’œil). Révision ratée → chapitre « à revoir », de nouveau dû le lendemain ; une fois réussie,

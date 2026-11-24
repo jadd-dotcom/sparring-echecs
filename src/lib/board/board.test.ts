@@ -93,7 +93,7 @@ describe('questions exactes', () => {
     if (g1) expect([...(g1.expected as string[])].sort()).toEqual(['e2', 'f3', 'h3']);
   });
   it('6 : visualisation (suite légale de la bonne longueur ; réponse = position réelle)', () => {
-    for (const id of ['6-2', '6-4', '6-6', '6-8']) for (const q of many(id, 80)) {
+    for (const id of ['6-2', '6-4', '6-6', '6-8', '6-12', '6-16']) for (const q of many(id, 80)) {
       const plies = L(id).plies!;
       expect(q.moves).toHaveLength(plies);
       const c = new Chess();
@@ -110,16 +110,25 @@ describe('questions exactes', () => {
     }
   });
   it('débuts et parties courtes : coups légaux ; parties courtes finies par un mat', () => {
-    for (const l of OPENING_LINES) { const c = new Chess(); for (const m of l) c.move(m); expect(l.length).toBeGreaterThanOrEqual(8); }
+    for (const l of OPENING_LINES) { const c = new Chess(); for (const m of l) c.move(m); expect(l.length).toBe(16); }
     for (const g of SHORT_GAMES) { const c = new Chess(); for (const m of g.moves) c.move(m); expect(c.isCheckmate(), g.name).toBe(true); }
     const r = seeded(3);
     for (let i = 0; i < 200; i++) expect(visuSequence(r, 8)).toHaveLength(8);
+    for (let i = 0; i < 200; i++) expect(visuSequence(r, 16)).toHaveLength(16);
+    expect(LEVELS.filter((l) => l.chapter === 6).map((l) => l.plies)).toEqual([2, 4, 6, 8, 12, 16]);
   });
 });
 
 describe('critères de maîtrise', () => {
   const t30 = L('1a').test, q20 = L('3').test, q10 = L('6-4').test, blind = L('7b').test;
-  it('ch. 1-2 : 30 s, ≥ 25 bonnes réponses et ≤ 1 erreur', () => {
+  it('ch. 1-2 : 30 s, ≥ 25 bonnes réponses et ≤ 1 erreur (1e et 2e, nommer une case : ≥ 20)', () => {
+    for (const id of ['1a', '1b', '1c', '1d', '2c', '2d']) expect(L(id).test).toMatchObject({ type: 'timed', seconds: 30, minCorrect: 25, maxErrors: 1, passesNeeded: 3 });
+    for (const id of ['1e', '2e']) {
+      expect(L(id).test).toMatchObject({ type: 'timed', seconds: 30, minCorrect: 20, maxErrors: 1, passesNeeded: 3 });
+      expect(testPassed(L(id).test, { correct: 20, errors: 1 })).toBe(true);
+      expect(testPassed(L(id).test, { correct: 19, errors: 0 })).toBe(false);
+      expect(testPassed(L(id).test, { correct: 24, errors: 2 })).toBe(false);
+    }
     expect(testPassed(t30, { correct: 25, errors: 1 })).toBe(true);
     expect(testPassed(t30, { correct: 24, errors: 0 })).toBe(false);
     expect(testPassed(t30, { correct: 30, errors: 2 })).toBe(false);
@@ -137,11 +146,12 @@ describe('critères de maîtrise', () => {
     expect(testPassed(q10, { correct: 9, total: 10, timesMs: Array(10).fill(60000) })).toBe(true);
     expect(testPassed(q10, { correct: 8, total: 10, timesMs: [] })).toBe(false);
   });
-  it('ch. 7 : partie à l’aveugle finie avec ≤ 3 coups d’œil (abandon : au moins 20 coups joués)', () => {
+  it('ch. 7 : partie à l’aveugle finie avec ≤ 3 coups d’œil (abandon : au moins 30 coups joués)', () => {
     expect(testPassed(blind, { finished: true, reason: 'mate', myMoves: 15, peeks: 3 })).toBe(true);
     expect(testPassed(blind, { finished: true, reason: 'mate', myMoves: 15, peeks: 4 })).toBe(false);
     expect(testPassed(blind, { finished: true, reason: 'resign', myMoves: 5, peeks: 0 })).toBe(false);
-    expect(testPassed(blind, { finished: true, reason: 'resign', myMoves: 20, peeks: 0 })).toBe(true);
+    expect(testPassed(blind, { finished: true, reason: 'resign', myMoves: 29, peeks: 0 })).toBe(false);
+    expect(testPassed(blind, { finished: true, reason: 'resign', myMoves: 30, peeks: 0 })).toBe(true);
     expect(testPassed(blind, { finished: false, reason: 'mate', myMoves: 30, peeks: 0 })).toBe(false);
   });
   it('validation : 3 réussites pour un niveau des ch. 1-2, une seule ensuite ; déblocage dans l’ordre', () => {

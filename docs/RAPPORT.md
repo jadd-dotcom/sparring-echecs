@@ -261,3 +261,9 @@
 - **Tests** : `src/lib/board/*.test.ts` (questions vérifiées par des calculs indépendants et chess.js : cases, couleurs,
   diagonales, distances du cavalier ; critères ; révisions ; tirage adaptatif) et `tests/board.cjs` (parcours complet, dont une
   vraie partie à l'aveugle gagnée contre Maia avec 1 coup d'œil).
+
+## Maîtrise de l'échiquier : ajustements (24/11)
+- Ch. 6 : deux niveaux de plus, 12 et 16 demi-coups (8 coups complets) ; débuts courants allongés à 16 demi-coups.
+- Ch. 7 : un abandon ne compte comme partie finie qu'après 30 de mes coups (au lieu de 20).
+- 1e et 2e (nommer une case au clavier) : épreuve à 20 bonnes réponses en 30 s, au plus 1 erreur ; les autres niveaux
+  des ch. 1-2 restent à 25.

@@ -78,6 +78,8 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByText(/Une case se nomme toujours colonne puis rangée/).waitFor();
   assert(await p.getByRole('heading', { name: 'Astuce' }).count() === 1, 'leçon : méthode + astuce + exemples');
   assert(await p.locator('[data-level="1b"]').getByRole('button', { name: 'Épreuve' }).isDisabled(), '1b verrouillé tant que 1a n’est pas validé');
+  assert(/au moins 20 bonnes réponses/.test(await p.locator('[data-level="1e"]').innerText()) && /au moins 25 bonnes réponses/.test(await p.locator('[data-level="1d"]').innerText()),
+    'consignes : 1e à 20 bonnes réponses en 30 s, 1d à 25');
   await p.screenshot({ path: OUT + '/b-2-lecon.png', fullPage: true });
 
   // --- 1a : 3 épreuves de 30 s (≥ 25 bonnes, ≤ 1 erreur) ; une avec 1 erreur volontaire
@@ -185,10 +187,18 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(prog.chapters[3].toReview === true, 'chapitre 3 marqué à revoir, de nouveau dû demain');
 
   // --- 7a : rejouer de tête le mat du lion
-  prog.levels = { ...prog.levels, ...lv(['6-2', '6-4', '6-6', '6-8']) };
-  prog.chapters[6] = { validatedAt: Date.now(), step: 0, due: '2099-01-01', toReview: false };
+  // Chapitre 6 : 6-2 … 6-12 injectés, puis la vraie épreuve de 16 demi-coups (8 coups complets)
+  prog.levels = { ...prog.levels, ...lv(['6-2', '6-4', '6-6', '6-8', '6-12']) };
   prog.chapters[3] = { ...prog.chapters[3], toReview: false, due: '2099-01-01' };
   await setMeta('boardProgress', prog);
+  await p.goto(URL + '#/stats'); await p.goto(URL + '#/board/ex/6-16/test');
+  await p.getByRole('button', { name: /Commencer l’épreuve/ }).tap();
+  const prompt16 = await p.getByTestId('prompt').innerText();
+  assert(/ 8\.\S+ \S+ :/.test(prompt16) && !/ 9\./.test(prompt16), '6-16 : suite de 8 coups complets — ' + prompt16);
+  r = await runTest();
+  assert(/Épreuve réussie/.test(r) && /10\/10 justes/.test(r) && /Niveau validé/.test(r), '6-16 : 10 questions justes → validé : ' + r.replace(/\s+/g, ' '));
+  prog = await meta('boardProgress');
+  assert(prog.chapters[6] && prog.levels['6-16'].validated, 'chapitre 6 validé (2, 4, 6, 8, 12 et 16 demi-coups)');
   await p.goto(URL + '#/stats'); await p.goto(URL + '#/board/replay');
   await p.getByRole('button', { name: /Le mat du lion/ }).tap();
   for (let k = 0; k < 4; k++) {

@@ -85,7 +85,7 @@ export const BOARD_LESSONS: BoardLesson[] = [
     method: [
       'Pars de la position de départ et joue chaque coup dans ta tête, dans l’ordre. Demande-toi d’où vient chaque pièce : ♘f3 vient de g1, ♗c4 de f1, ♘c6 de b8.',
       'Une prise (x) fait disparaître la pièce qui était sur la case d’arrivée.',
-      'La longueur se compte en demi-coups : « 1.e4 e5 » fait 2 demi-coups. On monte de 2 à 4, 6, puis 8 demi-coups.',
+      'La longueur se compte en demi-coups : « 1.e4 e5 » fait 2 demi-coups. On monte de 2 à 4, 6, 8, puis 12 et 16 demi-coups (8 coups complets).',
     ],
     tip: 'Garde une image simple : les pions du centre, les pièces sorties et la dernière pièce jouée. Pour « est-elle défendue ? », cherche une pièce de son camp qui touche cette case : un pion défend en diagonale vers l’avant, un cavalier en « L », la dame et les fous en diagonale, la dame et les tours en ligne droite, le roi sur les cases autour de lui.',
     examples: ['Après 1.e4 e5 2.♘f3 ♘c6 : en c6, un cavalier noir ; en g1, plus rien.', 'Après 1.e4 e5 2.♘f3 ♘c6 3.♗b5 : le fou en b5 n’est pas défendu.'],
@@ -94,6 +94,8 @@ export const BOARD_LESSONS: BoardLesson[] = [
       '6-4': 'Pareil avec 4 demi-coups.',
       '6-6': 'Pareil avec 6 demi-coups.',
       '6-8': 'Pareil avec 8 demi-coups.',
+      '6-12': 'Pareil avec 12 demi-coups (6 coups complets).',
+      '6-16': 'Pareil avec 16 demi-coups (8 coups complets).',
     },
   },
   {
