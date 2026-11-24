@@ -42,7 +42,10 @@ const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{2653}\u{2660}-\u{26FF}\u{2700}-\u
   await p.goto(URL + '#/mates/kq/lesson');
   await p.locator('[data-square="e1"], .piece-img').first().waitFor();
   const kingSquare = await p.evaluate(() => { const i = document.querySelector('.piece-img'); return i?.getAttribute('src'); });
-  assert(/pieces\/celtic\/[wb][KQRBNP]\.svg$/.test(kingSquare), 'pièces par défaut : Celtic (' + kingSquare + ')');
+  assert(/pieces\/relief\/[wb][KQRBNP]\.svg$/.test(kingSquare), 'pièces par défaut : Relief (' + kingSquare + ')');
+  const names = await (async () => { await p.goto(URL + '#/settings'); return p.getByRole('radiogroup', { name: 'Pièces' }).locator('label').allInnerTexts(); })();
+  assert(names.length === 3 && /Relief/.test(names[0]) && /Merida/.test(names[1]) && /Maestro/.test(names[2]) && !names.some((n) => /Celtic|Cburnett/.test(n)),
+    'Réglages : 3 jeux, Relief, Merida, Maestro (' + names.map((n) => n.split('\n')[0]).join(', ') + ')');
   await p.goto(URL + '#/settings');
   await p.getByRole('radiogroup', { name: 'Pièces' }).getByText('Merida').tap();
   await p.goto(URL + '#/mates/kq/lesson');
@@ -53,6 +56,18 @@ const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{2653}\u{2660}-\u{26FF}\u{2700}-\u
   assert(ok, 'fichier de pièce servi par l’appli');
   void pieceSrc;
   await p.screenshot({ path: OUT + '/a-1-merida.png' });
+  await p.goto(URL + '#/settings');
+  await p.getByRole('radiogroup', { name: 'Pièces' }).getByText('Maestro').tap();
+  await p.goto(URL + '#/mates/kq/lesson');
+  await p.locator('.piece-img').first().waitFor();
+  const src3 = await p.evaluate(() => document.querySelector('.piece-img').getAttribute('src'));
+  assert(/pieces\/maestro\//.test(src3) && await p.evaluate(async (u) => (await fetch(u)).ok, src3), 'Réglages → Maestro : pièces changées et servies (' + src3 + ')');
+  // Ancien réglage « celtic » : on retombe sur Relief.
+  await p.evaluate(() => window.__db.meta.put({ key: 'pieces', value: 'celtic' }));
+  await p.reload();
+  await p.goto(URL + '#/mates/kq/lesson');
+  await p.locator('.piece-img').first().waitFor();
+  assert(/pieces\/relief\//.test(await p.evaluate(() => document.querySelector('.piece-img').getAttribute('src'))), 'ancien réglage Celtic → Relief');
   await ctx.close();
 
   // 3. Zones tactiles ≥ 48 px et aucun emoji, sur les écrans principaux (iPhone et iPad)

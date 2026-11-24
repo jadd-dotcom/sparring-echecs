@@ -82,7 +82,7 @@ async function overlaps(p, set) {
     p.on('pageerror', (e) => errors.push(e.message));
     await p.goto(URL);
     await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor();
-    for (const set of ['celtic', 'merida', 'cburnett']) {
+    for (const set of ['relief', 'merida', 'maestro']) {
       await p.evaluate((s) => window.__db.meta.put({ key: 'pieces', value: s }), set);
       await p.reload();   // le jeu de pièces est lu au démarrage
       await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor().catch(() => {});

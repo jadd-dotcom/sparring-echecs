@@ -226,7 +226,6 @@ table.classes td:first-child, table.classes th:first-child { text-align: left; }
 [data-square="a8"] span[style*="bottom:"], [data-square="h1"] span[style*="bottom:"] { transform: translate(-2px, -3px); }
 [data-square="a8"] .piece-img, [data-square="h1"] .piece-img { --corner: 6px; }
 .piece-img[data-set="merida"] { --reserve: 9px; }     /* pièces qui remplissent davantage leur cadre */
-.piece-img[data-set="cburnett"] { --reserve: 6px; }   /* pièces plus fines : moins de marge nécessaire */
 
 /* Onglets (segmenté) */
 .tabs { background: var(--surface-2); padding: 5px; border-radius: 14px; margin-bottom: 12px; gap: 6px; }

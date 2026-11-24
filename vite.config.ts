@@ -33,6 +33,8 @@ export default defineConfig({
       workbox: {
         // Tout est précaché, y compris le modèle Maia (~22 Mo) et les .wasm → hors ligne complet.
         globPatterns: ['**/*.{js,mjs,css,html,svg,png,wasm,onnx,webmanifest,dtm,woff2}'],
+        // public/pieces/cburnett ne sert que de source au jeu Relief (scripts/make-relief.py) : pas de précache.
+        globIgnores: ['**/pieces/cburnett/**'],
         maximumFileSizeToCacheInBytes: 40 * 1024 * 1024,
         navigateFallback: 'index.html',
       },
