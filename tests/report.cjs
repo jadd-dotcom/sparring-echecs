@@ -49,6 +49,7 @@ const THOUGHTS = [
         break;
       }
       const c = new Chess(); g.uci.forEach((u) => c.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] }));
+      if (c.isGameOver()) break; // partie finie (mat, pat) : l'écran de fin arrive
       const u = await p.evaluate(([f, h, r]) => window.__maiaPick(f, h, 600, r), [c.fen(), g.uci, g.botElo]);
       await sq(u.slice(0, 2)).tap(); await sq(u.slice(2, 4)).tap();
       if (u.length === 5) await p.getByRole('button', { name: PROMO[u[4]] }).tap();
@@ -88,19 +89,19 @@ const THOUGHTS = [
     for (let k = 0; k < 2; k++) {
       await p.evaluate((id) => window.__db.cards.update(id, { due: '2000-01-01' }), card.id);
       await p.goto(URL); await p.goto(URL + '#/revise');
-      await p.getByText('Trouve le bon coup').waitFor();
+      await p.getByTestId('instruction').waitFor();
       await sq(wrong.slice(0, 2)).tap(); await sq(wrong.slice(2, 4)).tap();
       if (wrong.length === 5) await p.getByRole('button', { name: PROMO[wrong[4]] }).tap();
-      await p.getByText(/Le bon coup était/).waitFor({ timeout: 30000 });
+      await p.getByTestId('try-msg').waitFor({ timeout: 30000 });
     }
     if (mistakeCards[1]) {
       const c2 = mistakeCards[1];
       await p.evaluate((id) => window.__db.cards.update(id, { due: '2000-01-01' }), c2.id);
       await p.goto(URL); await p.goto(URL + '#/revise');
-      await p.getByText('Trouve le bon coup').waitFor();
+      await p.getByTestId('instruction').waitFor();
       await sq(c2.bestUci.slice(0, 2)).tap(); await sq(c2.bestUci.slice(2, 4)).tap();
       if (c2.bestUci.length === 5) await p.getByRole('button', { name: PROMO[c2.bestUci[4]] }).tap();
-      await p.getByText(/Juste !/).waitFor({ timeout: 30000 });
+      await p.getByText(/Bien joué/).waitFor({ timeout: 30000 });
     }
     const after = await p.evaluate((id) => window.__db.cards.get(id), card.id);
     assert(after.attempts.filter((t) => !t.ok).length === 2, 'révisions faites : 1 carte ratée 2 fois');

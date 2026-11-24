@@ -4,18 +4,22 @@ import type { Color } from '../repertoire';
 import type { Eval } from '../winpct';
 import { balance, flipTurn, formatPv, opponentGain, playPv } from './facts';
 
-export type Motif = 'mat-rate' | 'mat-ouvert' | 'menace-ignoree' | 'piece-en-prise' | 'autre';
+export type Motif = 'mat-rate' | 'mat-ouvert' | 'menace-ignoree' | 'piece-en-prise' | 'gain-rate' | 'autre';
 
 /** Ordre de priorité (le premier qui s'applique est le motif principal). */
-export const MOTIF_ORDER: Motif[] = ['mat-rate', 'mat-ouvert', 'menace-ignoree', 'piece-en-prise', 'autre'];
+export const MOTIF_ORDER: Motif[] = ['mat-rate', 'mat-ouvert', 'menace-ignoree', 'piece-en-prise', 'gain-rate', 'autre'];
 
 export const MOTIF_LABEL: Record<Motif, string> = {
   'mat-rate': 'Mat raté',
   'mat-ouvert': 'Mat ouvert',
   'menace-ignoree': 'Menace ignorée',
   'piece-en-prise': 'Pièce laissée en prise',
+  'gain-rate': 'Gain raté',
   autre: 'Autre',
 };
+
+/** Plies de la suite (mon coup, sa réponse, mon coup suivant) sur lesquels on mesure un gain de matériel. */
+export const GAIN_PLIES = 3;
 
 export const MATE_HORIZON = 3;
 export const GAIN_THRESHOLD = 2;
@@ -33,6 +37,12 @@ export interface MotifFacts {
   threat: { mate: number | null; gain2: number } | null;
   /** La menace marche encore après mon coup. */
   threatStillWorks: boolean;
+  /** Gain de matériel pour moi sur les 3 premiers demi-coups de la meilleure suite (mon coup, sa réponse, mon coup). */
+  bestGain3?: number;
+  /** Même mesure après le coup que j'ai joué (mon coup puis la suite de Stockfish). */
+  playedGain3?: number;
+  /** J'avais un mat forcé (de n'importe quelle longueur) avant mon coup. */
+  mateForMeAny?: boolean;
 }
 
 export function detectMotifs(f: MotifFacts): { motifs: Motif[]; motif: Motif } {
@@ -42,6 +52,11 @@ export function detectMotifs(f: MotifFacts): { motifs: Motif[]; motif: Motif } {
   const threatened = !!f.threat && (f.threat.mate !== null || f.threat.gain2 >= GAIN_THRESHOLD);
   if (threatened && f.threatStillWorks) m.push('menace-ignoree');
   if (f.refutationGain2 >= GAIN_THRESHOLD) m.push('piece-en-prise');
+  // Gain raté : je pouvais mater, ou gagner au moins 2 points de matériel, et mon coup ne le fait pas
+  // (il ne mate pas / il gagne au moins 2 points de moins que la meilleure suite).
+  const best = f.bestGain3 ?? 0, played = f.playedGain3 ?? 0;
+  const missed = f.mateForMeAny ? !f.playedKeepsMate : best >= GAIN_THRESHOLD && best - played >= GAIN_THRESHOLD;
+  if (missed) m.push('gain-rate');
   const motifs = m.length ? m : (['autre'] as Motif[]);
   return { motifs, motif: MOTIF_ORDER.find((x) => motifs.includes(x))! };
 }
@@ -53,7 +68,11 @@ export interface Engine {
   search(fen: string, depth: number): Promise<EngineResult>;
 }
 
+/** Version du calcul (2 : motif « Gain raté » ajouté) ; un détail plus ancien est recalculé quand on en a besoin. */
+export const DETAIL_VERSION = 2;
+
 export interface ErrorDetail {
+  v?: number;
   depth: number;
   bestLine: string;        // suite Stockfish après le meilleur coup (SAN, numérotée)
   bestMaterial: number;    // bilan matériel (moi − adversaire) au bout de la suite
@@ -123,7 +142,11 @@ export async function computeErrorDetail(engine: Engine, fenBefore: string, myUc
     }
   }
 
+  const base = balance(fenBefore, me);
   const facts: MotifFacts = {
+    bestGain3: balance(playPv(fenBefore, bestPv, GAIN_PLIES).fen, me) - base,
+    playedGain3: balance(playPv(fenBefore, [myUci, ...refutation.pv], GAIN_PLIES).fen, me) - base,
+    mateForMeAny: 'mate' in best.score && best.score.mate > 0,
     mateForMeBefore: mateIn(best.score),
     playedKeepsMate,
     mateAgainstMeAfter: after.isGameOver() ? null : mateIn(refutation.score),
@@ -132,6 +155,7 @@ export async function computeErrorDetail(engine: Engine, fenBefore: string, myUc
     threatStillWorks,
   };
   return {
+    v: DETAIL_VERSION,
     depth,
     bestLine: formatPv(fenBefore, bestPlay.san),
     bestMaterial: balance(bestPlay.fen, me),

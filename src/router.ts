@@ -8,6 +8,7 @@ export type Route =
   | { name: 'play'; opening?: string; unrated?: boolean }
   | { name: 'review'; id: number }
   | { name: 'revise'; opening?: string }
+  | { name: 'cards' }
   | { name: 'openings' }
   | { name: 'repertoire'; id: string }
   | { name: 'stats' }
@@ -38,7 +39,7 @@ export function parse(fullHash: string): Route {
     if (view === 'replay') return { name, view, ...(parts[2] ? { mode: parts[2] as BoardMode } : {}) };
     return { name };
   }
-  if (name === 'stats' || name === 'settings' || name === 'openings' || name === 'report') return { name };
+  if (name === 'stats' || name === 'settings' || name === 'openings' || name === 'report' || name === 'cards') return { name };
   return { name: 'home' };
 }
 

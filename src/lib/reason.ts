@@ -37,6 +37,12 @@ export function errorReason(d: ErrorDetail, fenBefore: string, myUci: string): s
       return `tu pouvais mater : ${fig(d.bestLine)}`;
     case 'mat-ouvert':
       return `il permet un mat : ${fig(d.refutation)}`;
+    case 'gain-rate': {
+      const b = tryMove(fenBefore, firstSan(d.bestLine));
+      if (b?.san.includes('#') || /#/.test(d.bestLine)) return `tu pouvais mater : ${fig(d.bestLine)}`;
+      if (b?.captured) return `tu pouvais prendre ${theP(b.captured, b.to)} avec ${fig(b.san)} (${fig(d.bestLine)})`;
+      return `tu pouvais gagner du matériel : ${fig(d.bestLine)}`;
+    }
     default:
       return null;
   }

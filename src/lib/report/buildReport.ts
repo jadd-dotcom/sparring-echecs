@@ -225,6 +225,7 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
     '  - *Mat ouvert* : après mon coup, l’adversaire a un mat en 3 coups ou moins.',
     '  - *Menace ignorée* : si l’adversaire avait pu rejouer avant mon coup, il gagnait au moins 2 points de matériel ou matait, et mon coup ne l’en empêche pas.',
     '  - *Pièce laissée en prise* : dans la réfutation de mon coup, l’adversaire gagne au moins 2 points en 2 demi-coups.',
+    '  - *Gain raté* : je pouvais gagner au moins 2 points de matériel (sur les 3 premiers demi-coups de la meilleure suite) ou mater, et mon coup ne le fait pas.',
     '  - *Autre* : aucun des cas précédents (souvent positionnel ou stratégique).',
     '',
   );

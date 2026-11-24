@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Chess } from 'chess.js';
 import { asciiBoard, balance, flipTurn, formatPv, material, opponentGain, phaseOf } from './facts';
-import { detectMotifs, type MotifFacts } from './motifs';
+import { detectMotifs, MOTIF_ORDER, type MotifFacts } from './motifs';
 
 const START = new Chess().fen();
 const fenOf = (sans: string[], start?: string) => { const c = new Chess(start); sans.forEach((s) => c.move(s)); return c.fen(); };
@@ -72,4 +72,21 @@ describe('règles des motifs (faits donnés)', () => {
     expect(detectMotifs({ ...base, mateForMeBefore: 2, playedKeepsMate: true }).motif).toBe('autre');
   });
   it('mat ouvert', () => expect(detectMotifs({ ...base, mateAgainstMeAfter: 1 }).motif).toBe('mat-ouvert'));
+});
+
+describe('motif « Gain raté » (faits donnés)', () => {
+  const base = { mateForMeBefore: null, playedKeepsMate: false, mateAgainstMeAfter: null, refutationGain2: 0, threat: null, threatStillWorks: false };
+  it('pièce gratuite non prise : gain raté', () => expect(detectMotifs({ ...base, bestGain3: 3, playedGain3: 0 }).motif).toBe('gain-rate'));
+  it('gain de 1 seul point : pas un gain raté', () => expect(detectMotifs({ ...base, bestGain3: 1, playedGain3: 0 }).motif).toBe('autre'));
+  it('gain pris (ou presque) : pas un gain raté', () => expect(detectMotifs({ ...base, bestGain3: 3, playedGain3: 2 }).motif).toBe('autre'));
+  it('dame ratée, tour prise : gain raté (4 points de moins)', () => expect(detectMotifs({ ...base, bestGain3: 9, playedGain3: 5 }).motif).toBe('gain-rate'));
+  it('mat long non joué : gain raté ; mat conservé : non', () => {
+    expect(detectMotifs({ ...base, mateForMeAny: true }).motif).toBe('gain-rate');
+    expect(detectMotifs({ ...base, mateForMeAny: true, playedKeepsMate: true }).motifs).toEqual(['autre']);
+  });
+  it('priorité : pièce en prise avant gain raté, gain raté avant « Autre »', () => {
+    expect(detectMotifs({ ...base, refutationGain2: 3, bestGain3: 3 }).motifs).toEqual(['piece-en-prise', 'gain-rate']);
+    expect(detectMotifs({ ...base, refutationGain2: 3, bestGain3: 3 }).motif).toBe('piece-en-prise');
+    expect(MOTIF_ORDER.slice(-2)).toEqual(['gain-rate', 'autre']);
+  });
 });

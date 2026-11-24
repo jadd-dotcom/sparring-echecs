@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { db, type Game } from '../db';
-import { addErrorDetails, analyseGame, isError } from '../analysis';
+import { addErrorDetails, analyseGame, isError, needsDetail } from '../analysis';
 import { buildReport, inaccuraciesToDetail, selectGames, type PeriodKind, type RepInfo } from '../lib/report/buildReport';
 import { repertoireInfoWith } from '../openings';
 import { getBoardProgress, getBoardStats } from '../boardService';
@@ -45,7 +45,7 @@ export default function Report() {
       if (!g.analysis) {
         if (stop.current) { skipped++; continue; }
         await analyseGame(g.id!, (d, t) => setProgress(`Analyse de la partie ${i + 1}/${games.length}… ${Math.round((100 * d) / t)} %`));
-      } else if (g.analysis.some((a) => isError(a) && !a.detail)) {
+      } else if (g.analysis.some((a) => isError(a) && needsDetail(a))) {
         const analysis = g.analysis.map((a) => ({ ...a }));
         await addErrorDetails(g, analysis, (d, t) => setProgress(`Détail des erreurs, partie ${i + 1}/${games.length}… ${d}/${t}`));
         await db.games.update(g.id!, { analysis });

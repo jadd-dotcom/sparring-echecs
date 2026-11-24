@@ -267,3 +267,24 @@
 - Ch. 7 : un abandon ne compte comme partie finie qu'après 30 de mes coups (au lieu de 20).
 - 1e et 2e (nommer une case au clavier) : épreuve à 20 bonnes réponses en 30 s, au plus 1 erreur ; les autres niveaux
   des ch. 1-2 restent à 25.
+
+## Révision « Trouve le bon coup » (24/11)
+- **En haut** : d'où vient la position (Chess.com / PGN importé / Maia, adversaire et classement, date, n° du coup) et la
+  consigne « Joue sur l'échiquier un meilleur coup que 4. ♔e2 ». Mon coup de la partie en **flèche rouge**, désactivable
+  (réglage mémorisé).
+- **Boutons** : « Indice » (1er appui : le motif en mots, ex. « Une pièce adverse n'est pas défendue : cherche une prise » ;
+  2e appui : la pièce à jouer est surlignée) ; « Solution » (après 2 essais ratés ou 2 indices) ; « Passer » (la carte
+  revient demain, sans essai compté). Plusieurs essais possibles ; réussie du premier coup (au plus l'indice en mots) → la
+  carte avance (J+3, J+7…), sinon elle revient demain.
+- **Après la réponse** : pourquoi le bon coup est bon (suite de Stockfish et bilan matériel) et pourquoi le mien l'était
+  moins (motif, comme dans la revue, + la suite qui le réfute). Le détail est repris de l'analyse de la partie, ou calculé
+  une fois puis enregistré.
+- **Toutes mes cartes** (accueil, écran de révision) : chaque position avec un petit échiquier (coup joué en rouge, meilleur en
+  vert), son origine, la prochaine révision, les essais ; « Voir la partie » ; « Supprimer » (avec confirmation). Les
+  positions du répertoire se gèrent depuis le répertoire.
+- **Nouveau motif « Gain raté »** : je pouvais gagner au moins 2 points de matériel (sur les 3 premiers demi-coups de la
+  meilleure suite) ou mater, et mon coup ne le fait pas. Dans la revue (« tu pouvais prendre le ♗f2 avec ♔xf2 … (gain
+  raté) »), les indices et le rapport pour Claude (ligne avant « Autre »). Les analyses déjà faites sont recalculées pour
+  les erreurs (version 2 du détail).
+- **Tests** : `src/lib/reviseText.test.ts`, motif dans `facts.test.ts` et `motifs.sf.test.ts` (vrai Stockfish sur
+  1.e4 e5 2.♘f3 ♗c5 3.♘c3 ♗xf2+ 4.♔e2), `tests/revise.cjs` (parcours complet sur iPad émulé).
