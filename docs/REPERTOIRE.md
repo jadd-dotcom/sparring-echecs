@@ -36,13 +36,13 @@ Coups les plus coûteux : d4 (31 cp, SF préfère Nf3), e4 (29 cp, SF préfère 
 
 ## Système …c5 / …g6 (Dragon accéléré) (Noirs)
 
-Coups adverses imposés : aucun · 29 lignes · 156 coups vérifiés · 270 s
+Coups adverses imposés : aucun · 41 lignes · 220 coups vérifiés · 412 s
 
 ```pgn
 [Event "Système …c5 / …g6 (Dragon accéléré)"]
 [Orientation "black"]
 
-1. e4 (1. d4 Nf6 2. c4 (2. Nf3 g6 3. Bf4 (3. c4 Bg7 4. Nc3 O-O 5. e4 d6 6. Be2 c5) 3... Bg7 4. e3 O-O 5. Be2 d6 6. h3 c5 7. c3 Qb6 8. Qb3 Be6 9. Qxb6 axb6 10. a3 cxd4 11. exd4 Nd5) (2. Bf4 g6 3. e3 Bg7 4. Nf3 O-O 5. Be2 d6 6. h3 c5 7. c3 Qb6) 2... g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. Be2 c5 7. O-O (7. d5 e6 8. O-O exd5 9. cxd5 Re8 10. Nd2 Na6) 7... cxd4 8. Nxd4 Nc6 9. Be3 Bd7 10. Qd2 Nxd4 11. Bxd4 Bc6) (1. c4 c5 2. Nc3 (2. Nf3 Nc6 3. Nc3 g6 4. g3 Bg7 5. Bg2 d6 6. O-O Nf6) 2... Nc6 3. g3 g6 4. Bg2 Bg7 5. Nf3 (5. e3 e5 6. Nge2 Nge7 7. O-O O-O 8. d3 d6 9. Rb1 a5 10. a3 Be6) 5... d6 6. O-O Nf6 7. d3 O-O 8. a3 a6 9. Rb1 Rb8 10. b4 cxb4 11. axb4 b5) (1. Nf3 c5 2. g3 (2. e4 Nc6 3. d4 cxd4 4. Nxd4 g6 5. Nc3 Bg7) (2. c4 Nc6 3. Nc3 g6 4. g3 Bg7 5. Bg2 d6) 2... g6 3. Bg2 Bg7 4. O-O Nc6 5. d3 d6 6. e4 e5 7. c3 Nge7 8. a3 O-O 9. b4 b6) 1... c5 2. Nf3 (2. Nc3 Nc6 3. g3 (3. f4 g6 4. Nf3 Bg7 5. Bc4 e6 6. O-O Nge7 7. d3 d5 8. Bb3 O-O) (3. Nf3 g6 4. d4 cxd4 5. Nxd4 Bg7 6. Be3 Nf6 7. Bc4 O-O) 3... g6 4. Bg2 Bg7 5. d3 d6 6. f4 e6 7. Nf3 Nge7 8. O-O O-O 9. Be3 Nd4 10. Qd2 Rb8) (2. c3 Nf6 3. e5 Nd5 4. d4 (4. Nf3 Nc6 5. d4 cxd4 6. cxd4 d6 7. Bc4 Nb6) 4... cxd4 5. Nf3 Nc6 6. cxd4 d6 7. Bc4 Nb6 8. Bb5 dxe5 9. Nxe5 Bd7 10. Nxd7 Qxd7) (2. d4 cxd4 3. c3 (3. Nf3 Nc6 4. Nxd4 g6 5. Nc3 Bg7 6. Be3 Nf6) 3... Nf6 4. e5 Nd5 5. Nf3 Nc6 6. cxd4 d6 7. Bc4 Nb6) (2. Bc4 Nc6 3. Nf3 g6 4. O-O Bg7 5. c3 e6) 2... Nc6 3. d4 (3. Bc4 g6 4. O-O (4. Nc3 Bg7 5. d3 e6 6. O-O Nge7 7. Bb3 O-O 8. Re1 d6 9. Ne2 Ne5 10. Nxe5 dxe5) 4... Bg7 5. c3 e6 6. d4 cxd4 7. cxd4 d5 8. exd5 exd5 9. Bb5 Ne7 10. Re1 O-O) (3. Bb5 g6 4. O-O (4. Bxc6 dxc6 5. d3 Bg7 6. h3 Nf6 7. Nc3 O-O 8. Be3 b6 9. Qd2 e5) 4... Bg7 5. Re1 e5 6. Bxc6 dxc6 7. d3 Qe7 8. Nbd2 Nf6 9. Nc4 Nd7) (3. Nc3 g6 4. d4 cxd4 5. Nxd4 Bg7 6. Be3 Nf6 7. Bc4 O-O 8. Bb3 d6) 3... cxd4 4. Nxd4 g6 5. Nc3 (5. c4 Bg7 6. Be3 Nf6 7. Nc3 Ng4 8. Qxg4 Nxd4 9. Qd1 Ne6 10. Rc1 Qa5 11. Qd2 d6) (5. Nxc6 bxc6 6. Bd3 (6. Qd4 Nf6 7. e5 Nd5 8. e6 f6 9. exd7+ Bxd7 10. Bc4 e5) 6... Bg7 7. O-O Nf6 8. Nc3 d6 9. h3 O-O 10. Be3 Rb8) 5... Bg7 6. Be3 Nf6 7. Bc4 (7. Be2 O-O 8. O-O d5 9. exd5 Nxd5 10. Nxd5 Qxd5 11. Bf3 Qc4 12. Nxc6 bxc6 13. b3 Qa6) 7... O-O 8. Bb3 d6 9. f3 Bd7 10. Qd2 Nxd4 11. Bxd4 b5 *
+1. e4 (1. d4 Nf6 2. c4 (2. Nf3 g6 3. Bf4 (3. c4 Bg7 4. Nc3 O-O 5. e4 d6 6. Be2 c5) 3... Bg7 4. e3 O-O 5. Be2 d6 6. h3 c5 7. c3 Qb6 8. Qb3 Be6 9. Qxb6 axb6 10. a3 cxd4 11. exd4 Nd5) (2. Bf4 g6 3. e3 Bg7 4. Nf3 O-O 5. Be2 d6 6. h3 c5 7. c3 Qb6) 2... g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. Be2 c5 7. O-O (7. d5 e6 8. O-O exd5 9. cxd5 Re8 10. Nd2 Na6) 7... cxd4 8. Nxd4 Nc6 9. Be3 Bd7 10. Qd2 Nxd4 11. Bxd4 Bc6) (1. c4 c5 2. Nc3 (2. Nf3 Nc6 3. Nc3 g6 4. g3 Bg7 5. Bg2 d6 6. O-O Nf6) 2... Nc6 3. g3 g6 4. Bg2 Bg7 5. Nf3 (5. e3 e5 6. Nge2 Nge7 7. O-O O-O 8. d3 d6 9. Rb1 a5 10. a3 Be6) 5... d6 6. O-O Nf6 7. d3 O-O 8. a3 a6 9. Rb1 Rb8 10. b4 cxb4 11. axb4 b5) (1. Nf3 c5 2. g3 (2. e4 Nc6 3. d4 cxd4 4. Nxd4 g6 5. Nc3 Bg7) (2. c4 Nc6 3. Nc3 g6 4. g3 Bg7 5. Bg2 d6) 2... g6 3. Bg2 Bg7 4. O-O Nc6 5. d3 d6 6. e4 e5 7. c3 Nge7 8. a3 O-O 9. b4 b6) (1. e3 c5 2. d4 g6 3. c4 Bg7 4. Nc3 Nf6 5. d5 d6 6. Nf3 O-O 7. Bd3 e6 8. h3 exd5) 1... c5 2. Nf3 (2. Nc3 Nc6 3. g3 (3. f4 g6 4. Nf3 Bg7 5. Bc4 e6 6. O-O Nge7 7. d3 d5 8. Bb3 O-O) (3. Nf3 g6 4. d4 cxd4 5. Nxd4 Bg7 6. Be3 Nf6 7. Bc4 O-O) (3. Bc4 g6 4. Qf3 (4. Nf3 Bg7 5. d3 Nf6 6. h3 d6 7. O-O O-O 8. Be3 e6) 4... Nf6 5. d3 Bg7 6. Nge2 d6 7. O-O O-O 8. Qg3 Bd7) (3. Bb5 g6 4. Bxc6 bxc6 5. f4 Bg7 6. d3 Nf6 7. Nf3 d6 8. h3 O-O) 3... g6 4. Bg2 Bg7 5. d3 d6 6. f4 e6 7. Nf3 Nge7 8. O-O O-O 9. Be3 Nd4 10. Qd2 Rb8) (2. c3 Nf6 3. e5 Nd5 4. d4 (4. Nf3 Nc6 5. d4 cxd4 6. cxd4 d6 7. Bc4 Nb6) 4... cxd4 5. Nf3 Nc6 6. cxd4 d6 7. Bc4 Nb6 8. Bb5 dxe5 9. Nxe5 Bd7 10. Nxd7 Qxd7) (2. d4 cxd4 3. c3 (3. Nf3 Nc6 4. Nxd4 g6 5. Nc3 Bg7 6. Be3 Nf6) 3... Nf6 4. e5 Nd5 5. Nf3 Nc6 6. cxd4 d6 7. Bc4 Nb6) (2. Bc4 Nc6 3. Nf3 (3. Qf3 Nf6 4. d3 g6 5. Nc3 Bg7 6. Nge2 d6 7. Qg3 O-O 8. O-O Bd7) (3. Qh5 e6 4. Nf3 Nf6 5. Qh4 d5 6. exd5 exd5 7. Bb5 Bd6 8. O-O O-O) 3... g6 4. O-O Bg7 5. c3 e6) (2. Qh5 d6 3. Bc4 g6 4. Qe2 (4. Qf3 Nf6 5. d3 Bg7 6. Ne2 Nc6 7. Nbc3 O-O 8. O-O e6) 4... Bg7 5. Nf3 Nc6 6. O-O Nf6 7. h3 O-O 8. d3 Rb8) (2. Qf3 Nc6 3. Bc4 Nf6 4. d3 g6 5. Nc3 Bg7 6. Nge2 d6 7. Qg3 O-O 8. O-O Bd7) (2. d3 g6 3. g3 Bg7 4. Bg2 Nc6 5. c3 Nf6 6. d4 d6 7. d5 Na5 8. Na3 O-O) (2. c4 Nc6 3. Nc3 g6 4. Nge2 Bg7 5. d3 d6 6. g3 Nf6 7. h3 O-O 8. Bg2 Bd7) 2... Nc6 3. d4 (3. Bc4 g6 4. O-O (4. Nc3 Bg7 5. d3 e6 6. O-O Nge7 7. Bb3 O-O 8. Re1 d6 9. Ne2 Ne5 10. Nxe5 dxe5) 4... Bg7 5. c3 e6 6. d4 cxd4 7. cxd4 d5 8. exd5 exd5 9. Bb5 Ne7 10. Re1 O-O) (3. Bb5 g6 4. O-O (4. Bxc6 dxc6 5. d3 Bg7 6. h3 Nf6 7. Nc3 O-O 8. Be3 b6 9. Qd2 e5) 4... Bg7 5. Re1 e5 6. Bxc6 dxc6 7. d3 Qe7 8. Nbd2 Nf6 9. Nc4 Nd7) (3. Nc3 g6 4. d4 cxd4 5. Nxd4 Bg7 6. Be3 Nf6 7. Bc4 O-O 8. Bb3 d6) (3. c3 Nf6 4. d4 cxd4 5. e5 Nd5 6. cxd4 d6 7. Bc4 Nb6 8. Bb3 dxe5) 3... cxd4 4. Nxd4 g6 5. Nc3 (5. c4 Bg7 6. Be3 Nf6 7. Nc3 Ng4 8. Qxg4 Nxd4 9. Qd1 Ne6 10. Rc1 Qa5 11. Qd2 d6) (5. Nxc6 bxc6 6. Bd3 (6. Qd4 Nf6 7. e5 Nd5 8. e6 f6 9. exd7+ Bxd7 10. Bc4 e5) 6... Bg7 7. O-O Nf6 8. Nc3 d6 9. h3 O-O 10. Be3 Rb8) 5... Bg7 6. Be3 Nf6 7. Bc4 (7. Be2 O-O 8. O-O d5 9. exd5 Nxd5 10. Nxd5 Qxd5 11. Bf3 Qc4 12. Nxc6 bxc6 13. b3 Qa6) 7... O-O 8. Bb3 d6 9. f3 Bd7 10. Qd2 Nxd4 11. Bxd4 b5 *
 ```
 
 | # | Ligne | Perte max (cp) | Résultat |
@@ -57,34 +57,38 @@ Coups adverses imposés : aucun · 29 lignes · 156 coups vérifiés · 270 s
 | 8 | 1. e4 c5 2. Nf3 Nc6 3. Bb5 g6 4. O-O Bg7 5. Re1 e5 6. Bxc6 dxc6 7. d3 Qe7 8. Nbd2 Nf6 9. Nc4 Nd7 | 10 | ✅ |
 | 9 | 1. e4 c5 2. Nf3 Nc6 3. Bb5 g6 4. Bxc6 dxc6 5. d3 Bg7 6. h3 Nf6 7. Nc3 O-O 8. Be3 b6 9. Qd2 e5 | 15 | ✅ |
 | 10 | 1. e4 c5 2. Nf3 Nc6 3. Nc3 g6 4. d4 cxd4 5. Nxd4 Bg7 6. Be3 Nf6 7. Bc4 O-O 8. Bb3 d6 | 8 | ✅ |
-| 11 | 1. e4 c5 2. Nc3 Nc6 3. g3 g6 4. Bg2 Bg7 5. d3 d6 6. f4 e6 7. Nf3 Nge7 8. O-O O-O 9. Be3 Nd4 10. Qd2 Rb8 | 8 | ✅ |
-| 12 | 1. e4 c5 2. Nc3 Nc6 3. f4 g6 4. Nf3 Bg7 5. Bc4 e6 6. O-O Nge7 7. d3 d5 8. Bb3 O-O | 8 | ✅ |
-| 13 | 1. e4 c5 2. Nc3 Nc6 3. Nf3 g6 4. d4 cxd4 5. Nxd4 Bg7 6. Be3 Nf6 7. Bc4 O-O | 8 | ✅ |
-| 14 | 1. e4 c5 2. c3 Nf6 3. e5 Nd5 4. d4 cxd4 5. Nf3 Nc6 6. cxd4 d6 7. Bc4 Nb6 8. Bb5 dxe5 9. Nxe5 Bd7 10. Nxd7 Qxd7 | 8 | ✅ |
-| 15 | 1. e4 c5 2. c3 Nf6 3. e5 Nd5 4. Nf3 Nc6 5. d4 cxd4 6. cxd4 d6 7. Bc4 Nb6 | 8 | ✅ |
-| 16 | 1. e4 c5 2. d4 cxd4 3. c3 Nf6 4. e5 Nd5 5. Nf3 Nc6 6. cxd4 d6 7. Bc4 Nb6 | 27 | ✅ |
-| 17 | 1. e4 c5 2. d4 cxd4 3. Nf3 Nc6 4. Nxd4 g6 5. Nc3 Bg7 6. Be3 Nf6 | 22 | ✅ |
-| 18 | 1. e4 c5 2. Bc4 Nc6 3. Nf3 g6 4. O-O Bg7 5. c3 e6 | 30 | ✅ |
-| 19 | 1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. Be2 c5 7. O-O cxd4 8. Nxd4 Nc6 9. Be3 Bd7 10. Qd2 Nxd4 11. Bxd4 Bc6 | 27 | ✅ |
-| 20 | 1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. Be2 c5 7. d5 e6 8. O-O exd5 9. cxd5 Re8 10. Nd2 Na6 | 27 | ✅ |
-| 21 | 1. d4 Nf6 2. Nf3 g6 3. Bf4 Bg7 4. e3 O-O 5. Be2 d6 6. h3 c5 7. c3 Qb6 8. Qb3 Be6 9. Qxb6 axb6 10. a3 cxd4 11. exd4 Nd5 | 11 | ✅ |
-| 22 | 1. d4 Nf6 2. Nf3 g6 3. c4 Bg7 4. Nc3 O-O 5. e4 d6 6. Be2 c5 | 13 | ✅ |
-| 23 | 1. d4 Nf6 2. Bf4 g6 3. e3 Bg7 4. Nf3 O-O 5. Be2 d6 6. h3 c5 7. c3 Qb6 | 11 | ✅ |
-| 24 | 1. c4 c5 2. Nc3 Nc6 3. g3 g6 4. Bg2 Bg7 5. Nf3 d6 6. O-O Nf6 7. d3 O-O 8. a3 a6 9. Rb1 Rb8 10. b4 cxb4 11. axb4 b5 | 20 | ✅ |
-| 25 | 1. c4 c5 2. Nc3 Nc6 3. g3 g6 4. Bg2 Bg7 5. e3 e5 6. Nge2 Nge7 7. O-O O-O 8. d3 d6 9. Rb1 a5 10. a3 Be6 | 20 | ✅ |
-| 26 | 1. c4 c5 2. Nf3 Nc6 3. Nc3 g6 4. g3 Bg7 5. Bg2 d6 6. O-O Nf6 | 20 | ✅ |
-| 27 | 1. Nf3 c5 2. g3 g6 3. Bg2 Bg7 4. O-O Nc6 5. d3 d6 6. e4 e5 7. c3 Nge7 8. a3 O-O 9. b4 b6 | 25 | ✅ |
-| 28 | 1. Nf3 c5 2. e4 Nc6 3. d4 cxd4 4. Nxd4 g6 5. Nc3 Bg7 | 22 | ✅ |
-| 29 | 1. Nf3 c5 2. c4 Nc6 3. Nc3 g6 4. g3 Bg7 5. Bg2 d6 | 3 | ✅ |
+| 11 | 1. e4 c5 2. Nf3 Nc6 3. c3 Nf6 4. d4 cxd4 5. e5 Nd5 6. cxd4 d6 7. Bc4 Nb6 8. Bb3 dxe5 | 8 | ✅ |
+| 12 | 1. e4 c5 2. Nc3 Nc6 3. g3 g6 4. Bg2 Bg7 5. d3 d6 6. f4 e6 7. Nf3 Nge7 8. O-O O-O 9. Be3 Nd4 10. Qd2 Rb8 | 8 | ✅ |
+| 13 | 1. e4 c5 2. Nc3 Nc6 3. f4 g6 4. Nf3 Bg7 5. Bc4 e6 6. O-O Nge7 7. d3 d5 8. Bb3 O-O | 8 | ✅ |
+| 14 | 1. e4 c5 2. Nc3 Nc6 3. Nf3 g6 4. d4 cxd4 5. Nxd4 Bg7 6. Be3 Nf6 7. Bc4 O-O | 8 | ✅ |
+| 15 | 1. e4 c5 2. Nc3 Nc6 3. Bc4 g6 4. Qf3 Nf6 5. d3 Bg7 6. Nge2 d6 7. O-O O-O 8. Qg3 Bd7 | 17 | ✅ |
+| 16 | 1. e4 c5 2. Nc3 Nc6 3. Bc4 g6 4. Nf3 Bg7 5. d3 Nf6 6. h3 d6 7. O-O O-O 8. Be3 e6 | 8 | ✅ |
+| 17 | 1. e4 c5 2. Nc3 Nc6 3. Bb5 g6 4. Bxc6 bxc6 5. f4 Bg7 6. d3 Nf6 7. Nf3 d6 8. h3 O-O | 9 | ✅ |
+| 18 | 1. e4 c5 2. c3 Nf6 3. e5 Nd5 4. d4 cxd4 5. Nf3 Nc6 6. cxd4 d6 7. Bc4 Nb6 8. Bb5 dxe5 9. Nxe5 Bd7 10. Nxd7 Qxd7 | 8 | ✅ |
+| 19 | 1. e4 c5 2. c3 Nf6 3. e5 Nd5 4. Nf3 Nc6 5. d4 cxd4 6. cxd4 d6 7. Bc4 Nb6 | 8 | ✅ |
+| 20 | 1. e4 c5 2. d4 cxd4 3. c3 Nf6 4. e5 Nd5 5. Nf3 Nc6 6. cxd4 d6 7. Bc4 Nb6 | 36 | ✅ |
+| 21 | 1. e4 c5 2. d4 cxd4 3. Nf3 Nc6 4. Nxd4 g6 5. Nc3 Bg7 6. Be3 Nf6 | 22 | ✅ |
+| 22 | 1. e4 c5 2. Bc4 Nc6 3. Nf3 g6 4. O-O Bg7 5. c3 e6 | 30 | ✅ |
+| 23 | 1. e4 c5 2. Bc4 Nc6 3. Qf3 Nf6 4. d3 g6 5. Nc3 Bg7 6. Nge2 d6 7. Qg3 O-O 8. O-O Bd7 | 37 | ✅ |
+| 24 | 1. e4 c5 2. Bc4 Nc6 3. Qh5 e6 4. Nf3 Nf6 5. Qh4 d5 6. exd5 exd5 7. Bb5 Bd6 8. O-O O-O | 33 | ✅ |
+| 25 | 1. e4 c5 2. Qh5 d6 3. Bc4 g6 4. Qe2 Bg7 5. Nf3 Nc6 6. O-O Nf6 7. h3 O-O 8. d3 Rb8 | 11 | ✅ |
+| 26 | 1. e4 c5 2. Qh5 d6 3. Bc4 g6 4. Qf3 Nf6 5. d3 Bg7 6. Ne2 Nc6 7. Nbc3 O-O 8. O-O e6 | 12 | ✅ |
+| 27 | 1. e4 c5 2. Qf3 Nc6 3. Bc4 Nf6 4. d3 g6 5. Nc3 Bg7 6. Nge2 d6 7. Qg3 O-O 8. O-O Bd7 | 37 | ✅ |
+| 28 | 1. e4 c5 2. d3 g6 3. g3 Bg7 4. Bg2 Nc6 5. c3 Nf6 6. d4 d6 7. d5 Na5 8. Na3 O-O | 35 | ✅ |
+| 29 | 1. e4 c5 2. c4 Nc6 3. Nc3 g6 4. Nge2 Bg7 5. d3 d6 6. g3 Nf6 7. h3 O-O 8. Bg2 Bd7 | 10 | ✅ |
+| 30 | 1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. Be2 c5 7. O-O cxd4 8. Nxd4 Nc6 9. Be3 Bd7 10. Qd2 Nxd4 11. Bxd4 Bc6 | 18 | ✅ |
+| 31 | 1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. Be2 c5 7. d5 e6 8. O-O exd5 9. cxd5 Re8 10. Nd2 Na6 | 21 | ✅ |
+| 32 | 1. d4 Nf6 2. Nf3 g6 3. Bf4 Bg7 4. e3 O-O 5. Be2 d6 6. h3 c5 7. c3 Qb6 8. Qb3 Be6 9. Qxb6 axb6 10. a3 cxd4 11. exd4 Nd5 | 13 | ✅ |
+| 33 | 1. d4 Nf6 2. Nf3 g6 3. c4 Bg7 4. Nc3 O-O 5. e4 d6 6. Be2 c5 | 16 | ✅ |
+| 34 | 1. d4 Nf6 2. Bf4 g6 3. e3 Bg7 4. Nf3 O-O 5. Be2 d6 6. h3 c5 7. c3 Qb6 | 3 | ✅ |
+| 35 | 1. c4 c5 2. Nc3 Nc6 3. g3 g6 4. Bg2 Bg7 5. Nf3 d6 6. O-O Nf6 7. d3 O-O 8. a3 a6 9. Rb1 Rb8 10. b4 cxb4 11. axb4 b5 | 18 | ✅ |
+| 36 | 1. c4 c5 2. Nc3 Nc6 3. g3 g6 4. Bg2 Bg7 5. e3 e5 6. Nge2 Nge7 7. O-O O-O 8. d3 d6 9. Rb1 a5 10. a3 Be6 | 18 | ✅ |
+| 37 | 1. c4 c5 2. Nf3 Nc6 3. Nc3 g6 4. g3 Bg7 5. Bg2 d6 6. O-O Nf6 | 18 | ✅ |
+| 38 | 1. Nf3 c5 2. g3 g6 3. Bg2 Bg7 4. O-O Nc6 5. d3 d6 6. e4 e5 7. c3 Nge7 8. a3 O-O 9. b4 b6 | 26 | ✅ |
+| 39 | 1. Nf3 c5 2. e4 Nc6 3. d4 cxd4 4. Nxd4 g6 5. Nc3 Bg7 | 22 | ✅ |
+| 40 | 1. Nf3 c5 2. c4 Nc6 3. Nc3 g6 4. g3 Bg7 5. Bg2 d6 | 16 | ✅ |
+| 41 | 1. e3 c5 2. d4 g6 3. c4 Bg7 4. Nc3 Nf6 5. d5 d6 6. Nf3 O-O 7. Bd3 e6 8. h3 exd5 | 23 | ✅ |
 
-Coups les plus coûteux : g6 (30 cp, SF préfère Nf6), d6 (27 cp, SF préfère d5), e5 (27 cp, SF préfère Qa5+)
+Coups les plus coûteux : g6 (37 cp, SF préfère e6), Nf6 (36 cp, SF préfère dxc3), Nf6 (35 cp, SF préfère e5)
 
 **Toutes les lignes passent le seuil.**
-
-## Archives (ancien répertoire)
-
-Consultables dans l’onglet « Archives » de l’écran Ouvertures ; vérification conservée :
-
-- Système de Londres (Blancs) : 44 coups vérifiés en V2, perte max 26 cp.
-- Gambit Dame refusé (Noirs) : 51 coups vérifiés en V2, perte max 47 cp.
-- Défense française (Noirs) : 67 coups vérifiés en V2, perte max 36 cp.

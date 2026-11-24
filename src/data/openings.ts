@@ -1,7 +1,7 @@
 // Répertoire pré-chargé : lignes principales, ~10 coups, en PGN avec variantes.
 // Pour ajouter une ouverture : ajouter une entrée ici (ou via l'écran Ouvertures).
 // Répertoire actuel : Anglaise (Blancs) et système …c5/…g6 (Noirs). L'ancien (Londres, GDR, Française) est archivé.
-import type { Color } from '../lib/repertoire';
+import { addLine, lines, parsePgn, toPgn, type Color } from '../lib/repertoire';
 
 export interface OpeningDef {
   id: string;
@@ -12,6 +12,15 @@ export interface OpeningDef {
   pgn: string;
   /** Rangée dans les Archives (ancien répertoire, consultable). */
   archived?: boolean;
+  /** Lignes ajoutées après coup : fusionnées une seule fois dans le répertoire déjà enregistré (révision `rev`). */
+  updates?: { rev: number; pgn: string }[];
+}
+
+/** PGN de base + lignes ajoutées, en un seul arbre (pour une première installation). */
+function withUpdates(base: string, adds: string[], headers: Record<string, string>): string {
+  const root = parsePgn(base).root;
+  for (const a of adds) for (const l of lines(parsePgn(a).root)) addLine(root, l);
+  return toPgn(root, headers);
 }
 
 /** Blancs : Anglaise, système fermé (c4, Nc3, g3, Bg2, d3, puis e4 ou e3, Nge2, petit roque). */
@@ -22,11 +31,25 @@ export const ENGLISH_PGN = `[Event "Anglaise (système fermé)"]
 `;
 
 /** Noirs : le même système inversé (…c5, …Nc6, …g6, …Bg7, …d6), contre 1.e4, 1.d4, 1.c4 et 1.Nf3. */
-export const G6_SYSTEM_PGN = `[Event "Système …c5 / …g6 (Dragon accéléré)"]
+const G6_SYSTEM_BASE_PGN = `[Event "Système …c5 / …g6 (Dragon accéléré)"]
 [Orientation "black"]
 
 1. e4 (1. d4 Nf6 2. c4 (2. Nf3 g6 3. Bf4 (3. c4 Bg7 4. Nc3 O-O 5. e4 d6 6. Be2 c5) 3... Bg7 4. e3 O-O 5. Be2 d6 6. h3 c5 7. c3 Qb6 8. Qb3 Be6 9. Qxb6 axb6 10. a3 cxd4 11. exd4 Nd5) (2. Bf4 g6 3. e3 Bg7 4. Nf3 O-O 5. Be2 d6 6. h3 c5 7. c3 Qb6) 2... g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. Be2 c5 7. O-O (7. d5 e6 8. O-O exd5 9. cxd5 Re8 10. Nd2 Na6) 7... cxd4 8. Nxd4 Nc6 9. Be3 Bd7 10. Qd2 Nxd4 11. Bxd4 Bc6) (1. c4 c5 2. Nc3 (2. Nf3 Nc6 3. Nc3 g6 4. g3 Bg7 5. Bg2 d6 6. O-O Nf6) 2... Nc6 3. g3 g6 4. Bg2 Bg7 5. Nf3 (5. e3 e5 6. Nge2 Nge7 7. O-O O-O 8. d3 d6 9. Rb1 a5 10. a3 Be6) 5... d6 6. O-O Nf6 7. d3 O-O 8. a3 a6 9. Rb1 Rb8 10. b4 cxb4 11. axb4 b5) (1. Nf3 c5 2. g3 (2. e4 Nc6 3. d4 cxd4 4. Nxd4 g6 5. Nc3 Bg7) (2. c4 Nc6 3. Nc3 g6 4. g3 Bg7 5. Bg2 d6) 2... g6 3. Bg2 Bg7 4. O-O Nc6 5. d3 d6 6. e4 e5 7. c3 Nge7 8. a3 O-O 9. b4 b6) 1... c5 2. Nf3 (2. Nc3 Nc6 3. g3 (3. f4 g6 4. Nf3 Bg7 5. Bc4 e6 6. O-O Nge7 7. d3 d5 8. Bb3 O-O) (3. Nf3 g6 4. d4 cxd4 5. Nxd4 Bg7 6. Be3 Nf6 7. Bc4 O-O) 3... g6 4. Bg2 Bg7 5. d3 d6 6. f4 e6 7. Nf3 Nge7 8. O-O O-O 9. Be3 Nd4 10. Qd2 Rb8) (2. c3 Nf6 3. e5 Nd5 4. d4 (4. Nf3 Nc6 5. d4 cxd4 6. cxd4 d6 7. Bc4 Nb6) 4... cxd4 5. Nf3 Nc6 6. cxd4 d6 7. Bc4 Nb6 8. Bb5 dxe5 9. Nxe5 Bd7 10. Nxd7 Qxd7) (2. d4 cxd4 3. c3 (3. Nf3 Nc6 4. Nxd4 g6 5. Nc3 Bg7 6. Be3 Nf6) 3... Nf6 4. e5 Nd5 5. Nf3 Nc6 6. cxd4 d6 7. Bc4 Nb6) (2. Bc4 Nc6 3. Nf3 g6 4. O-O Bg7 5. c3 e6) 2... Nc6 3. d4 (3. Bc4 g6 4. O-O (4. Nc3 Bg7 5. d3 e6 6. O-O Nge7 7. Bb3 O-O 8. Re1 d6 9. Ne2 Ne5 10. Nxe5 dxe5) 4... Bg7 5. c3 e6 6. d4 cxd4 7. cxd4 d5 8. exd5 exd5 9. Bb5 Ne7 10. Re1 O-O) (3. Bb5 g6 4. O-O (4. Bxc6 dxc6 5. d3 Bg7 6. h3 Nf6 7. Nc3 O-O 8. Be3 b6 9. Qd2 e5) 4... Bg7 5. Re1 e5 6. Bxc6 dxc6 7. d3 Qe7 8. Nbd2 Nf6 9. Nc4 Nd7) (3. Nc3 g6 4. d4 cxd4 5. Nxd4 Bg7 6. Be3 Nf6 7. Bc4 O-O 8. Bb3 d6) 3... cxd4 4. Nxd4 g6 5. Nc3 (5. c4 Bg7 6. Be3 Nf6 7. Nc3 Ng4 8. Qxg4 Nxd4 9. Qd1 Ne6 10. Rc1 Qa5 11. Qd2 d6) (5. Nxc6 bxc6 6. Bd3 (6. Qd4 Nf6 7. e5 Nd5 8. e6 f6 9. exd7+ Bxd7 10. Bc4 e5) 6... Bg7 7. O-O Nf6 8. Nc3 d6 9. h3 O-O 10. Be3 Rb8) 5... Bg7 6. Be3 Nf6 7. Bc4 (7. Be2 O-O 8. O-O d5 9. exd5 Nxd5 10. Nxd5 Qxd5 11. Bf3 Qc4 12. Nxc6 bxc6 13. b3 Qa6) 7... O-O 8. Bb3 d6 9. f3 Bd7 10. Qd2 Nxd4 11. Bxd4 b5 *
 `;
+
+/**
+ * Ajout du 24/11 : réponses aux coups RÉELLEMENT joués par mes adversaires de Chess.com quand ils quittent mon
+ * répertoire Noirs (vus au moins 2 fois dans mes parties importées) : attaques rapides sur f7 (♗c4 + ♕f3, ♕h5, ♕g3),
+ * ♗b5 tôt, 3.c3, 1.e3, 2.d3 et 2.c4. Toujours le système …c5/…g6, sans …e5 précoce ; vérifié par Stockfish.
+ */
+export const G6_ATTACKS_PGN = `[Event "Contre les attaques rapides sur f7 et les autres sorties vues"]
+[Orientation "black"]
+
+1. e4 (1. e3 c5 2. d4 g6 3. c4 Bg7 4. Nc3 Nf6 5. d5 d6 6. Nf3 O-O 7. Bd3 e6 8. h3 exd5) 1... c5 2. Qh5 (2. Qf3 Nc6 3. Bc4 Nf6 4. d3 g6 5. Nc3 Bg7 6. Nge2 d6 7. Qg3 O-O 8. O-O Bd7) (2. Bc4 Nc6 3. Qf3 (3. Qh5 e6 4. Nf3 Nf6 5. Qh4 d5 6. exd5 exd5 7. Bb5 Bd6 8. O-O O-O) 3... Nf6 4. d3 g6 5. Nc3 Bg7 6. Nge2 d6 7. Qg3 O-O 8. O-O Bd7) (2. Nc3 Nc6 3. Bc4 (3. Bb5 g6 4. Bxc6 bxc6 5. f4 Bg7 6. d3 Nf6 7. Nf3 d6 8. h3 O-O) 3... g6 4. Qf3 (4. Nf3 Bg7 5. d3 Nf6 6. h3 d6 7. O-O O-O 8. Be3 e6) 4... Nf6 5. d3 Bg7 6. Nge2 d6 7. O-O O-O 8. Qg3 Bd7) (2. Nf3 Nc6 3. c3 Nf6 4. d4 cxd4 5. e5 Nd5 6. cxd4 d6 7. Bc4 Nb6 8. Bb3 dxe5) (2. d3 g6 3. g3 Bg7 4. Bg2 Nc6 5. c3 Nf6 6. d4 d6 7. d5 Na5 8. Na3 O-O) (2. c4 Nc6 3. Nc3 g6 4. Nge2 Bg7 5. d3 d6 6. g3 Nf6 7. h3 O-O 8. Bg2 Bd7) 2... d6 3. Bc4 g6 4. Qe2 (4. Qf3 Nf6 5. d3 Bg7 6. Ne2 Nc6 7. Nbc3 O-O 8. O-O e6) 4... Bg7 5. Nf3 Nc6 6. O-O Nf6 7. h3 O-O 8. d3 Rb8 *
+`;
+
+export const G6_SYSTEM_PGN = withUpdates(G6_SYSTEM_BASE_PGN, [G6_ATTACKS_PGN],
+  { Event: 'Système …c5 / …g6 (Dragon accéléré)', Orientation: 'black' });
 
 // ---------------------------------------------------------------- Archives (ancien répertoire)
 
@@ -50,7 +73,8 @@ export const FRENCH_PGN = `[Event "Défense française"]
 
 export const BUILTIN_OPENINGS: OpeningDef[] = [
   { id: 'english', name: 'Anglaise (système fermé)', color: 'w', forced: [], pgn: ENGLISH_PGN },
-  { id: 'g6-system', name: 'Système …c5 / …g6 (Dragon accéléré)', color: 'b', forced: [], pgn: G6_SYSTEM_PGN },
+  { id: 'g6-system', name: 'Système …c5 / …g6 (Dragon accéléré)', color: 'b', forced: [], pgn: G6_SYSTEM_PGN,
+    updates: [{ rev: 1, pgn: G6_ATTACKS_PGN }] },
   { id: 'london', name: 'Système de Londres', color: 'w', forced: [], pgn: LONDON_PGN, archived: true },
   { id: 'qgd', name: 'Gambit Dame refusé', color: 'b', forced: ['d4', 'c4'], pgn: QGD_PGN, archived: true },
   { id: 'french', name: 'Défense française', color: 'b', forced: ['e4'], pgn: FRENCH_PGN, archived: true },

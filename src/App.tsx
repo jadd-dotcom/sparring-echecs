@@ -48,7 +48,7 @@ export default function App() {
         {route.name === 'stats' && <Stats />}
         {route.name === 'settings' && <Settings />}
         {route.name === 'report' && <Report />}
-        {route.name === 'lesson' && <OpeningLessonScreen key={route.id} id={route.id} />}
+        {route.name === 'lesson' && <OpeningLessonScreen key={`${route.id}-${route.part ?? ''}`} id={route.id} part={route.part} />}
         {route.name === 'mates' && <Mates key={`${route.level}-${route.mode}`} level={route.level} mode={route.mode} />}
         {route.name === 'board' && !route.view && <BoardMastery />}
         {route.name === 'board' && route.view === 'lesson' && <BoardLessonScreen key={route.chapter} chapter={route.chapter!} />}

@@ -7,6 +7,7 @@ import type { MateLevelId, MateOutcome, MoveFlag } from './lib/mates';
 import { RATING_START, type Score } from './lib/rating';
 import type { ProfileData } from './lib/profile';
 import type { ExternalMeta } from './lib/chesscom';
+import type { ThoughtTag } from './lib/thoughts';
 
 /** Origine d'une partie : contre Maia dans l'appli, ou importée de Chess.com (sans effet sur le niveau). */
 export type GameSource = 'app' | 'chesscom';
@@ -74,6 +75,8 @@ export interface Game {
   unrated?: boolean;
   /** « Ce que je pensais », saisi pendant la revue : demi-coup → texte. */
   thoughts?: Record<number, string>;
+  /** « Ce que je pensais » en un toucher (erreurs et gaffes), avant de voir le meilleur coup : demi-coup → réponse. */
+  thoughtTags?: Record<number, ThoughtTag>;
 }
 
 export type CardKind = 'mistake' | 'drill' | 'mate';

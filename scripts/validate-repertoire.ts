@@ -41,6 +41,7 @@ async function main() {
   type Checks = Record<string, Record<string, { loss: number; best: string; bestSan: string; depth: number }>>;
   // Les ouvertures archivées gardent leur vérification précédente (ARCHIVES=1 pour les recalculer).
   const previous: Checks = JSON.parse(readFileSync('src/data/repertoire-checks.json', 'utf8'));
+  const previousMd = readFileSync('docs/REPERTOIRE.md', 'utf8');
   const checks: Checks = {};
   const archivedMd: string[] = [];
   let md = `# Répertoire pré-chargé et vérification Stockfish\n\nStockfish 19 lite (single-thread), profondeur ${DEPTH}, en Node.\n` +
@@ -48,7 +49,16 @@ async function main() {
   let allOk = true;
   for (const o of BUILTIN_OPENINGS) {
     const only = process.env.ONLY?.split(',');
-    if (only && !only.includes(o.id) && previous[o.id]) { checks[o.id] = previous[o.id]; continue; }
+    if (only && !only.includes(o.id) && previous[o.id]) {
+      // Ouverture non recalculée : on garde sa vérification et sa section du document.
+      checks[o.id] = previous[o.id];
+      if (!o.archived) {
+        const head = `## ${o.name} (`;
+        const i = previousMd.indexOf(head);
+        if (i >= 0) { const j = previousMd.indexOf('\n## ', i + 1); md += previousMd.slice(i, j < 0 ? undefined : j + 1).replace(/\*\*(Toutes|Certaines) les lignes[^\n]*\n/, ''); }
+      }
+      continue;
+    }
     if (o.archived && !process.env.ARCHIVES && previous[o.id]) {
       checks[o.id] = previous[o.id];
       const worst = Math.max(0, ...Object.values(previous[o.id]).map((v) => v.loss));

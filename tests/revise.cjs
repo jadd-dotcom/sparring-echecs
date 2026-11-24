@@ -31,6 +31,8 @@ const RED = 'rgba(220,40,40,.85)';
   await p.goto(URL + '#/review/' + id);
   await p.locator('table.classes').waitFor({ timeout: 180000 });
   await p.locator('.moves .mv').nth(6).tap();
+  await p.getByRole('button', { name: 'Je voulais attaquer autre chose' }).tap();
+  await p.getByText('Motif :').waitFor();
   const sentence = (await p.locator('.move-sentence').innerText()).replace(/\s+/g, ' ');
   assert(/♔e2 est une (erreur|gaffe) : tu pouvais prendre le ♗f2 avec ♔xf2 .*\(gain raté\)/.test(sentence), 'revue : ' + sentence);
   await p.screenshot({ path: OUT + '/rv-0-revue.png' });

@@ -70,3 +70,46 @@ describe('leçons d’ouvertures', () => {
     });
   }
 });
+
+describe('bloc « Contre les attaques rapides sur f7 » (système …c5/…g6)', () => {
+  const l = OPENING_LESSONS.find((x) => x.openingId === 'g6-system')!;
+  const o = BUILTIN_OPENINGS.find((x) => x.id === 'g6-system')!;
+  const root = parsePgn(o.pgn).root;
+  const drill = new Map(drillPositions(root, 'b').map((d) => [d.key, d]));
+  const x = l.extras?.find((e) => e.id === 'f7');
+  it('existe, avec une introduction et 6 lignes', () => {
+    expect(x?.title).toBe('Contre les attaques rapides sur f7');
+    expect(x!.lines).toHaveLength(6);
+  });
+  for (const [j, ln] of (x?.lines ?? []).entries()) {
+    it(`ligne ${j + 1} (${ln.name}) : dans le répertoire, une phrase par coup, mes coups dans le drill`, () => {
+      const c = new Chess();
+      let n = root;
+      for (const s of ln.start) { c.move(s); n = n.children.find((k) => k.san === s)!; expect(n, s).toBeDefined(); }
+      for (const m of ln.moves) {
+        if (c.turn() === 'b') {
+          const d = drill.get(fenKey(c.fen()));
+          expect(d, `position avant ${m.san}`).toBeDefined();
+          expect(d!.acceptSan).toContain(m.san);
+        }
+        expect(() => c.move(m.san), m.san).not.toThrow();
+        n = n.children.find((k) => k.san === m.san)!;
+        expect(n, `${m.san} dans l’arbre du répertoire`).toBeDefined();
+        const t = plainText(m.why);
+        expect(t.length, t).toBeLessThan(160);
+        expect(t.trim().endsWith('.'), t).toBe(true);
+        expect((t.slice(0, -1).match(/[.!?](\s|$)/g) ?? []).length, `deux phrases au plus : ${t}`).toBeLessThanOrEqual(1);
+      }
+    });
+  }
+  it('les menaces annoncées sont vraies : mat en f7 contre ♕f3/♕h5 + ♗c4, échec seulement après 2.♕h5 d6 3.♗c4', () => {
+    const after = (sans: string) => { const c = new Chess(); sans.split(' ').forEach((s) => c.move(s)); return c; };
+    const mates = (sans: string, mv: string) => { const c = after(sans); c.move('a6'); c.move(mv); return c.isCheckmate(); };
+    expect(mates('e4 c5 Qf3 Nc6 Bc4', 'Qxf7#')).toBe(true);
+    expect(mates('e4 c5 Bc4 Nc6 Qh5', 'Qxf7#')).toBe(true);
+    expect(mates('e4 c5 Nc3 Nc6 Bc4 g6 Qf3', 'Qxf7#')).toBe(true);
+    expect(mates('e4 c5 Qh5 d6 Bc4', 'Qxf7+')).toBe(false);
+    // …g6 trop tôt contre ♕h5 : la dame prend c5.
+    expect(() => after('e4 c5 Qh5 g6 Qxc5')).not.toThrow();
+  });
+});
