@@ -77,8 +77,9 @@ export default function ReviseMistake({ card, remaining, onNext, onResult }: {
       if (t.ok) await finish({ solved: true, byUser: t });
       else {
         setTries((x) => [...x, t]);
+        // Essai raté : la carte revient demain, même si l'on quitte l'écran sans finir.
         attempts.current = [...attempts.current, { date: Date.now(), uci, ok: false }];
-        await db.cards.update(card.id!, { attempts: attempts.current });
+        await db.cards.update(card.id!, { ...schedule(card, false, dayKey()), attempts: attempts.current });
       }
     } finally { setChecking(false); }
   }

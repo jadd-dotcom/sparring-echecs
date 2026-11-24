@@ -49,6 +49,7 @@ const THOUGHTS = [
         break;
       }
       const c = new Chess(); g.uci.forEach((u) => c.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] }));
+      if (c.isGameOver()) break; // partie finie (mat, pat) : l'écran de fin arrive
       const u = await p.evaluate(([f, h, r]) => window.__maiaPick(f, h, 600, r), [c.fen(), g.uci, g.botElo]);
       await sq(u.slice(0, 2)).tap(); await sq(u.slice(2, 4)).tap();
       if (u.length === 5) await p.getByRole('button', { name: PROMO[u[4]] }).tap();
