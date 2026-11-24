@@ -15,10 +15,11 @@ import {
   bookLength, CLASS_LABEL, CLASS_ORDER, classifyMove, classSummary, mergeIndexes, moveSentence, type MoveClass,
 } from '../lib/moveClass';
 import { Chess } from 'chess.js';
+import { THOUGHT_LABEL, THOUGHT_ORDER, type ThoughtTag } from '../lib/thoughts';
 
-/** « Ce que je pensais » : 1-2 phrases, enregistrées automatiquement. */
 const TIME_CLASS: Record<string, string> = { bullet: 'bullet', blitz: 'blitz', rapid: 'rapide', daily: 'par jour' };
 
+/** « Ce que je pensais » : texte libre facultatif (1-2 phrases), enregistré automatiquement. */
 function ThoughtBox({ game, ply, onSaved }: { game: Game; ply: number; onSaved: (t: Record<number, string>) => void }) {
   const [text, setText] = useState(game.thoughts?.[ply] ?? '');
   const [saved, setSaved] = useState(true);
@@ -32,7 +33,7 @@ function ThoughtBox({ game, ply, onSaved }: { game: Game; ply: number; onSaved: 
     setSaved(true);
   };
   return (
-    <label className="thought">Ce que je pensais <span className="muted small">(facultatif, 1-2 phrases)</span>
+    <label className="thought">En quelques mots <span className="muted small">(facultatif, 1-2 phrases)</span>
       <textarea rows={2} maxLength={400} value={text} placeholder="ex. Je voulais attaquer le roi, je n’ai pas vu son fou."
         onChange={(e) => {
           setText(e.target.value); setSaved(false);
@@ -43,6 +44,28 @@ function ThoughtBox({ game, ply, onSaved }: { game: Game; ply: number; onSaved: 
         onBlur={() => { if (timer.current) clearTimeout(timer.current); if (!saved) save(text); }} />
       <span className="muted small">{saved ? (text.trim() ? <><Check aria-hidden className="ico sm" /> enregistré</> : '') : '…'}</span>
     </label>
+  );
+}
+
+/** « Ce que je pensais » en un toucher : sur mes erreurs et gaffes, avant de montrer le meilleur coup. */
+function ThoughtButtons({ game, ply, onSaved }: { game: Game; ply: number; onSaved: (t: Record<number, ThoughtTag>) => void }) {
+  const cur = game.thoughtTags?.[ply];
+  const pick = async (t: ThoughtTag) => {
+    const fresh = (await db.games.get(game.id!))?.thoughtTags ?? {};
+    const thoughtTags = { ...fresh, [ply]: t };
+    await db.games.update(game.id!, { thoughtTags });
+    onSaved(thoughtTags);
+  };
+  return (
+    <div className={`thought-tags ${cur ? 'answered' : ''}`} role="group" aria-label="Ce que je pensais" data-testid="thought-tags">
+      {cur ? <p className="muted small">Ce que je pensais (touche pour changer) :</p>
+        : <p><b>Avant de voir le meilleur coup :</b> qu’est-ce qui s’est passé ?</p>}
+      <div className="tag-buttons">
+        {THOUGHT_ORDER.map((t) => (
+          <button key={t} className={cur === t ? 'on' : ''} aria-pressed={cur === t} onClick={() => pick(t)}>{THOUGHT_LABEL[t]}</button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -109,6 +132,8 @@ export default function Review({ id }: { id: number }) {
   const cls = ply >= 0 ? clsOf(ply) : null;
   const exit = game.bookExit ?? null;
   const isMyExit = exit?.by === 'me' && ply === exit.ply;
+  // Erreur ou gaffe sans réponse « ce que je pensais » : on cache le meilleur coup, la raison et le motif.
+  const askThought = !!a && (a.severity === 'mistake' || a.severity === 'blunder') && !game.thoughtTags?.[ply] && !(retry && retry.ply === ply);
 
   // Position APRÈS le coup ; pastille sur la case d'arrivée ; flèche verte = meilleur coup (s'il y en avait un meilleur).
   const fen = fens[ply + 1];
@@ -120,7 +145,7 @@ export default function Review({ id }: { id: number }) {
     highlight[u.slice(0, 2)] = 'rgba(255,255,0,.35)';
     highlight[u.slice(2, 4)] = 'rgba(255,255,0,.45)';
     badges[u.slice(2, 4)] = cls;
-    if (cls !== 'best' && cls !== 'book' && pe.bestUci && pe.bestUci !== u)
+    if (cls !== 'best' && cls !== 'book' && pe.bestUci && pe.bestUci !== u && !askThought)
       arrows.push({ from: pe.bestUci.slice(0, 2), to: pe.bestUci.slice(2, 4), color: 'rgba(30,160,60,.9)' });
     if (isMyExit) for (const sanExp of exit!.expectedSan) {
       const m = new Chess(fens[ply]).move(sanExp);
@@ -168,6 +193,33 @@ export default function Review({ id }: { id: number }) {
   const opp = imported ? game.ext?.opp.name ?? 'l’adversaire' : 'Maia';
   const repName = game.repOpeningId ? openingNames[game.repOpeningId] : undefined;
 
+  // Carte d'explication du coup ; en tête de colonne quand une réponse « ce que je pensais » est attendue.
+  const explain = (a || pe) && (
+          <div className="card explain">
+            {pe && <span className="muted small">Chances de gain {mine(ply) ? 'pour toi' : `pour ${opp}`} : {Math.round(pe.wpBefore)} % → {Math.round(pe.wpAfter)} %{pe.drop >= 1 ? ` (−${Math.round(pe.drop)} pts)` : ''}</span>}
+            {isMyExit && <><br /><span><BookOpen aria-hidden className="ico sm book-ico" /> Répertoire : <b>{fig(exit!.expectedSan.join(' ou '))}</b> (flèche bleue) au lieu de {fig(exit!.playedSan)}.</span></>}
+            {askThought && <ThoughtButtons game={game} ply={ply} onSaved={(thoughtTags) => setGame((g) => (g ? { ...g, thoughtTags } : g))} />}
+            {a?.detail && !askThought && <>
+              <br />Motif : <b>{MOTIF_LABEL[a.detail.motif]}</b>
+              <br /><span className="muted small">Réfutation : {fig(a.detail.refutation) || '—'}</span>
+            </>}
+            {a && a.severity !== 'ok' && !retryOn && !askThought && (
+              <div><button className="primary" onClick={() => setRetry({ ply, tries: 0, checking: false, result: null, solution: false })}><RotateCcw aria-hidden className="ico" />Réessayer</button></div>
+            )}
+            {retryOn && (
+              <div className={`retry-card ${retry!.result ? (retry!.result.ok ? 'good' : 'bad') : ''}`}>
+                <p><b>Réessayer :</b> trouve un meilleur coup que {fig(pe!.san)}.</p>
+                {retry!.checking && <p className="pulse muted">Vérification par Stockfish…</p>}
+                {retry!.result && <p>{retry!.result.ok ? <CircleCheck aria-hidden className="ico good-text" /> : <CircleX aria-hidden className="ico bad-text" />} {retry!.result.text}</p>}
+                <button onClick={() => setRetry(null)}>Fermer</button>
+              </div>
+            )}
+            {a && (a.severity === 'mistake' || a.severity === 'blunder') && !askThought && <>
+              <ThoughtButtons game={game} ply={ply} onSaved={(thoughtTags) => setGame((g) => (g ? { ...g, thoughtTags } : g))} />
+              <ThoughtBox key={ply} game={game} ply={ply} onSaved={(thoughts) => setGame((g) => (g ? { ...g, thoughts } : g))} />
+            </>}
+          </div>
+        );
   return (
     <div className="play">
       <div className="board-col">
@@ -181,7 +233,8 @@ export default function Review({ id }: { id: number }) {
         </div>
         <p className="move-sentence">
           {pe && cls ? <><ClassBadge cls={cls} size={22} className="class-badge inline" />{' '}
-            {moveSentence(fig(pe.san), cls, pe.bestSan ? fig(pe.bestSan) : null, mine(ply) ? reason : null, mine(ply) && reason && a?.detail ? MOTIF_LABEL[a.detail.motif] : null)}{' '}
+            {askThought ? moveSentence(fig(pe.san), cls, null, null, null)
+              : moveSentence(fig(pe.san), cls, pe.bestSan ? fig(pe.bestSan) : null, mine(ply) ? reason : null, mine(ply) && reason && a?.detail ? MOTIF_LABEL[a.detail.motif] : null)}{' '}
             <span className="muted small">({mine(ply) ? 'ton coup' : opp})</span></>
             : <span className="muted">Touche un coup ou utilise les flèches.</span>}
         </p>
@@ -194,6 +247,7 @@ export default function Review({ id }: { id: number }) {
         </div>
       </div>
       <aside className="side-col">
+        {askThought && explain}
         <div className="card">
           {imported && (
             <p className="source-line"><span className="tag chesscom-tag">{game.ext?.site === 'pgn' ? 'PGN importé' : 'Chess.com'}</span>{' '}
@@ -250,30 +304,7 @@ export default function Review({ id }: { id: number }) {
             )}
           </div>
         )}
-        {(a || pe) && (
-          <div className="card explain">
-            {pe && <span className="muted small">Chances de gain {mine(ply) ? 'pour toi' : `pour ${opp}`} : {Math.round(pe.wpBefore)} % → {Math.round(pe.wpAfter)} %{pe.drop >= 1 ? ` (−${Math.round(pe.drop)} pts)` : ''}</span>}
-            {isMyExit && <><br /><span><BookOpen aria-hidden className="ico sm book-ico" /> Répertoire : <b>{fig(exit!.expectedSan.join(' ou '))}</b> (flèche bleue) au lieu de {fig(exit!.playedSan)}.</span></>}
-            {a?.detail && <>
-              <br />Motif : <b>{MOTIF_LABEL[a.detail.motif]}</b>
-              <br /><span className="muted small">Réfutation : {fig(a.detail.refutation) || '—'}</span>
-            </>}
-            {a && a.severity !== 'ok' && !retryOn && (
-              <div><button className="primary" onClick={() => setRetry({ ply, tries: 0, checking: false, result: null, solution: false })}><RotateCcw aria-hidden className="ico" />Réessayer</button></div>
-            )}
-            {retryOn && (
-              <div className={`retry-card ${retry!.result ? (retry!.result.ok ? 'good' : 'bad') : ''}`}>
-                <p><b>Réessayer :</b> trouve un meilleur coup que {fig(pe!.san)}.</p>
-                {retry!.checking && <p className="pulse muted">Vérification par Stockfish…</p>}
-                {retry!.result && <p>{retry!.result.ok ? <CircleCheck aria-hidden className="ico good-text" /> : <CircleX aria-hidden className="ico bad-text" />} {retry!.result.text}</p>}
-                <button onClick={() => setRetry(null)}>Fermer</button>
-              </div>
-            )}
-            {a && (a.severity === 'mistake' || a.severity === 'blunder') && (
-              <ThoughtBox key={ply} game={game} ply={ply} onSaved={(thoughts) => setGame((g) => (g ? { ...g, thoughts } : g))} />
-            )}
-          </div>
-        )}
+        {!askThought && explain}
         <div className="moves card grid">
           {san.map((s, i) => {
             const c = clsOf(i);

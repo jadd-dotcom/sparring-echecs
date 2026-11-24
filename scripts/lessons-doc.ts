@@ -9,7 +9,8 @@ let md = `# Leçons d'ouvertures (mode Leçon)\n\nContenu affiché dans l'appli,
   `1. Leçon → 2. Drill → 3. Partie à thème. Les leçons de l’ancien répertoire (Londres, Gambit Dame refusé, Défense française) ` +
   `restent consultables dans l’onglet « Archives » ; elles sont reprises en fin de document.\n\nDéroulé d'une leçon : (1) la ligne principale par blocs de 3 coups, une phrase ` +
   `par coup ; (2) après chaque bloc, l'élève rejoue ses coups (1re erreur : case de départ surlignée ; 2e : solution) ; ` +
-  `(3) le plan en 3 phrases ; (4) une partie type commentée. Les coups appris entrent dans le drill (1re révision le lendemain).\n\n` +
+  `(3) le plan en 3 phrases ; (4) une partie type commentée ; (5) pour le système …c5/…g6, un bloc supplémentaire ` +
+  `« Contre les attaques rapides sur f7 » (lignes de côté vues dans mes parties Chess.com). Les coups appris entrent dans le drill (1re révision le lendemain).\n\n` +
   `Toutes les lignes du répertoire et leur vérification Stockfish : \`docs/REPERTOIRE.md\`.\n\n` +
   `Les parties types prolongent la ligne principale avec Stockfish 16 (1 s par coup, les deux camps) : ce ne sont pas des parties de joueurs réels.\n\n`;
 md += '## Glossaire (expliqué à la 1re apparition dans chaque leçon)\n\n' + Object.entries(GLOSSARY).map(([k, v]) => `- **${k}** : ${v}`).join('\n') + '\n\n';
@@ -32,6 +33,16 @@ for (const l of OPENING_LESSONS) {
   md += 'Coups : ' + l.model.moves.map((s, i) => num(start + i, s)).join(' ') + '\n\nMoments clés :\n\n';
   for (const [k, v] of Object.entries(l.model.notes)) md += `- ${num(start + Number(k), l.model.moves[Number(k)])} — ${plainText(v)}${termsNote(`model:${k}`)}\n`;
   md += `\nFin : ${l.model.end}\n\n`;
+  for (const x of l.extras ?? []) {
+    md += `### 5. Bloc supplémentaire : ${x.title}\n\n${plainText(x.intro)}${termsNote(`extra:${x.id}:intro`)}\n\n` +
+      'Chaque ligne se regarde puis se rejoue comme un bloc de la leçon ; ses coups entrent dans le drill. ' +
+      'Accès direct : écran Ouvertures → « Leçon : contre les attaques rapides sur f7 ».\n\n';
+    x.lines.forEach((ln, j) => {
+      md += `**Ligne ${j + 1} — ${ln.name}**${ln.start.length ? ` (début : ${ln.start.map((s, i) => (i % 2 ? '' : `${i / 2 + 1}. `) + s).join(' ')})` : ''}\n\n`;
+      ln.moves.forEach((m, i) => { md += `- ${num(ln.start.length + i, m.san)} — ${plainText(m.why)}${termsNote(`extra:${x.id}:${j}:${i}`)}\n`; });
+      md += '\n';
+    });
+  }
 }
 writeFileSync('docs/LECONS-OUVERTURES.md', md);
 console.log('docs/LECONS-OUVERTURES.md écrit');

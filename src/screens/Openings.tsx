@@ -85,6 +85,9 @@ export default function Openings() {
                 {o.archived ? 'Leçon' : '1. Leçon'}{lesson?.done ? <><Check aria-hidden className="ico sm" /><span className="sr-only"> terminée</span></> : lesson?.blocksDone ? ` (${lesson.blocksDone} bloc${lesson.blocksDone > 1 ? 's' : ''})` : ''}
               </button>
             )}
+            {!o.archived && OPENING_LESSONS.find((l) => l.openingId === o.id)?.extras?.map((x) => (
+              <button key={x.id} onClick={() => go({ name: 'lesson', id: o.id, part: x.id })} data-testid={`extra-${x.id}`}>Leçon : {x.title.charAt(0).toLowerCase() + x.title.slice(1)}</button>
+            ))}
             {!o.archived && (
               <>
                 <button disabled={due + fresh === 0} onClick={() => go({ name: 'revise', opening: o.id })}>

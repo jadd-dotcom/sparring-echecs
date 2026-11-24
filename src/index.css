@@ -314,3 +314,12 @@ details > summary { cursor: pointer; min-height: 48px; display: flex; align-item
 .mini-sq.best { box-shadow: inset 0 0 0 40px rgba(40, 170, 60, .5); }
 .mini-sq img { width: 92%; height: 92%; pointer-events: none; }
 @media (max-width: 420px) { .mini-board { width: 108px; } }
+
+/* « Ce que je pensais » en un toucher (revue) */
+.thought-tags { margin-top: 10px; }
+.thought-tags p { margin: 0 0 8px; }
+.tag-buttons { display: flex; flex-direction: column; gap: 8px; }
+.tag-buttons button { text-align: left; justify-content: flex-start; min-height: 48px; }
+.tag-buttons button.on { background: var(--accent); color: var(--accent-ink); box-shadow: 0 4px 0 var(--accent-edge); }
+.thought-tags.answered .tag-buttons { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+.thought-tags.answered .tag-buttons button { flex: 1 1 auto; min-height: 48px; font-size: .85rem; padding: 6px 10px; }

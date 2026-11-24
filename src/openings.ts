@@ -4,7 +4,7 @@ import { db, DUE_NEW, type Card, type Game, type Hole, type MoveCheck, type Open
 import { BUILTIN_OPENINGS } from './data/openings';
 import builtinChecks from './data/repertoire-checks.json';
 import {
-  buildIndex, drillPositions, fenKey, findBookExit, myMoves, parsePgn, toPgn, type BookExit, type RepNode,
+  addLine, buildIndex, drillPositions, fenKey, findBookExit, lines, myMoves, parsePgn, toPgn, type BookExit, type RepNode,
 } from './lib/repertoire';
 import { stockfish } from './engines/stockfish';
 import { evalToCp, type Eval } from './lib/winpct';
@@ -48,6 +48,38 @@ export async function ensureOpenings() {
   }
   if (changed) await db.meta.put({ key: 'openingsSeeded', value: [...done] });
   if (archChanged) await db.meta.put({ key: 'openingsArchived', value: [...archivedOnce] });
+  await applyBuiltinUpdates();
+}
+
+/**
+ * Lignes ajoutées après coup à une ouverture pré-chargée (`updates`) : fusionnées une seule fois dans le répertoire
+ * déjà enregistré, sans toucher aux lignes que j'ai ajoutées ou retirées moi-même ; leurs vérifications Stockfish
+ * sont reprises et les nouvelles positions entrent dans le drill.
+ */
+export async function applyBuiltinUpdates() {
+  const revs = { ...(((await db.meta.get('openingsRev'))?.value as Record<string, number> | undefined) ?? {}) };
+  let changed = false;
+  for (const def of BUILTIN_OPENINGS) {
+    const last = Math.max(0, ...(def.updates ?? []).map((u) => u.rev));
+    if (!last || (revs[def.id] ?? 0) >= last) continue;
+    const o = await db.openings.get(def.id);
+    if (o) {
+      const root = treeOf(o);
+      let added = 0;
+      for (const u of def.updates!.filter((x) => x.rev > (revs[def.id] ?? 0))) {
+        for (const l of lines(parsePgn(u.pgn).root)) {
+          try { added += addLine(root, l); } catch { /* ligne devenue illégale : ignorée */ }
+        }
+      }
+      if (added) {
+        const builtin = (builtinChecks as Record<string, Record<string, MoveCheck>>)[def.id] ?? {};
+        await saveTree(def.id, root, { ...builtin, ...o.checks });
+      }
+    }
+    revs[def.id] = last;
+    changed = true;
+  }
+  if (changed) await db.meta.put({ key: 'openingsRev', value: revs });
 }
 
 /** Range une ouverture dans les Archives, ou l'en ressort. */

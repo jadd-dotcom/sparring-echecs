@@ -13,7 +13,14 @@ export interface OpeningLesson {
   plan: [string, string, string];
   /** Partie type : suite de la ligne principale et commentaires des moments clés (indice dans `moves`). */
   model: { moves: string[]; notes: Record<number, string>; end: string };
+  /** Blocs supplémentaires (après la leçon) : lignes de côté du répertoire, une phrase par coup. */
+  extras?: LessonExtra[];
 }
+
+/** Une ligne d'un bloc supplémentaire : coups déjà connus (`start`, sans commentaire), puis un coup = une phrase. */
+export interface LessonLine { name: string; start: string[]; moves: { san: string; why: string }[] }
+
+export interface LessonExtra { id: string; title: string; intro: string; lines: LessonLine[] }
 
 export const GLOSSARY: Record<string, string> = {
   centre: 'les cases d4, d5, e4 et e5 ; les pièces qui les contrôlent sont plus actives.',
@@ -122,6 +129,118 @@ export const OPENING_LESSONS: OpeningLesson[] = [
       },
       end: 'Position équilibrée : tu as gardé ton fou g7 et ta colonne c, ton jeu est actif.',
     },
+    extras: [{
+      id: 'f7',
+      title: 'Contre les attaques rapides sur f7',
+      intro: 'Coups vus dans tes parties Chess.com : la dame (en h5, f3 ou g3) et le fou c4 visent f7, que seul ton roi protège. '
+        + 'Règle : bloque la route de la dame (…Nf6 contre Qf3, …g6 ou …e6 contre Qh5), puis développe-toi ; avant …g6, vérifie que la dame ne peut pas prendre c5.',
+      lines: [
+        {
+          name: '2.Qh5 (la dame vise f7 et c5)',
+          start: ['e4', 'c5'],
+          moves: [
+            { san: 'Qh5', why: 'La dame blanche sort tout de suite : elle vise f7 et aussi ton pion c5, par la 5e rangée.' },
+            { san: 'd6', why: 'Le pion d6 protège c5 ; pas encore …g6, la dame prendrait c5.' },
+            { san: 'Bc4', why: 'Le fou rejoint la dame contre f7 : ils menacent Qxf7+.' },
+            { san: 'g6', why: 'Le pion g6 coupe la route de la dame vers f7 et l’attaque : c’est aussi ton [[fianchetto]].' },
+            { san: 'Qe2', why: 'La dame recule en e2, d’où elle protège le pion e4.' },
+            { san: 'Bg7', why: 'Ton fou se place sur la [[grande diagonale]], comme toujours.' },
+            { san: 'Nf3', why: 'Le cavalier blanc se [[développer|développe]].' },
+            { san: 'Nc6', why: 'Ton cavalier se développe et surveille les cases d4 et e5.' },
+            { san: 'O-O', why: 'Les Blancs mettent leur roi à l’abri.' },
+            { san: 'Nf6', why: 'Ton second cavalier sort et attaque le pion e4.' },
+            { san: 'h3', why: 'Le pion h3 empêche ton fou c8 de venir en g4.' },
+            { san: 'O-O', why: 'Tu fais le petit [[roque]] : ton roi est à l’abri derrière le fou g7.' },
+            { san: 'd3', why: 'Le pion d3 protège e4 et ouvre la diagonale du fou c1.' },
+            { san: 'Rb8', why: 'Ta tour prépare …b5 : ton jeu est sur l’aile dame, comme dans la leçon.' },
+          ],
+        },
+        {
+          name: '2.Qh5 d6 3.Bc4 g6 4.Qf3 (la dame revient sur f7)',
+          start: ['e4', 'c5', 'Qh5', 'd6', 'Bc4', 'g6'],
+          moves: [
+            { san: 'Qf3', why: 'La dame revient viser f7, cette fois par la colonne f : elle menace encore Qxf7+.' },
+            { san: 'Nf6', why: 'Ton cavalier bloque la colonne f : f7 est de nouveau à l’abri.' },
+            { san: 'd3', why: 'Le pion d3 protège e4, attaqué par ton cavalier.' },
+            { san: 'Bg7', why: 'Ton fou rejoint la grande diagonale.' },
+            { san: 'Ne2', why: 'Le cavalier sort en e2, car la dame occupe f3.' },
+            { san: 'Nc6', why: 'Ton second cavalier se développe.' },
+            { san: 'Nbc3', why: 'L’autre cavalier blanc se développe.' },
+            { san: 'O-O', why: 'Tu roques : ton roi est à l’abri.' },
+            { san: 'O-O', why: 'Les Blancs roquent aussi.' },
+            { san: 'e6', why: 'Le pion e6 ferme pour de bon la diagonale du fou c4 vers f7.' },
+          ],
+        },
+        {
+          name: '2.Qf3 puis 3.Bc4 (menace de mat en f7)',
+          start: ['e4', 'c5'],
+          moves: [
+            { san: 'Qf3', why: 'La dame blanche sort en f3 : elle vise f7 par la colonne f.' },
+            { san: 'Nc6', why: 'Tu te développes normalement : la dame seule ne menace rien.' },
+            { san: 'Bc4', why: 'Le fou rejoint la dame : ils menacent Qxf7 échec et mat.' },
+            { san: 'Nf6', why: 'Ton cavalier bloque la colonne f : plus de mat en f7.' },
+            { san: 'd3', why: 'Le pion d3 protège e4, attaqué par ton cavalier.' },
+            { san: 'g6', why: 'Tu prépares ton fianchetto ; la dame ne pourra pas venir en h5.' },
+            { san: 'Nc3', why: 'Le cavalier blanc se développe.' },
+            { san: 'Bg7', why: 'Ton fou se place sur la grande diagonale.' },
+            { san: 'Nge2', why: 'Le second cavalier sort en e2, car la dame occupe f3.' },
+            { san: 'd6', why: 'Le pion d6 ouvre la diagonale de ton fou c8.' },
+            { san: 'Qg3', why: 'La dame passe en g3, face à ton roque : elle prépare Bh6 pour échanger ton fou g7.' },
+            { san: 'O-O', why: 'Tu roques quand même : ton pion d6 reste protégé par le pion e7.' },
+            { san: 'O-O', why: 'Les Blancs roquent.' },
+            { san: 'Bd7', why: 'Ton dernier fou se développe ; ensuite …Rb8 et …b5 sur l’aile dame.' },
+          ],
+        },
+        {
+          name: '2.Bc4 Nc6 3.Qf3 (même idée, autre ordre)',
+          start: ['e4', 'c5'],
+          moves: [
+            { san: 'Bc4', why: 'Le fou blanc vise tout de suite f7.' },
+            { san: 'Nc6', why: 'Tu te développes.' },
+            { san: 'Qf3', why: 'La dame rejoint le fou : ils menacent Qxf7 échec et mat.' },
+            { san: 'Nf6', why: 'Comme contre 2.Qf3 : ton cavalier bloque la colonne f.' },
+            { san: 'd3', why: 'Le pion d3 protège e4.' },
+            { san: 'g6', why: 'C’est la même position que contre 2.Qf3 : continue avec …Bg7, …d6 et le roque.' },
+          ],
+        },
+        {
+          name: '2.Bc4 Nc6 3.Qh5 (mat en f7 et pion c5 visés)',
+          start: ['e4', 'c5', 'Bc4', 'Nc6'],
+          moves: [
+            { san: 'Qh5', why: 'La dame menace Qxf7 échec et mat avec le fou, et vise aussi ton pion c5.' },
+            { san: 'e6', why: 'Le pion e6 ferme la route du fou vers f7 et ouvre celle de ton fou f8, qui protège c5 ; ici …g6 perdrait c5.' },
+            { san: 'Nf3', why: 'Le cavalier blanc se développe.' },
+            { san: 'Nf6', why: 'Ton cavalier attaque la dame : tu gagnes du temps.' },
+            { san: 'Qh4', why: 'La dame recule en h4.' },
+            { san: 'd5', why: 'Le pion d5 attaque à la fois le fou c4 et le pion e4.' },
+            { san: 'exd5', why: 'Les Blancs prennent ton pion.' },
+            { san: 'exd5', why: 'Tu reprends : le fou c4 est de nouveau attaqué.' },
+            { san: 'Bb5', why: 'Le fou s’écarte en b5 et cloue ton cavalier c6 devant ton roi.' },
+            { san: 'Bd6', why: 'Ton fou se développe et prépare le roque.' },
+            { san: 'O-O', why: 'Les Blancs roquent.' },
+            { san: 'O-O', why: 'Tu roques : le clouage disparaît, ton centre est solide et tes pièces actives.' },
+          ],
+        },
+        {
+          name: '2.Nc3 Nc6 3.Bc4 g6 4.Qf3',
+          start: ['e4', 'c5', 'Nc3', 'Nc6'],
+          moves: [
+            { san: 'Bc4', why: 'Le fou blanc vise f7.' },
+            { san: 'g6', why: 'Le pion g6 prépare ton fianchetto et interdit Qh5.' },
+            { san: 'Qf3', why: 'La dame rejoint le fou contre f7 : menace Qxf7 échec et mat.' },
+            { san: 'Nf6', why: 'Ton cavalier bloque la colonne f : f7 est à l’abri.' },
+            { san: 'd3', why: 'Le pion d3 protège e4.' },
+            { san: 'Bg7', why: 'Ton fou va sur la grande diagonale.' },
+            { san: 'Nge2', why: 'Le cavalier sort en e2, car la dame occupe f3.' },
+            { san: 'd6', why: 'Le pion d6 ouvre la diagonale de ton fou c8.' },
+            { san: 'O-O', why: 'Les Blancs roquent.' },
+            { san: 'O-O', why: 'Tu roques à ton tour.' },
+            { san: 'Qg3', why: 'La dame passe en g3 et vise ton pion d6.' },
+            { san: 'Bd7', why: 'Ton fou se développe ; d6 reste protégé par le pion e7.' },
+          ],
+        },
+      ],
+    }],
   },
   {
     openingId: 'london',
@@ -284,6 +403,10 @@ export function lessonTexts(l: OpeningLesson): { where: string; text: string }[]
     ...l.moves.map((m, i) => ({ where: `move:${i}`, text: m.why })),
     ...l.plan.map((p, i) => ({ where: `plan:${i}`, text: p })),
     ...Object.entries(l.model.notes).map(([k, v]) => ({ where: `model:${k}`, text: v })),
+    ...(l.extras ?? []).flatMap((x) => [
+      { where: `extra:${x.id}:intro`, text: x.intro },
+      ...x.lines.flatMap((ln, j) => ln.moves.map((m, i) => ({ where: `extra:${x.id}:${j}:${i}`, text: m.why }))),
+    ]),
   ];
 }
 

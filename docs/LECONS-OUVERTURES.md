@@ -2,7 +2,7 @@
 
 Contenu affiché dans l'appli, généré depuis `src/data/openingLessons.ts` (`npm run lessons-doc`). Ordre conseillé : l’Anglaise (Blancs), puis le système …c5/…g6 (Noirs) ; pour chacune : 1. Leçon → 2. Drill → 3. Partie à thème. Les leçons de l’ancien répertoire (Londres, Gambit Dame refusé, Défense française) restent consultables dans l’onglet « Archives » ; elles sont reprises en fin de document.
 
-Déroulé d'une leçon : (1) la ligne principale par blocs de 3 coups, une phrase par coup ; (2) après chaque bloc, l'élève rejoue ses coups (1re erreur : case de départ surlignée ; 2e : solution) ; (3) le plan en 3 phrases ; (4) une partie type commentée. Les coups appris entrent dans le drill (1re révision le lendemain).
+Déroulé d'une leçon : (1) la ligne principale par blocs de 3 coups, une phrase par coup ; (2) après chaque bloc, l'élève rejoue ses coups (1re erreur : case de départ surlignée ; 2e : solution) ; (3) le plan en 3 phrases ; (4) une partie type commentée ; (5) pour le système …c5/…g6, un bloc supplémentaire « Contre les attaques rapides sur f7 » (lignes de côté vues dans mes parties Chess.com). Les coups appris entrent dans le drill (1re révision le lendemain).
 
 Toutes les lignes du répertoire et leur vérification Stockfish : `docs/REPERTOIRE.md`.
 
@@ -146,6 +146,98 @@ Moments clés :
 - 20... Rc8 — Ta dernière tour reprend la colonne c et vise le pion c4.
 
 Fin : Position équilibrée : tu as gardé ton fou g7 et ta colonne c, ton jeu est actif.
+
+### 5. Bloc supplémentaire : Contre les attaques rapides sur f7
+
+Coups vus dans tes parties Chess.com : la dame (en h5, f3 ou g3) et le fou c4 visent f7, que seul ton roi protège. Règle : bloque la route de la dame (…Nf6 contre Qf3, …g6 ou …e6 contre Qh5), puis développe-toi ; avant …g6, vérifie que la dame ne peut pas prendre c5.
+
+Chaque ligne se regarde puis se rejoue comme un bloc de la leçon ; ses coups entrent dans le drill. Accès direct : écran Ouvertures → « Leçon : contre les attaques rapides sur f7 ».
+
+**Ligne 1 — 2.Qh5 (la dame vise f7 et c5)** (début : 1. e4 c5)
+
+- 2. Qh5 — La dame blanche sort tout de suite : elle vise f7 et aussi ton pion c5, par la 5e rangée.
+- 2... d6 — Le pion d6 protège c5 ; pas encore …g6, la dame prendrait c5.
+- 3. Bc4 — Le fou rejoint la dame contre f7 : ils menacent Qxf7+.
+- 3... g6 — Le pion g6 coupe la route de la dame vers f7 et l’attaque : c’est aussi ton fianchetto.
+- 4. Qe2 — La dame recule en e2, d’où elle protège le pion e4.
+- 4... Bg7 — Ton fou se place sur la grande diagonale, comme toujours.
+- 5. Nf3 — Le cavalier blanc se développe.
+- 5... Nc6 — Ton cavalier se développe et surveille les cases d4 et e5.
+- 6. O-O — Les Blancs mettent leur roi à l’abri.
+- 6... Nf6 — Ton second cavalier sort et attaque le pion e4.
+- 7. h3 — Le pion h3 empêche ton fou c8 de venir en g4.
+- 7... O-O — Tu fais le petit roque : ton roi est à l’abri derrière le fou g7.
+- 8. d3 — Le pion d3 protège e4 et ouvre la diagonale du fou c1.
+- 8... Rb8 — Ta tour prépare …b5 : ton jeu est sur l’aile dame, comme dans la leçon.
+
+**Ligne 2 — 2.Qh5 d6 3.Bc4 g6 4.Qf3 (la dame revient sur f7)** (début : 1. e4 c5 2. Qh5 d6 3. Bc4 g6)
+
+- 4. Qf3 — La dame revient viser f7, cette fois par la colonne f : elle menace encore Qxf7+.
+- 4... Nf6 — Ton cavalier bloque la colonne f : f7 est de nouveau à l’abri.
+- 5. d3 — Le pion d3 protège e4, attaqué par ton cavalier.
+- 5... Bg7 — Ton fou rejoint la grande diagonale.
+- 6. Ne2 — Le cavalier sort en e2, car la dame occupe f3.
+- 6... Nc6 — Ton second cavalier se développe.
+- 7. Nbc3 — L’autre cavalier blanc se développe.
+- 7... O-O — Tu roques : ton roi est à l’abri.
+- 8. O-O — Les Blancs roquent aussi.
+- 8... e6 — Le pion e6 ferme pour de bon la diagonale du fou c4 vers f7.
+
+**Ligne 3 — 2.Qf3 puis 3.Bc4 (menace de mat en f7)** (début : 1. e4 c5)
+
+- 2. Qf3 — La dame blanche sort en f3 : elle vise f7 par la colonne f.
+- 2... Nc6 — Tu te développes normalement : la dame seule ne menace rien.
+- 3. Bc4 — Le fou rejoint la dame : ils menacent Qxf7 échec et mat.
+- 3... Nf6 — Ton cavalier bloque la colonne f : plus de mat en f7.
+- 4. d3 — Le pion d3 protège e4, attaqué par ton cavalier.
+- 4... g6 — Tu prépares ton fianchetto ; la dame ne pourra pas venir en h5.
+- 5. Nc3 — Le cavalier blanc se développe.
+- 5... Bg7 — Ton fou se place sur la grande diagonale.
+- 6. Nge2 — Le second cavalier sort en e2, car la dame occupe f3.
+- 6... d6 — Le pion d6 ouvre la diagonale de ton fou c8.
+- 7. Qg3 — La dame passe en g3, face à ton roque : elle prépare Bh6 pour échanger ton fou g7.
+- 7... O-O — Tu roques quand même : ton pion d6 reste protégé par le pion e7.
+- 8. O-O — Les Blancs roquent.
+- 8... Bd7 — Ton dernier fou se développe ; ensuite …Rb8 et …b5 sur l’aile dame.
+
+**Ligne 4 — 2.Bc4 Nc6 3.Qf3 (même idée, autre ordre)** (début : 1. e4 c5)
+
+- 2. Bc4 — Le fou blanc vise tout de suite f7.
+- 2... Nc6 — Tu te développes.
+- 3. Qf3 — La dame rejoint le fou : ils menacent Qxf7 échec et mat.
+- 3... Nf6 — Comme contre 2.Qf3 : ton cavalier bloque la colonne f.
+- 4. d3 — Le pion d3 protège e4.
+- 4... g6 — C’est la même position que contre 2.Qf3 : continue avec …Bg7, …d6 et le roque.
+
+**Ligne 5 — 2.Bc4 Nc6 3.Qh5 (mat en f7 et pion c5 visés)** (début : 1. e4 c5 2. Bc4 Nc6)
+
+- 3. Qh5 — La dame menace Qxf7 échec et mat avec le fou, et vise aussi ton pion c5.
+- 3... e6 — Le pion e6 ferme la route du fou vers f7 et ouvre celle de ton fou f8, qui protège c5 ; ici …g6 perdrait c5.
+- 4. Nf3 — Le cavalier blanc se développe.
+- 4... Nf6 — Ton cavalier attaque la dame : tu gagnes du temps.
+- 5. Qh4 — La dame recule en h4.
+- 5... d5 — Le pion d5 attaque à la fois le fou c4 et le pion e4.
+- 6. exd5 — Les Blancs prennent ton pion.
+- 6... exd5 — Tu reprends : le fou c4 est de nouveau attaqué.
+- 7. Bb5 — Le fou s’écarte en b5 et cloue ton cavalier c6 devant ton roi.
+- 7... Bd6 — Ton fou se développe et prépare le roque.
+- 8. O-O — Les Blancs roquent.
+- 8... O-O — Tu roques : le clouage disparaît, ton centre est solide et tes pièces actives.
+
+**Ligne 6 — 2.Nc3 Nc6 3.Bc4 g6 4.Qf3** (début : 1. e4 c5 2. Nc3 Nc6)
+
+- 3. Bc4 — Le fou blanc vise f7.
+- 3... g6 — Le pion g6 prépare ton fianchetto et interdit Qh5.
+- 4. Qf3 — La dame rejoint le fou contre f7 : menace Qxf7 échec et mat.
+- 4... Nf6 — Ton cavalier bloque la colonne f : f7 est à l’abri.
+- 5. d3 — Le pion d3 protège e4.
+- 5... Bg7 — Ton fou va sur la grande diagonale.
+- 6. Nge2 — Le cavalier sort en e2, car la dame occupe f3.
+- 6... d6 — Le pion d6 ouvre la diagonale de ton fou c8.
+- 7. O-O — Les Blancs roquent.
+- 7... O-O — Tu roques à ton tour.
+- 8. Qg3 — La dame passe en g3 et vise ton pion d6.
+- 8... Bd7 — Ton fou se développe ; d6 reste protégé par le pion e7.
 
 ---
 

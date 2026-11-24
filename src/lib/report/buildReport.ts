@@ -11,6 +11,7 @@ import type { BookExit } from '../repertoire';
 import { CHAPTERS, chapterValidated, LEVELS, passesNeeded, type BoardProgress } from '../board/levels';
 import { weakestSquares, type SquareStats } from '../board/stats';
 import { colorName as squareColor } from '../board/geometry';
+import { THOUGHT_LABEL, THOUGHT_ORDER, THOUGHT_SHORT, type ThoughtTag } from '../thoughts';
 
 export type PeriodKind = 'since-last' | '7-days' | '20-games';
 
@@ -112,6 +113,14 @@ export function gamesToShow(games: Game[], n = 5): Game[] {
   return [0, 0.5, 1].flatMap((sc) => recent.filter((g) => g.score === sc)).slice(0, n);
 }
 
+/** « Ce que je pensais » d'un coup : réponse en un toucher et/ou texte libre (null si rien). */
+export function thoughtText(g: Game, ply: number): string | null {
+  const tag = g.thoughtTags?.[ply];
+  const txt = g.thoughts?.[ply];
+  if (!tag && !txt) return null;
+  return [tag ? THOUGHT_LABEL[tag] : null, txt ? `« ${txt} »` : null].filter(Boolean).join(' — ');
+}
+
 /** PGN annoté : ?! ? ?? et win% sur mes coups, « ce que je pensais » en commentaire. */
 export function annotatedPgn(g: Game, gameNo: number): string {
   const byPly = new Map((g.analysis ?? []).map((a) => [a.ply, a]));
@@ -137,13 +146,64 @@ export function annotatedPgn(g: Game, gameNo: number): string {
     const num = i % 2 === 0 ? `${i / 2 + 1}. ` : byPly.has(i - 1) ? `${Math.floor(i / 2) + 1}... ` : '';
     let tok = num + s + (a && a.severity !== 'ok' ? NAG[a.severity] : '');
     if (a) {
-      const thought = g.thoughts?.[i];
+      const thought = thoughtText(g, i);
       const wp = a.severity === 'ok' ? `win% ${r0(a.wpAfter)}` : `win% ${r0(a.wpBefore)}→${r0(a.wpAfter)}${a.bestSan ? `, meilleur : ${a.bestSan}` : ''}`;
       tok += ` {${wp}${thought ? `. Je pensais : ${thought.replace(/[{}]/g, '')}` : ''}}`;
     }
     parts.push(tok);
   });
   return `${head}\n\n${parts.join(' ')} ${g.result}`;
+}
+
+/** Coups par lesquels l'adversaire sort de mon répertoire, vus au moins 2 fois (même position, même coup). */
+export function opponentExits(games: Game[], rep: Record<number, RepInfo>, min = 2): string[] {
+  const seen = new Map<string, { line: string; n: number; color: 'w' | 'b' }>();
+  for (const g of games) {
+    const e = rep[g.id!]?.exit;
+    if (!e || e.by !== 'opponent') continue;
+    const k = `${g.myColor} ${e.fenBefore.split(' ').slice(0, 4).join(' ')} ${e.playedSan}`;
+    const line = g.san.slice(0, e.ply + 1).map((m, i) => (i === e.ply ? `**${i % 2 ? `${moveNo(i)} ` : `${moveNo(i)}`}${m}**` : `${i % 2 ? '' : moveNo(i)}${m}`)).join(' ');
+    const x = seen.get(k) ?? { line, n: 0, color: g.myColor };
+    x.n++;
+    seen.set(k, x);
+  }
+  const often = [...seen.values()].filter((x) => x.n >= min).sort((a, b) => b.n - a.n);
+  return ['#### Coups par lesquels l’adversaire sort de mon répertoire (vus au moins 2 fois)', '',
+    ...(often.length ? often.map((x) => `- ${x.line} : ${x.n} fois (j’avais les ${colorName(x.color)})`) : ['Aucun coup vu 2 fois sur la période.']), ''];
+}
+
+/**
+ * « Ce que je pensais » (réponses en un toucher dans la revue) sur mes erreurs et gaffes, compté par motif.
+ * Colonnes : les 5 réponses + « sans réponse » ; lignes : les motifs (+ « motif non calculé » s'il y en a).
+ */
+export function thoughtTable(games: Game[]): string[] {
+  type Row = Record<ThoughtTag | 'none', number>;
+  const empty = (): Row => ({ menace: 0, calcul: 0, 'autre-cible': 0, 'trop-vite': 0, 'sais-pas': 0, none: 0 });
+  const rows = new Map<Motif | 'none', Row>([...MOTIF_ORDER.map((m) => [m, empty()] as const), ['none', empty()]]);
+  let answered = 0, total = 0;
+  for (const g of games) {
+    for (const a of g.analysis ?? []) {
+      if (!isError(a)) continue;
+      total++;
+      const tag = g.thoughtTags?.[a.ply];
+      if (tag) answered++;
+      rows.get(a.detail?.motif ?? 'none')![tag ?? 'none']++;
+    }
+  }
+  const out = ['### Ce que je pensais (réponse en un toucher), par motif', '',
+    `Réponses données sur ${answered} de mes ${total} erreur${total > 1 ? 's' : ''} et gaffe${total > 1 ? 's' : ''} (dans la revue, avant de voir le meilleur coup).`, '',
+    `| Motif | ${THOUGHT_ORDER.map((t) => THOUGHT_SHORT[t]).join(' | ')} | Sans réponse |`,
+    `|---|${THOUGHT_ORDER.map(() => '---|').join('')}---|`];
+  const sum = empty();
+  for (const [m, r] of rows) {
+    const n = THOUGHT_ORDER.reduce((x, t) => x + r[t], r.none);
+    if (m === 'none' && n === 0) continue;
+    for (const k of Object.keys(sum) as (keyof Row)[]) sum[k] += r[k];
+    out.push(`| ${m === 'none' ? 'Motif non calculé' : MOTIF_LABEL[m]} | ${THOUGHT_ORDER.map((t) => r[t]).join(' | ')} | ${r.none} |`);
+  }
+  out.push(`| **Total** | ${THOUGHT_ORDER.map((t) => `**${sum[t]}**`).join(' | ')} | **${sum.none}** |`, '');
+  out.push(`Réponses : ${THOUGHT_ORDER.map((t) => `${THOUGHT_SHORT[t]} = « ${THOUGHT_LABEL[t]} »`).join(' ; ')}.`, '');
+  return out;
 }
 
 export interface ReportInput {
@@ -292,6 +352,7 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
     push(`**Resté dans mon répertoire jusqu’au coup ${REP_MOVES} : ${yes} / ${withRep.length} parties (${pct(yes, withRep.length)})** — sorti moi-même avant : ${meOut} (${pct(meOut, withRep.length)}) ; l’adversaire en est sorti avant : ${oppOut} (${pct(oppOut, withRep.length)}).`, '');
     const bySrc = (gs: Game[]) => { const r = gs.filter((g) => rep[g.id!]?.exit !== undefined); return `${r.filter((g) => cat(g) === 'yes').length} / ${r.length} (${pct(r.filter((g) => cat(g) === 'yes').length, r.length)})`; };
     push(`- Contre Maia : ${bySrc(maiaGames)} · sur Chess.com : ${bySrc(ccGames)}.`, '');
+    push(...opponentExits(withRep, rep));
   }
 
   push('### Imprécisions, erreurs, gaffes par partie', '', '| Partie | Mes coups | Précision | Imprécisions | Erreurs | Gaffes |', '|---|---|---|---|---|---|');
@@ -332,6 +393,7 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
   push('### Motifs des erreurs et gaffes', '', `Sur ${errorsTotal} erreur${errorsTotal > 1 ? 's' : ''} et gaffe${errorsTotal > 1 ? 's' : ''} :`, '', '| Motif | Nombre |', '|---|---|');
   for (const m of MOTIF_ORDER) push(`| ${MOTIF_LABEL[m]} | ${motifCount[m]} |`);
   push('');
+  push(...thoughtTable(games));
 
   // Révision
   const from = period.from ?? 0;
@@ -370,8 +432,8 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
       `- Réfutation de mon coup : ${d ? `${d.refutation || '(fin de partie)'} — bilan matériel au bout : ${signed(d.refutationMaterial)}` : 'non calculée'}`,
     );
     if (d?.threatLine) push(`- Menace avant mon coup (si l’adversaire rejouait) : ${d.threatLine}`);
-    const th = g.thoughts?.[a.ply];
-    push(`- Ce que je pensais : ${th ? `« ${th} »` : '(non renseigné)'}`, '');
+    const th = thoughtText(g, a.ply);
+    push(`- Ce que je pensais : ${th ?? '(non renseigné)'}`, '');
   });
 
   // ------------------------------------------------------------ 3. Mes parties

@@ -300,3 +300,27 @@
   mélangent donc pas entre pièces (pas besoin de les renommer).
 - Coordonnées : `tests/coords.cjs` refait pour Relief, Merida et Maestro (5 écrans × 2 côtés : pièces centrées, aucune
   coordonnée sous une pièce ni rognée). Captures : `docs/design/pieces/` (3 jeux) et `docs/design/apres/` (Relief).
+
+## Répertoire Noirs : réponses aux sorties réelles (24/11)
+- **Analyse** des 89 parties Chess.com avec les Noirs (octobre et novembre, jusqu'au 23/11) : coups par lesquels
+  l'adversaire quitte mon répertoire …c5/…g6, gardés s'ils sont vus au moins 2 fois : 3.c3 (après 2.♘f3 ♘c6, 3 fois),
+  1.e3, 2.d3, 2.c4, 2.♘c3 ♘c6 3.♗c4 (2 fois chacun) ; et, dans les premiers coups de toutes mes parties Noirs,
+  les attaques rapides sur f7 : ♕h5 (16 parties), ♗c4 + ♕h5 (8), ♗c4 + ♕f3 (6), ♕f3 (8), ♕g3 (2), ♗b5 tôt (4).
+- **12 lignes ajoutées** (~8 de mes coups chacune), toujours …c5/…g6, sans …e5 précoce : 2.♕h5 d6! (…g6 tout de suite
+  perdrait c5), 2.♕f3 ♘c6 3.♗c4 ♘f6, 2.♗c4 ♘c6 3.♕f3 ♘f6 / 3.♕h5 e6!, 2.♘c3 ♘c6 3.♗c4 g6 (4.♕f3 ♘f6 … 8.♕g3) et
+  3.♗b5 g6, 3.c3 ♘f6 (rejoint l'Alapin), 1.e3 c5, 2.d3 g6, 2.c4 ♘c6. Vérifiées par Stockfish 19 (profondeur 20) :
+  aucun de mes coups ne perd plus de 0,5 pion (pire : 37 cp) — `docs/REPERTOIRE.md`.
+- **Leçon** : bloc « Contre les attaques rapides sur f7 » (6 lignes, une phrase par coup ; regarder puis rejouer),
+  accessible depuis l'écran Ouvertures et à la fin de la leçon …c5/…g6 ; les coups rejoués entrent dans le drill.
+  Texte : `docs/LECONS-OUVERTURES.md`.
+- **Mise à jour** du répertoire déjà enregistré : les lignes ajoutées sont fusionnées une seule fois (révision 1),
+  sans toucher à mes propres modifications ; les nouvelles positions entrent dans le drill (10 nouvelles par jour).
+- **Rapport pour Claude** : liste des coups par lesquels l'adversaire sort de mon répertoire, vus au moins 2 fois.
+
+## « Ce que je pensais » en un toucher (24/11)
+- Dans la revue, sur chacune de mes erreurs et gaffes, **avant** de montrer le meilleur coup (flèche verte, « Meilleur : »,
+  raison et motif cachés) : 5 boutons « Je n'ai pas vu la menace » / « J'ai vu, mais mal calculé » / « Je voulais attaquer
+  autre chose » / « J'ai joué trop vite » / « Je ne sais pas ». Après la réponse, tout s'affiche, avec le texte libre
+  facultatif ; la réponse reste modifiable.
+- Rapport pour Claude : tableau « Ce que je pensais, par motif » (réponses × motifs + « sans réponse ») ; la réponse
+  apparaît aussi dans « Mes coups les plus coûteux » et en commentaire des PGN annotés.

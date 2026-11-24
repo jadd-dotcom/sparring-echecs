@@ -70,10 +70,13 @@ const THOUGHTS = [
     // « Ce que je pensais » sur la 1re erreur/gaffe
     if (errs.length) {
       await p.locator('.mv').nth(errs[0].ply).tap();
+      // « Ce que je pensais » en un toucher (avant de voir le meilleur coup), puis le texte libre.
+      await p.getByTestId('thought-tags').getByRole('button').nth(thoughtIdx % 5).tap();
+      await p.getByTestId('thought-tags').locator('button.on').waitFor();
       const box = p.getByPlaceholder(/Je voulais attaquer le roi/);
       await box.tap();
       await box.fill(THOUGHTS[thoughtIdx++ % THOUGHTS.length]);
-      await p.locator('.card.explain').tap();
+      await box.blur();
       await p.getByText('enregistré', { exact: true }).waitFor();
       if (n === 0) await p.screenshot({ path: OUT + '/r-1-pensee.png' });
     }
@@ -132,7 +135,12 @@ const THOUGHTS = [
   for (const h of ['## 1. Résumé de la période', '### Par source', '### Par ouverture', '### Par phase', '### Motifs des erreurs et gaffes', '## 2. Mes coups les plus coûteux', '## 3. Mes parties', '## 4. Positions du paquet ratées']) assert(md.includes(h), 'section « ' + h + ' »');
   assert(/\| Chess.com \| 2 \|/.test(md) && /Resté dans mon répertoire jusqu’au coup 8 : \d+ \/ \d+ parties/.test(md), 'parties Chess.com et suivi du répertoire dans le rapport');
   assert(/\[Event "Chess.com — partie n°\d+"\]/.test(md), 'PGN annoté d’une partie Chess.com');
-  assert(/Ce que je pensais : « /.test(md), '« ce que je pensais » présent dans le rapport');
+  assert(/Ce que je pensais : J[^\n]*« /.test(md) || /Ce que je pensais : Je ne sais pas — « /.test(md), '« ce que je pensais » (réponse + texte) présent dans le rapport');
+  const tagged = await p.evaluate(() => window.__db.games.toArray().then((a) => a.reduce((n, g) => n + Object.keys(g.thoughtTags ?? {}).length, 0)));
+  const tot = md.match(/\| \*\*Total\*\* \| \*\*(\d+)\*\* \| \*\*(\d+)\*\* \| \*\*(\d+)\*\* \| \*\*(\d+)\*\* \| \*\*(\d+)\*\* \|/);
+  assert(md.includes('### Ce que je pensais (réponse en un toucher), par motif') && tot && tot.slice(1, 6).reduce((x, y) => x + +y, 0) <= tagged && tot.slice(1, 6).reduce((x, y) => x + +y, 0) >= 1,
+    `réponses en un toucher comptées par motif (${tot ? tot.slice(1, 6).join('/') : '?'} ; ${tagged} au total)`);
+  assert(md.includes('#### Coups par lesquels l’adversaire sort de mon répertoire (vus au moins 2 fois)'), 'sorties adverses du répertoire listées');
   assert((md.match(/```pgn/g) ?? []).length === 5, '« Mes parties » : 5 PGN annotés (défaites, puis nulles, puis victoires)');
   const last = await p.evaluate(() => window.__db.meta.get('lastReportAt').then((m) => m?.value));
   assert(typeof last === 'number', 'date du dernier rapport mémorisée');

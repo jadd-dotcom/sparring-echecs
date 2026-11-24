@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Chess } from 'chess.js';
 import type { Card, Game, MoveAnalysis } from '../../db';
-import { annotatedPgn, buildReport, costliestMoves, gamesToShow, repText, selectGames, worstErrors } from './buildReport';
+import { annotatedPgn, buildReport, costliestMoves, gamesToShow, opponentExits, repText, selectGames, worstErrors } from './buildReport';
 import { parsePgn } from '../repertoire';
 
 const DAY = 86400000;
@@ -28,6 +28,9 @@ const G1 = game(1, NOW - 10 * DAY, ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Nf6'], 'w'
 const G2 = game(2, NOW - 3 * DAY, ['d4', 'd5', 'c4', 'e6', 'Nc3', 'Nf6'], 'b', 1, { 1: [45, 'blunder'], 5: [22, 'mistake'] });
 const G3 = game(3, NOW - DAY, ['e4', 'c5', 'Nf3', 'd6'], 'w', 0, { 0: [31, 'blunder'] });
 G1.thoughts = { 2: 'Je voulais développer vite.' };
+G2.thoughtTags = { 1: 'menace' };
+G3.thoughtTags = { 0: 'trop-vite' };
+G3.thoughts = { 0: 'Pressé par la pendule.' };
 
 describe('période', () => {
   it('depuis le dernier rapport / 7 jours / 20 parties', () => {
@@ -51,7 +54,8 @@ describe('tri des erreurs', () => {
 describe('PGN annoté', () => {
   it('?! ? ?? et win% sur mes coups, relisible', () => {
     const pgn = annotatedPgn(G1, 1);
-    expect(pgn).toContain('2. Nf3? {win% 60→35, meilleur : BEST. Je pensais : Je voulais développer vite.}');
+    expect(pgn).toContain('2. Nf3? {win% 60→35, meilleur : BEST. Je pensais : « Je voulais développer vite. »}');
+    expect(annotatedPgn(G3, 3)).toContain('1. e4?? {win% 60→29, meilleur : BEST. Je pensais : J’ai joué trop vite — « Pressé par la pendule. »}');
     expect(pgn).toContain('3. Bc4?! {win% 60→48');
     expect(pgn).toContain('1. e4 {win% 60}');
     expect(pgn).toContain('2... Nc6');
@@ -84,12 +88,24 @@ describe('rapport complet', () => {
     expect(md).toContain('### 5. Partie n°1, coup 3. Bc4?! — imprécision (−12 pts)');
     expect(md).toContain('### 1. Partie n°2, coup 1… d5?? — gaffe (−45 pts)');
     expect(md).toContain('- Ce que je pensais : « Je voulais développer vite. »');
+    expect(md).toContain('- Ce que je pensais : Je n’ai pas vu la menace');
     expect(md).toContain('## 3. Mes parties (les 3 : défaites, puis nulles, puis victoires)');
     expect(md.indexOf('### Partie n°3 — défaite')).toBeLessThan(md.indexOf('### Partie n°1 — défaite'));
     expect(md.indexOf('### Partie n°1 — défaite')).toBeLessThan(md.indexOf('### Partie n°2 — victoire'));
     expect(md).toContain('Cartes vues : **1** (3 tentatives) ; réussite : **33 %**');
     expect(md).toMatch(/\| `rnbqkbnr\/pppppppp\/8\/8\/8\/8\/PPPPPPPP\/RNBQKBNR w KQkq - 0 1` \| Blancs \| e4 \| 2 \/ 3 \|/);
   });
+  it('« ce que je pensais » en un toucher, compté par motif', () => {
+    expect(md).toContain('### Ce que je pensais (réponse en un toucher), par motif');
+    expect(md).toContain('Réponses données sur 2 de mes 4 erreurs et gaffes');
+    expect(md).toContain('| Motif | Menace pas vue | Mal calculé | Autre cible | Trop vite | Ne sait pas | Sans réponse |');
+    expect(md).toContain('| Pièce laissée en prise | 1 | 0 | 0 | 1 | 0 | 2 |');
+    expect(md).toContain('| Gain raté | 0 | 0 | 0 | 0 | 0 | 0 |');
+    expect(md).toContain('| **Total** | **1** | **0** | **0** | **1** | **0** | **2** |');
+    expect(md).not.toContain('Motif non calculé');
+    expect(md.indexOf('### Ce que je pensais')).toBeGreaterThan(md.indexOf('### Motifs des erreurs et gaffes'));
+  });
+
   it('phases : coups 1-10 = ouverture', () => {
     expect(md).toMatch(/\| Ouverture \| 8 \| 1 \| 2 \| 2 \|/);
     expect(md).toMatch(/\| Milieu \| 0 \|/);
@@ -141,6 +157,18 @@ describe('parties Chess.com et répertoire', () => {
     expect(md).toContain('| Système …c5 / …g6 | 1 | 1 / 0 / 0 | 1 | 0 | 0 |');
     expect(md).toContain('**Resté dans mon répertoire jusqu’au coup 8 : 1 / 3 parties (33 %)** — sorti moi-même avant : 1 (33 %) ; l’adversaire en est sorti avant : 1 (33 %).');
     expect(md).toContain('- Contre Maia : 1 / 2 (50 %) · sur Chess.com : 0 / 1 (0 %).');
+  });
+  it('coups par lesquels l’adversaire sort de mon répertoire, vus au moins 2 fois', () => {
+    expect(md).toContain('#### Coups par lesquels l’adversaire sort de mon répertoire (vus au moins 2 fois)');
+    expect(md).toContain('Aucun coup vu 2 fois sur la période.');
+    const ex = (ply: number, played: string, fen: string) => ({ exit: { ply, by: 'opponent' as const, playedSan: played, expectedSan: ['Nf3'], fenBefore: fen, fenAfter: '' } });
+    const a = game(10, NOW, ['e4', 'c5', 'Qh5', 'd6'], 'b', 1, {});
+    const b = game(11, NOW, ['e4', 'c5', 'Qh5', 'Nf6'], 'b', 0, {});
+    const c = game(12, NOW, ['e4', 'c5', 'Qf3', 'Nc6'], 'b', 0, {});
+    const fen = 'rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2';
+    const out = opponentExits([a, b, c], { 10: ex(2, 'Qh5', fen), 11: ex(2, 'Qh5', fen), 12: ex(2, 'Qf3', fen) }).join('\n');
+    expect(out).toContain('- 1.e4 c5 **2.Qh5** : 2 fois (j’avais les Noirs)');
+    expect(out).not.toContain('Qf3');
   });
   it('PGN annoté Chess.com : joueurs, lien, cadence', () => {
     const pgn = annotatedPgn(CC, 4);
