@@ -288,3 +288,15 @@
   les erreurs (version 2 du détail).
 - **Tests** : `src/lib/reviseText.test.ts`, motif dans `facts.test.ts` et `motifs.sf.test.ts` (vrai Stockfish sur
   1.e4 e5 2.♘f3 ♗c5 3.♘c3 ♗xf2+ 4.♔e2), `tests/revise.cjs` (parcours complet sur iPad émulé).
+
+## Jeux de pièces : Relief, Merida, Maestro (24/11)
+- **Relief** (par défaut) : créé à partir de cburnett (GPLv2+) par `scripts/make-relief.py` (script fourni, non modifié) :
+  dégradés clairs/sombres et ombre portée ; fichiers dans `public/pieces/relief/`.
+- **Merida** (GPLv2+) inchangé ; **Maestro** (sadsnake1, CC BY-NC-SA 4.0, licence non commerciale) repris de
+  `lila/public/piece/maestro`. Crédits dans le README et `public/pieces/LICENCES.txt`.
+- **Celtic supprimé** ; Cburnett retiré des réglages (il reste comme source de Relief, non précaché). Un ancien réglage
+  Celtic ou Cburnett passe automatiquement à Relief.
+- Pièces affichées en `<img>` : chaque SVG est un document séparé, les id internes de Relief (`L`, `D`, `sh`) ne se
+  mélangent donc pas entre pièces (pas besoin de les renommer).
+- Coordonnées : `tests/coords.cjs` refait pour Relief, Merida et Maestro (5 écrans × 2 côtés : pièces centrées, aucune
+  coordonnée sous une pièce ni rognée). Captures : `docs/design/pieces/` (3 jeux) et `docs/design/apres/` (Relief).

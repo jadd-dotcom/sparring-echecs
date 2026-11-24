@@ -13,8 +13,9 @@ Noms : `{accueil,partie,revue,mats}-{iphone,ipad}-{dark,light}.jpg` ; en plus, d
 ## Ce qui change
 1. **Thème sombre par défaut** : fond anthracite, cartes un peu plus claires sans bordure fine, avec ombre ; réglage
    Sombre / Clair / Auto (Auto suit l'appareil), appliqué dès le chargement de la page.
-2. **Pièces** : jeux libres de Lichess, au choix dans Réglages → Apparence — *Celtic* (par défaut, avec relief, MIT),
-   *Merida* (ombré, GPLv2+), *Cburnett* (classique, GPLv2+). Fichiers dans `public/pieces/`, crédits dans le README.
+2. **Pièces** : trois jeux au choix dans Réglages → Apparence — *Relief* (par défaut : cburnett avec dégradés et ombre
+   portée, créé par `scripts/make-relief.py`, GPLv2+), *Merida* (GPLv2+), *Maestro* (CC BY-NC-SA 4.0, non commercial).
+   Fichiers dans `public/pieces/`, crédits dans le README. Captures des trois jeux dans `pieces/` (voir plus bas).
 3. **Échiquier** : bords arrondis (6 px), ombre, coordonnées discrètes tout au coin des cases du bord, jamais sous les
    pièces (pièces à 88 % de la case, un peu moins sur les petits écrans ; vérifié au pixel par `tests/coords.cjs`) ;
    pièce saisie agrandie (×1,22) avec une ombre portée pendant le glisser.
@@ -26,6 +27,15 @@ Noms : `{accueil,partie,revue,mats}-{iphone,ipad}-{dark,light}.jpg` ; en plus, d
 
 Aucune pièce, icône, image, son ni logo de Chess.com n'est utilisé.
 
+## Les trois jeux de pièces (24/11)
+Captures prises par `node tests/pieces-shots.cjs docs/design/pieces [url]` : la même position (partie italienne après
+8 coups) avec chaque jeu, sur iPad paysage et iPhone, en thème sombre et clair, et le choix dans les Réglages.
+- `pieces/{relief,merida,maestro}-{ipad,iphone}-{dark,light}.jpg`
+- `pieces/reglages-{dark,light}.jpg`
+
+Les captures de `apres/` ont été refaites avec *Relief*, le jeu par défaut. Les pièces sont affichées en `<img>` : chaque
+SVG est un document à part, les identifiants internes de Relief (`L`, `D`, `sh`) ne peuvent donc pas entrer en conflit.
+
 ## Poids ajouté
 | Élément | Brut | Compressé (gzip) |
 |---|---|---|
@@ -36,3 +46,7 @@ Aucune pièce, icône, image, son ni logo de Chess.com n'est utilisé.
 | **Total** | **≈ 149 Ko** | **≈ 71 Ko** |
 
 Le précache hors ligne passe de 25 à 62 entrées (≈ 39,9 Mo → 40,1 Mo, surtout le modèle Maia).
+
+Mise à jour du 24/11 (jeux de pièces remplacés) : Relief 17 Ko, Merida 34 Ko, Maestro 53 Ko, soit ≈ 102 Ko bruts
+(≈ 44 Ko gzip, fichier par fichier) pour les 36 fichiers proposés ; le dossier source `cburnett/` n'est pas précaché.
+Le précache reste à 62 entrées (≈ 40,2 Mo).

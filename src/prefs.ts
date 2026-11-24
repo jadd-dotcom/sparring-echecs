@@ -5,17 +5,18 @@ import { useSyncExternalStore } from 'react';
 import { db } from './db';
 
 export type ThemePref = 'dark' | 'light' | 'auto';
-export type PieceSet = 'celtic' | 'merida' | 'cburnett';
+export type PieceSet = 'relief' | 'merida' | 'maestro';
 
-/** Jeux de pièces libres de Lichess (dépôt lila), licences compatibles GPLv3 — crédits dans le README. */
+/** Jeux de pièces (crédits dans le README) : Relief, tiré de cburnett (scripts/make-relief.py) ; Merida et Maestro,
+ *  repris du dépôt de Lichess (lila). Le jeu cburnett reste dans public/pieces/ comme source de Relief. */
 export const PIECE_SETS: { id: PieceSet; name: string; author: string; license: string }[] = [
-  { id: 'celtic', name: 'Celtic', author: 'Maurizio Monge', license: 'MIT' },
+  { id: 'relief', name: 'Relief', author: 'd’après Colin M.L. Burnett', license: 'GPLv2+' },
   { id: 'merida', name: 'Merida', author: 'Armando Hernandez Marroquin', license: 'GPLv2+' },
-  { id: 'cburnett', name: 'Cburnett', author: 'Colin M.L. Burnett', license: 'GPLv2+' },
+  { id: 'maestro', name: 'Maestro', author: 'sadsnake1', license: 'CC BY-NC-SA 4.0' },
 ];
 
 interface Prefs { theme: ThemePref; pieces: PieceSet }
-let prefs: Prefs = { theme: 'dark', pieces: 'celtic' };
+let prefs: Prefs = { theme: 'dark', pieces: 'relief' };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((f) => f());
 
@@ -38,7 +39,8 @@ export async function loadPrefs() {
   try { saved = localStorage.getItem('theme'); } catch { /* navigation privée */ }
   const themes = ['dark', 'light', 'auto'] as const;
   const theme = themes.find((x) => x === t?.value) ?? themes.find((x) => x === saved) ?? 'dark';
-  const pieces = PIECE_SETS.find((x) => x.id === p?.value)?.id ?? 'celtic';
+  // Ancien réglage (Celtic, Cburnett) ou absent → Relief, le jeu par défaut.
+  const pieces = PIECE_SETS.find((x) => x.id === p?.value)?.id ?? 'relief';
   prefs = { theme, pieces };
   apply();
   emit();

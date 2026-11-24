@@ -63,11 +63,16 @@ Déploiement : GitHub Actions → GitHub Pages (`.github/workflows/deploy.yml`).
 Code de l'appli : GPL-3.0 (imposée par Stockfish). Maia3-js : MIT. Stockfish.js : GPL-3.0.
 chess.js : BSD-2-Clause. react-chessboard : MIT. onnxruntime-web : MIT. Dexie : Apache-2.0.
 
-Apparence (toutes compatibles avec la GPL-3.0 de l'appli) :
-- **Pièces** — jeux libres repris du dépôt de Lichess (`lila/public/piece`), dans `public/pieces/` :
-  - *Celtic* (par défaut) : © Maurizio Monge, [chess-art](https://github.com/maurimo/chess-art), licence MIT ;
-  - *Merida* : © Armando Hernandez Marroquin, licence GPLv2 ou ultérieure ;
-  - *Cburnett* : © Colin M.L. Burnett, licence GPLv2 ou ultérieure.
+Apparence :
+- **Pièces** — trois jeux au choix (Réglages → Apparence), dans `public/pieces/` :
+  - *Relief* (par défaut) : créé à partir du jeu *cburnett* (© Colin M.L. Burnett, licence GPLv2 ou ultérieure, repris
+    du dépôt de Lichess `lila/public/piece/cburnett`) par `scripts/make-relief.py` (dégradés et ombre portée) ; même
+    licence GPLv2 ou ultérieure. Le dossier `cburnett/` reste dans le dépôt comme source du script (il n'est pas proposé
+    dans les réglages ni précaché) ;
+  - *Merida* : © Armando Hernandez Marroquin, licence GPLv2 ou ultérieure (repris de `lila/public/piece/merida`) ;
+  - *Maestro* : © sadsnake1, licence [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) (repris de
+    `lila/public/piece/maestro`). Attention : licence **non commerciale** ; ces 12 fichiers gardent leur propre licence
+    (ils ne sont pas couverts par la GPL de l'appli) et l'appli ne doit pas être utilisée commercialement avec eux.
 - **Police** : Inter, © The Inter Project Authors, SIL Open Font License 1.1 (sous-ensemble latin, `src/assets/fonts/`,
   licence dans `src/assets/fonts/Inter-OFL.txt`), servie avec l'appli pour le hors ligne.
 - **Icônes** : [Lucide](https://lucide.dev), licence ISC. Les pastilles de classement des coups sont dessinées pour l'appli.
