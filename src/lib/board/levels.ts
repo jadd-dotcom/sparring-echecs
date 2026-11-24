@@ -22,6 +22,8 @@ export interface Level {
 }
 
 const T30: TestSpec = { type: 'timed', seconds: 30, minCorrect: 25, maxErrors: 1, passesNeeded: 3 };
+/** Nommer une case au clavier (deux touches par réponse) : 20 bonnes réponses en 30 s. */
+const T30_NAME: TestSpec = { type: 'timed', seconds: 30, minCorrect: 20, maxErrors: 1, passesNeeded: 3 };
 const Q20: TestSpec = { type: 'count', questions: 20, minCorrect: 19, maxMedianMs: 3000 };
 const Q10: TestSpec = { type: 'count', questions: 10, minCorrect: 9 };
 
@@ -30,10 +32,10 @@ export const LEVELS: Level[] = [
   { id: '1b', chapter: 1, title: 'Rangées', kind: 'rank', side: 'w', test: T30 },
   { id: '1c', chapter: 1, title: 'Trouver une case (coordonnées affichées)', kind: 'find', side: 'w', coords: true, test: T30 },
   { id: '1d', chapter: 1, title: 'Trouver une case (coordonnées cachées)', kind: 'find', side: 'w', test: T30 },
-  { id: '1e', chapter: 1, title: 'Nommer une case', kind: 'name', side: 'w', test: T30 },
+  { id: '1e', chapter: 1, title: 'Nommer une case', kind: 'name', side: 'w', test: T30_NAME },
   { id: '2c', chapter: 2, title: 'Trouver une case (coordonnées affichées)', kind: 'find', side: 'b', coords: true, test: T30 },
   { id: '2d', chapter: 2, title: 'Trouver une case (coordonnées cachées)', kind: 'find', side: 'b', test: T30 },
-  { id: '2e', chapter: 2, title: 'Nommer une case', kind: 'name', side: 'b', test: T30 },
+  { id: '2e', chapter: 2, title: 'Nommer une case', kind: 'name', side: 'b', test: T30_NAME },
   { id: '3', chapter: 3, title: 'Couleur des cases', kind: 'color', side: 'w', test: Q20 },
   { id: '4', chapter: 4, title: 'Diagonales', kind: 'diag', side: 'w', test: Q20 },
   { id: '5', chapter: 5, title: 'Pièces', kind: 'piece', side: 'w', test: Q20 },
@@ -41,8 +43,10 @@ export const LEVELS: Level[] = [
   { id: '6-4', chapter: 6, title: 'Visualisation : 4 demi-coups', kind: 'visu', side: 'w', plies: 4, test: Q10 },
   { id: '6-6', chapter: 6, title: 'Visualisation : 6 demi-coups', kind: 'visu', side: 'w', plies: 6, test: Q10 },
   { id: '6-8', chapter: 6, title: 'Visualisation : 8 demi-coups', kind: 'visu', side: 'w', plies: 8, test: Q10 },
+  { id: '6-12', chapter: 6, title: 'Visualisation : 12 demi-coups', kind: 'visu', side: 'w', plies: 12, test: Q10 },
+  { id: '6-16', chapter: 6, title: 'Visualisation : 16 demi-coups', kind: 'visu', side: 'w', plies: 16, test: Q10 },
   { id: '7a', chapter: 7, title: 'Rejouer de tête des parties courtes', kind: 'replay', side: 'w', test: { type: 'none' } },
-  { id: '7b', chapter: 7, title: 'Partie à l’aveugle contre Maia', kind: 'blind', side: 'w', test: { type: 'blind', maxPeeks: 3, minMovesIfResign: 20 } },
+  { id: '7b', chapter: 7, title: 'Partie à l’aveugle contre Maia', kind: 'blind', side: 'w', test: { type: 'blind', maxPeeks: 3, minMovesIfResign: 30 } },
 ];
 
 export const CHAPTERS: { n: number; title: string }[] = [
