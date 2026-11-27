@@ -1,4 +1,5 @@
 // En partie : navigation en lecture seule, dernier coup affiché, sons ; assistance seulement en partie non comptée.
+const { gameEnded, reviewAfterGame } = require('./lib.cjs');
 const { chromium, devices } = require('playwright');
 const { Chess } = require('chess.js');
 const OUT = process.argv[2];
@@ -78,7 +79,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(true, 'échiquier débloqué : à toi de jouer');
   await p.getByRole('button', { name: /Abandonner/ }).tap();
   await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
-  await p.getByRole('button', { name: 'Analyser mes coups' }).waitFor();
+  await gameEnded(p);
 
   // ---------- partie non comptée : assistance
   await home();

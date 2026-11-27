@@ -9,6 +9,7 @@ export type Route =
   | { name: 'review'; id: number }
   | { name: 'revise'; opening?: string }
   | { name: 'cards' }
+  | { name: 'comment'; id?: number }
   | { name: 'openings' }
   | { name: 'repertoire'; id: string }
   | { name: 'stats' }
@@ -23,6 +24,7 @@ export function parse(fullHash: string): Route {
   const [name, arg] = hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
   if (name === 'play') return { name, ...(arg ? { opening: arg } : {}), ...(query.split('&').includes('nc') ? { unrated: true } : {}) };
   if (name === 'review' && arg) return { name: 'review', id: Number(arg) };
+  if (name === 'comment') return arg ? { name, id: Number(arg) } : { name };
   if (name === 'repertoire' && arg) return { name: 'repertoire', id: arg };
   if (name === 'lesson' && arg) {
     const part = hash.replace(/^#\/?/, '').split('/')[2];
@@ -47,7 +49,7 @@ export function parse(fullHash: string): Route {
 }
 
 export function go(r: Route) {
-  const arg = r.name === 'review' ? r.id : r.name === 'repertoire' || r.name === 'lesson' ? r.id
+  const arg = r.name === 'review' || r.name === 'comment' ? r.id : r.name === 'repertoire' || r.name === 'lesson' ? r.id
     : (r.name === 'play' || r.name === 'revise') ? r.opening : undefined;
   if (r.name === 'lesson' && r.part) { location.hash = `/lesson/${encodeURIComponent(r.id)}/${encodeURIComponent(r.part)}`; return; }
   if (r.name === 'play') { location.hash = `/play${r.opening ? '/' + encodeURIComponent(r.opening) : ''}${r.unrated ? '?nc' : ''}`; return; }

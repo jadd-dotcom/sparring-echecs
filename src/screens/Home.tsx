@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { db, getCurrent, getProfile, type Profile } from '../db';
 import { botRating, CALIBRATION_GAMES } from '../lib/rating';
 import { colorForNewGame, gamesSinceCalibration, inCalibration } from '../lib/profile';
@@ -9,6 +9,9 @@ import { BookOpen, ChartLine, CircleCheck, Crown, FileText, Flame, Grid3x3, Laye
 import { getBoardProgress } from '../boardService';
 import { dueChapters } from '../lib/board/levels';
 import { dayKey } from '../lib/srs';
+import { errorsToComment } from '../lib/commentQueue';
+import { bgAnalysis } from '../chesscomImport';
+import { MessageCircleQuestion } from '../icons';
 
 export default function Home() {
   const [p, setP] = useState<Profile | null>(null);
@@ -18,6 +21,10 @@ export default function Home() {
   const [unrated, setUnrated] = useState(false);
   const [boardDue, setBoardDue] = useState(0);
   const [offline, setOffline] = useState<string>(isOfflineReady() ? 'ready' : '');
+  const [toComment, setToComment] = useState(0);
+  const bg = useSyncExternalStore(bgAnalysis.subscribe, bgAnalysis.get);
+  // Erreurs à commenter : recalculées à l'ouverture et à chaque fin d'analyse en arrière-plan (parties importées).
+  useEffect(() => { db.games.toArray().then((gs) => setToComment(errorsToComment(gs).length)); }, [bg.running, bg.last?.at]);
   useEffect(() => {
     (async () => {
       // Tout charger avant le premier affichage (pas de « Jouer » qui devient « Reprendre la partie »).
@@ -60,6 +67,11 @@ export default function Home() {
           : `${due} position${due > 1 ? 's' : ''} à revoir aujourd’hui`}
       </button>
       {total > 0 && <button className="ghost small all-cards" onClick={() => go({ name: 'cards' })}>Voir toutes mes cartes</button>}
+      {toComment > 0 && (
+        <button className="comment-badge" data-testid="to-comment" onClick={() => go({ name: 'comment' })}>
+          <MessageCircleQuestion aria-hidden className="ico" />{toComment} erreur{toComment > 1 ? 's' : ''} à commenter
+        </button>
+      )}
       <div className="row">
         <button className="huge" onClick={() => go({ name: 'openings' })}><BookOpen aria-hidden className="ico" />Ouvertures</button>
         <button className="huge" onClick={() => go({ name: 'mates' })}><Crown aria-hidden className="ico" />Mats élémentaires</button>

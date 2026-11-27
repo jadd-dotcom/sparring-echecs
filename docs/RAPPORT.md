@@ -324,3 +324,18 @@
   facultatif ; la réponse reste modifiable.
 - Rapport pour Claude : tableau « Ce que je pensais, par motif » (réponses × motifs + « sans réponse ») ; la réponse
   apparaît aussi dans « Mes coups les plus coûteux » et en commentaire des PGN annotés.
+
+## Import automatique et « ce que je pensais » au bon moment (27/11)
+- **Import Chess.com automatique** : à chaque ouverture de l'appli avec Internet, si un pseudo est enregistré, les
+  nouvelles parties sont importées sans toucher de bouton (mêmes règles : requêtes une à une, mois passés jamais
+  redemandés ; pas deux imports à moins de 2 minutes). Message discret « X nouvelles parties importées » (rien s'il n'y en
+  a pas, rien en cas d'erreur). Analyse comme avant (parties depuis le 16/11/2026, les plus récentes d'abord), en
+  arrière-plan : une seule série à la fois pour toute l'appli, visible et arrêtable dans les Réglages, en pause pendant
+  une partie contre Maia.
+- **Fin d'une partie contre Maia** : avant tout autre écran, le résultat, l'analyse de mes coups, puis chacune de mes
+  erreurs et gaffes : position AVANT mon coup, mon coup en flèche rouge, les 5 réponses en un toucher, PUIS le meilleur
+  coup (flèche verte, raison, réfutation) et le texte libre facultatif. « Plus tard » à tout moment ; ensuite « Revoir
+  la partie », « Nouvelle partie » ou « Accueil ».
+- **Accueil** : badge « X erreurs à commenter » (parties importées analysées et « plus tard », jouées depuis le 16/11)
+  qui ouvre le même écran, les parties les plus récentes d'abord.
+- Le rapport pour Claude garde le tableau « Ce que je pensais, par motif ».

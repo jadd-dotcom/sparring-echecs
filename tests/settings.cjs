@@ -1,4 +1,5 @@
 // Réglages : couleur (Alterner / Blancs / Noirs), alternance après abandon et partie interrompue, niveau à la main.
+const { gameEnded, reviewAfterGame } = require('./lib.cjs');
 const { chromium, devices } = require('playwright');
 const OUT = process.argv[2];
 const URL = process.argv[3] || 'http://localhost:4173/sparring-echecs/';
@@ -18,7 +19,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   const resign = async () => {
     await p.getByRole('button', { name: /Abandonner/ }).tap();
     await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
-    await p.getByRole('button', { name: 'Analyser mes coups' }).waitFor();
+    await gameEnded(p);
   };
   /** Lance une partie depuis l'accueil et renvoie la partie en cours. */
   const start = async () => { await playBtn().tap(); return waitFor(cur); };

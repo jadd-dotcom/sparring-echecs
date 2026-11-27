@@ -1,4 +1,5 @@
 // Annuler une partie (5 premiers coups, sans effet) et « Partie non comptée » (analysée, sans effet sur le niveau).
+const { gameEnded, reviewAfterGame } = require('./lib.cjs');
 const { chromium, devices } = require('playwright');
 const { Chess } = require('chess.js');
 const OUT = process.argv[2];
@@ -29,7 +30,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   const resign = async () => {
     await p.getByRole('button', { name: /Abandonner/ }).tap();
     await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
-    await p.getByRole('button', { name: 'Analyser mes coups' }).waitFor();
+    await gameEnded(p);
   };
 
   await home();
@@ -81,7 +82,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   const p4 = await prof();
   assert(p4.rating === p2.rating && p4.gamesPlayed === p2.gamesPlayed, 'défaite non comptée : niveau et calibration inchangés');
   assert(p4.nextColor !== g4.myColor, 'la couleur alterne quand même');
-  await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
+  await reviewAfterGame(p);
   await p.locator('table.classes').waitFor({ timeout: 180000 });
   const last = await p.evaluate(() => window.__db.games.toArray().then((a) => a[a.length - 1]));
   assert(last.unrated && last.analysis?.length > 0 && last.ratingAfter === last.ratingBefore, 'partie non comptée enregistrée et analysée normalement');

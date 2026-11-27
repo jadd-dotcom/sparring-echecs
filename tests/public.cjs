@@ -1,5 +1,6 @@
 // Test de l'URL publique (GitHub Pages) sur iPad émulé : chargement, partie contre Maia, analyse, puis hors ligne.
 // Usage : PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 node tests/public.cjs https://jadd-dotcom.github.io/sparring-echecs/
+const { gameEnded, reviewAfterGame } = require('./lib.cjs');
 const { chromium, devices } = require('playwright');
 const { Chess } = require('chess.js');
 const URL = process.argv[2] || 'https://jadd-dotcom.github.io/sparring-echecs/';
@@ -47,7 +48,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByRole('button', { name: /Abandonner/ }).tap();
   await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
   const ta = Date.now();
-  await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
+  await reviewAfterGame(p);
   await p.locator('table.classes').waitFor({ timeout: 300000 });
   assert(true, `analyse Stockfish en ligne : ${((Date.now() - ta) / 1000).toFixed(1)} s`);
 
@@ -101,7 +102,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(true, 'Maia répond hors ligne');
   await p.getByRole('button', { name: /Abandonner/ }).tap();
   await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
-  await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
+  await reviewAfterGame(p);
   await p.locator('table.classes').waitFor({ timeout: 120000 });
   assert(true, 'analyse Stockfish hors ligne');
   await p.goto(URL + '#/mates');

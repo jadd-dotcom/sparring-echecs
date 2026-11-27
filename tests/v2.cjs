@@ -1,4 +1,5 @@
 // V2 — parcours « Ouvertures » sur iPad émulé : partie à thème, sorties, trous, drill, éditeur, stats.
+const { gameEnded, reviewAfterGame } = require('./lib.cjs');
 const { chromium, devices } = require('playwright');
 const OUT = process.argv[2];
 const URL = process.argv[3] || 'http://localhost:4173/sparring-echecs/';
@@ -23,7 +24,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   const resign = async () => {
     await p.getByRole('button', { name: /Abandonner/ }).tap();
     await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
-    await p.getByRole('button', { name: 'Analyser mes coups' }).waitFor();
+    await gameEnded(p);
   };
   const lastGame = () => p.evaluate(() => window.__db.games.toArray().then((a) => a[a.length - 1]));
 
@@ -51,7 +52,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(prof.nextColor === 'w', 'la partie à thème ne change pas l’alternance des couleurs');
 
   // Revue : la sortie est signalée avec le coup prévu
-  await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
+  await reviewAfterGame(p);
   await p.locator('table.classes').waitFor({ timeout: 120000 });
   await p.getByText(/Sortie du répertoire/).waitFor();
   await p.screenshot({ path: OUT + '/v2-3-revue-sortie.png' });

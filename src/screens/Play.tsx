@@ -67,6 +67,8 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
     setEnded((await db.games.get(id))!);
     // Partie à thème : sortie du répertoire + trou éventuel (Stockfish), en arrière-plan.
     if (g.openingId) recordBookExit(id).catch(console.error);
+    // Avant tout autre écran : résultat, puis mes erreurs et gaffes à commenter (« ce que je pensais »).
+    go({ name: 'comment', id });
   }, []);
 
   const apply = useCallback(async (g: CurrentGame, uci: string, ms?: number) => {
@@ -276,22 +278,6 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
         </div></div>
       )}
 
-      {ended && (
-        <div className="modal"><div className="modal-box">
-          <h2>{ended.score === 1 ? 'Victoire !' : ended.score === 0 ? 'Défaite' : 'Partie nulle'}</h2>
-          <p>{ended.termination} · {ended.result}</p>
-          {ended.unrated
-            ? <p>Partie non comptée : ton niveau reste à <b>{Math.round(ended.ratingBefore!)}</b>.</p>
-            : <p>Niveau : {Math.round(ended.ratingBefore!)} → <b>{Math.round(ended.ratingAfter!)}</b>{' '}
-              ({ended.ratingAfter! - ended.ratingBefore! >= 0 ? '+' : ''}{Math.round(ended.ratingAfter! - ended.ratingBefore!)})</p>}
-          <div className="col">
-            <button className="primary" onClick={() => go({ name: 'review', id: ended.id! })}>Analyser mes coups</button>
-            <button onClick={async () => { busy.current = false; setEnded(null); setMsg(null); setCur(await newCurrentGame(op?.id, { unrated: cur.unrated })); }}>
-              {op ? `Rejouer : ${op.name}` : 'Nouvelle partie'}
-            </button>
-          </div>
-        </div></div>
-      )}
     </div>
   );
 }

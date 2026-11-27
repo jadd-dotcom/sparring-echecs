@@ -1,4 +1,5 @@
 // Parcours tactile complet sur tablette : jouer (tap), abandon, analyse, revue, révision, stats, export.
+const { gameEnded, reviewAfterGame } = require('./lib.cjs');
 const { chromium, devices } = require('playwright');
 const { Chess } = require('chess.js');
 const OUT = process.argv[2];
@@ -71,16 +72,16 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
     await p.getByRole('button', { name: /Abandonner/ }).tap();
     await p.getByRole('dialog').or(p.locator('.modal-box')).first().getByRole('button', { name: 'Abandonner' }).tap();
   }
-  await p.getByRole('button', { name: 'Analyser mes coups' }).waitFor();
+  await gameEnded(p);
   await p.screenshot({ path: OUT + '/2-fin.png' });
   const prof = await p.evaluate(() => window.__db.meta.get('profile').then((m) => m.value));
   assert(prof.gamesPlayed === 1 && prof.nextColor === 'b', `profil mis à jour (niveau ${prof.rating.toFixed(1)}, prochaine couleur Noirs)`);
 
   // Analyse
   const t0 = Date.now();
-  await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
-  await p.getByText(/Analyse de la partie/).waitFor();
+  await p.getByTestId('comment-analysing').waitFor();
   await p.screenshot({ path: OUT + '/3-analyse.png' });
+  await reviewAfterGame(p);
   await p.locator('table.classes').waitFor({ timeout: 180000 });
   const g = await p.evaluate(() => window.__db.games.toArray().then((a) => a[0]));
   assert(g.analysis.length === Math.ceil(g.uci.length / 2), `analyse de ${g.analysis.length} coups en ${((Date.now() - t0) / 1000).toFixed(1)} s`);
