@@ -13,11 +13,12 @@ import {
   checkMove, lessonWhy, lineKey, linePlan, myMoveCount, orderedLines, pickLine, refusalStep, startRound,
   validatedCount, withError, withLineDone, type Line, type LineProgress,
 } from '../lib/lineTrainer';
-import { continueAsGame, getLineProgress, saveLineProgress } from '../linesService';
+import { continueAsGame, getLineProgress, getLineSession, saveLineProgress, saveLineSession, type LineSession } from '../linesService';
+import { crossroads, lastCrossroadPly } from '../lib/crossroads';
 import { fig } from '../lib/notation';
 import { answerFeedback, loadSoundSetting, soundForMove } from '../sound';
 import { go } from '../router';
-import { Check, CircleX, Play as PlayIcon } from '../icons';
+import { Check, CircleX, Play as PlayIcon, Repeat, RotateCcw } from '../icons';
 
 const OPP_DELAY = 550;
 
@@ -38,14 +39,30 @@ const positionOf = (uci: string[]) => {
   return c;
 };
 
-export default function PlayLines({ id }: { id: string }) {
+export default function PlayLines({ id, sel }: { id: string; sel?: boolean }) {
   const [opening, setOpening] = useState<Opening | null>(null);
   const [progress, setProgress] = useState<LineProgress | null>(null);
   const [run, setRun] = useState<Run | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  // Entraînement d'une sélection (onglet « Lignes ») : ordre, départ au carrefour ou au 1er coup, boucle.
+  const [session, setSession] = useState<LineSession | null>(null);
+  const [selDone, setSelDone] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lesson = OPENING_LESSONS.find((l) => l.openingId === id);
   const ordered = useMemo(() => (opening ? orderedLines(treeOf(opening), lesson) : []), [opening, lesson]);
+
+  /** Démarre une ligne ; « départ au carrefour » : les coups d'avant son dernier carrefour se jouent tout de suite. */
+  function launch(o: Opening, line: Line, start: 'carrefour' | 'first') {
+    let ply = 0;
+    const played: string[] = [];
+    if (start === 'carrefour') {
+      const pre = lastCrossroadPly(line, crossroads(treeOf(o), o.color));
+      const c = new Chess();
+      for (let i = 0; i < Math.max(0, pre); i++) { const m = c.move(line[i]); played.push(m.from + m.to + (m.promotion ?? '')); }
+      ply = Math.max(0, pre);
+    }
+    setRun({ line, ply, played, refusals: 0, errors: 0, solution: null, msg: null, done: false });
+  }
 
   /** Choisit la ligne suivante (nouveau tour si toutes ont le ✓) et la démarre. */
   async function startNext(o: Opening, p: LineProgress, ls: Line[]) {
@@ -53,8 +70,22 @@ export default function PlayLines({ id }: { id: string }) {
     const pick = pickLine(ls, prog);
     if (pick.newRound) { prog = startRound(prog); await saveLineProgress(o.id, prog); }
     setProgress(prog);
-    setRun({ line: ls[pick.index], ply: 0, played: [], refusals: 0, errors: 0, solution: null, msg: null, done: false });
+    launch(o, ls[pick.index], 'first');
     setInfo(pick.newRound ? `Toutes les lignes sont validées : nouveau tour (tour ${prog.round}).` : null);
+  }
+
+  /** Sélection : la ligne n° `i` (en boucle, on repart du début). */
+  function startSel(o: Opening, ses: LineSession, ls: Line[], i: number) {
+    if (i >= ses.keys.length) {
+      if (!ses.loop) { setSelDone(true); return; }
+      i = 0;
+      setInfo('Sélection recommencée (en boucle).');
+    } else setInfo(null);
+    const next = { ...ses, i };
+    setSession(next);
+    saveLineSession(next).catch(() => {});
+    const line = ls.find((l) => lineKey(l) === ses.keys[i]) ?? ls[0];
+    launch(o, line, ses.start);
   }
 
   useEffect(() => {
@@ -64,7 +95,10 @@ export default function PlayLines({ id }: { id: string }) {
       if (!o) return;
       setOpening(o);
       const ls = orderedLines(treeOf(o), OPENING_LESSONS.find((l) => l.openingId === id));
-      await startNext(o, await getLineProgress(id), ls);
+      const prog = await getLineProgress(id);
+      const ses = sel ? await getLineSession(id) : null;
+      if (ses) { setProgress(prog); startSel(o, ses, ls, ses.i); }
+      else await startNext(o, prog, ls);
     })();
     return () => { if (timer.current) clearTimeout(timer.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -92,6 +126,17 @@ export default function PlayLines({ id }: { id: string }) {
     return () => { if (timer.current) clearTimeout(timer.current); };
   }, [run, chess, me, opening, progress]);
 
+  if (selDone && opening) {
+    return (
+      <div className="card" data-testid="selection-done">
+        <h3><Check aria-hidden className="ico good-text" /> Sélection terminée</h3>
+        <div className="row">
+          <button className="primary" onClick={() => { setSelDone(false); if (session) startSel(opening, session, ordered, 0); }}><RotateCcw aria-hidden className="ico" />Recommencer la sélection</button>
+          <button onClick={() => go({ name: 'opening', id: opening.id, tab: 'lignes' })}>Retour aux lignes</button>
+        </div>
+      </div>
+    );
+  }
   if (!opening || !run || !progress) return null;
   const lineIdx = ordered.findIndex((l) => lineKey(l) === lineKey(run.line));
   const count = myMoveCount(run.line, run.ply, me);
@@ -131,7 +176,13 @@ export default function PlayLines({ id }: { id: string }) {
 
   async function next() {
     if (!opening || !progress) return;
-    await startNext(opening, progress, ordered);
+    if (session) startSel(opening, session, ordered, session.i + 1);
+    else await startNext(opening, progress, ordered);
+  }
+  /** Rejouer la ligne qu'on vient de finir (validée ou non), avec le même départ. */
+  function replay() {
+    if (!opening || !run) return;
+    launch(opening, run.line, session?.start ?? 'first');
   }
 
   async function continueGame() {
@@ -152,12 +203,13 @@ export default function PlayLines({ id }: { id: string }) {
   const done = validatedCount(ordered, progress);
 
   return (
-    <div className="play play-lines" data-line={lineIdx + 1} data-ply={run.ply} data-expected={myTurn ? run.line[run.ply] : ''}>
+    <div className="play play-lines" data-line={lineIdx + 1} data-ply={run.ply} data-expected={myTurn ? run.line[run.ply] : ''} data-fen={chess.fen()} data-key={lineKey(run.line)}>
       <div className="board-col">
         <div className="lines-banner" data-testid="lines-banner">
           <b>{opening.name}</b>
           <span>· Ligne {lineIdx + 1}/{ordered.length}</span>
           <span>· Coup {count.current}/{count.total}</span>
+          {session && <span>· Sélection {session.i + 1}/{session.keys.length}{session.loop ? ' ' : ''}{session.loop && <Repeat aria-label="en boucle" className="ico sm" />}</span>}
           {status === 'redo' && <span className="tag st-bad">à refaire</span>}
           {status === 'ok' && <span className="tag st-good"><Check aria-hidden className="ico sm" /> validée</span>}
         </div>
@@ -189,8 +241,9 @@ export default function PlayLines({ id }: { id: string }) {
             {plan?.block && <><p><b>{plan.block.title}</b></p><p className="muted small">{fig(plainText(plan.block.intro))}</p></>}
             {plan && <><p><b>Le plan</b></p><ul className="plan">{plan.plan.map((t, i) => <li key={i}>{fig(plainText(t))}</li>)}</ul></>}
             <div className="row">
+              <button onClick={replay} data-testid="line-replay"><RotateCcw aria-hidden className="ico" />Rejouer cette ligne</button>
+              <button className="primary" onClick={next} data-testid="line-next">{session ? (session.keys.length > 1 || session.loop ? 'Ligne suivante de la sélection' : 'Fin de la sélection') : 'Ligne suivante'}</button>
               <button onClick={continueGame}><PlayIcon aria-hidden className="ico" />Continuer la partie</button>
-              <button className="primary" onClick={next}>Ligne suivante</button>
             </div>
             <p className="muted small">« Continuer la partie » : Maia à ton niveau reprend depuis cette position (partie non comptée, analysée comme les autres).</p>
           </div>

@@ -9,7 +9,7 @@ import { dayKey } from '../lib/srs';
 import { getLessonProgress, setArchived, syncDrillCards, type LessonProgress } from '../openings';
 import { BUILTIN_OPENINGS } from '../data/openings';
 import { OPENING_LESSONS } from '../data/openingLessons';
-import { Check } from '../icons';
+import { Check, ChevronRight } from '../icons';
 
 interface Row { o: Opening; lines: number; due: number; fresh: number; holes: number; lesson?: LessonProgress; linesOk: number }
 
@@ -80,7 +80,7 @@ export default function Openings() {
       {shown.map(({ o, lines: n, due, fresh, holes, lesson, linesOk }) => (
         <section key={o.id} className="card opening" data-opening={o.id}>
           <div className="opening-head">
-            <h3>{o.name}</h3>
+            <h3><button className="link-title" onClick={() => go({ name: 'opening', id: o.id })} data-testid={`open-${o.id}`}>{o.name} <ChevronRight aria-hidden className="ico sm" /></button></h3>
             <span className="muted">{o.color === 'w' ? 'Blancs' : 'Noirs'} · {n} ligne{n > 1 ? 's' : ''}
               {o.forced.length > 0 && <> · l’adversaire joue {fig(o.forced.map((f) => f.split('|').join(' ou ')).join(', '))}</>}</span>
           </div>

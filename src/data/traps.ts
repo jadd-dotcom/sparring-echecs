@@ -18,6 +18,8 @@ export interface TrapDef {
   name: string;
   /** Chapitre 3 : l'ouverture de mon répertoire concernée. */
   opening?: string;
+  /** Ouvertures de mon répertoire où ce piège peut arriver (onglet « Pièges » de leur page). */
+  openings?: string[];
   /** Suite depuis la position de départ jusqu'au moment critique (la victime a le trait). */
   line: string[];
   /** Le coup fautif de la victime. */
@@ -115,7 +117,7 @@ export const TRAPS: TrapDef[] = [
     hintPunish: 'Ton cavalier peut bouger en découvrant un échec de ta dame, et attaquer sa dame en même temps.',
   },
   {
-    id: 'b2', chapter: 'dame', name: 'Pion empoisonné en b2',
+    id: 'b2', openings: ['london'], chapter: 'dame', name: 'Pion empoisonné en b2',
     line: ['d4', 'd5', 'Bf4', 'c5', 'e3', 'Qb6', 'Nc3'], blunder: 'Qxb2', punish: ['Nxd5', 'Bf5', 'Rb1', 'Qxa2', 'Nc7+'],
     good: ['Nf6', 'e6'], gain: 'du matériel',
     lesson: ['Son pion b2 semble gratuit, mais si ta dame le prend, elle s’éloigne de ton roi.',
@@ -127,7 +129,7 @@ export const TRAPS: TrapDef[] = [
 
   // ------------------------------------------------------------------ 3. Pièges de mes ouvertures
   {
-    id: 'englund', chapter: 'mes', opening: 'Londres (contre 1…e5, gambit Englund)', name: 'Gambit Englund : le fou en c3',
+    id: 'englund', openings: ['london'], chapter: 'mes', opening: 'Londres (contre 1…e5, gambit Englund)', name: 'Gambit Englund : le fou en c3',
     line: ['d4', 'e5', 'dxe5', 'Nc6', 'Nf3', 'Qe7', 'Bf4', 'Qb4+', 'Bd2', 'Qxb2'], blunder: 'Bc3', punish: ['Bb4', 'Bd2', 'Qxa1'],
     good: ['Nc3'], gain: 'la tour (et le mat si sa dame vient en d2)',
     lesson: ['Sa dame prend b2 et vise ta tour en a1 ; ton fou en c3 la chasserait, mais il pourrait être cloué.',
@@ -137,7 +139,7 @@ export const TRAPS: TrapDef[] = [
     hintPunish: 'Son fou en c3 est seul devant sa dame et son roi : cloue-le avec ton fou.',
   },
   {
-    id: 'anglaise-d5', chapter: 'mes', opening: 'Anglaise', name: 'Anglaise : reprendre en d5 avec la dame',
+    id: 'anglaise-d5', openings: ['english'], chapter: 'mes', opening: 'Anglaise', name: 'Anglaise : reprendre en d5 avec la dame',
     line: ['c4', 'e5', 'Nc3', 'Nf6', 'g3', 'd5', 'cxd5'], blunder: 'Qxd5', punish: ['Nxd5', 'Nxd5'], good: ['Nxd5'], gain: 'la dame',
     lesson: ['Après l’échange en d5, cette case est surveillée par son cavalier en c3.',
       'Si ta dame reprend en d5, son cavalier la prend : tu perds ta dame contre un cavalier.'],
@@ -146,7 +148,7 @@ export const TRAPS: TrapDef[] = [
     hintPunish: 'Sa dame est sur une case que ton cavalier surveille.',
   },
   {
-    id: 'g6-f3', chapter: 'mes', opening: 'Système …c5 / …g6', name: 'Mon système …g6 contre le fou c4 et la dame f3',
+    id: 'g6-f3', openings: ['g6-system'], chapter: 'mes', opening: 'Système …c5 / …g6', name: 'Mon système …g6 contre le fou c4 et la dame f3',
     line: ['e4', 'c5', 'Bc4', 'Nc6', 'Qf3'], blunder: 'g6', punish: ['Qxf7#'], good: ['Nf6', 'e6'], gain: 'le mat',
     lesson: ['Contre sa dame en f3 et son fou en c4, le coup automatique de mon système (pion g6) laisse f7 sans défense.',
       'Sa dame prend f7 : échec et mat, car son fou la protège.'],
@@ -155,7 +157,7 @@ export const TRAPS: TrapDef[] = [
     hintPunish: 'La case f7 n’est défendue que par son roi.',
   },
   {
-    id: 'londres-def-g6', chapter: 'mes', opening: 'Londres en défense (contre cavalier c3, pions f3, g4, h4)', name: 'Londres en défense : le fou g6 enfermé',
+    id: 'londres-def-g6', openings: ['london-def'], chapter: 'mes', opening: 'Londres en défense (contre cavalier c3, pions f3, g4, h4)', name: 'Londres en défense : le fou g6 enfermé',
     line: ['d4', 'd5', 'Nc3', 'Nf6', 'Bf4', 'c6', 'e3', 'Bf5', 'f3', 'e6', 'g4', 'Bg6', 'h4'], blunder: 'Nbd7', punish: ['h5', 'Bxh5', 'gxh5'],
     good: ['h5', 'h6'], gain: 'une pièce',
     lesson: ['Contre ses pions g4 et h4, ton fou en g6 n’a presque plus de cases : le pion h5 le prendrait au piège.',

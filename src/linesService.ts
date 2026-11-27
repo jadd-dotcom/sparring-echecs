@@ -35,3 +35,12 @@ export async function continueAsGame(openingId: string, myColor: 'w' | 'b', uci:
   await setCurrent(g);
   return g;
 }
+
+/** Entraînement d'une sélection de lignes (onglet « Lignes ») : ordre, départ, boucle, ligne en cours. */
+export interface LineSession { openingId: string; keys: string[]; start: 'carrefour' | 'first'; loop: boolean; i: number }
+
+export async function getLineSession(openingId: string): Promise<LineSession | null> {
+  const s = (await db.meta.get('lineSession'))?.value as LineSession | undefined;
+  return s && s.openingId === openingId && s.keys.length ? s : null;
+}
+export const saveLineSession = (s: LineSession) => db.meta.put({ key: 'lineSession', value: s });

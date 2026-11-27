@@ -525,3 +525,26 @@ pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur �
 - Tests : `src/lib/dailyPlan.test.ts` (plafond et priorités, étapes, piège du jour) ; `tests/today.cjs` (chip,
   séance, couleurs et tailles, retour au parent, étape cochée au retour, plafond réglable, onglets) ; les tests
   existants passent par les onglets.
+
+## Refonte, étape 3 : page d'une ouverture (27/11)
+- Ouvertures › une ouverture : page à onglets **Leçon / Lignes / Carrefours / Pièges**, en-tête
+  « Leçon x/y · Lignes x/y · Carrefours x/y ». Retour = parent (« ‹ Londres en défense » depuis la leçon ou les lignes).
+- **Leçon** : sommaire (blocs de la ligne principale, Le plan, La partie type, lignes supplémentaires groupées par
+  bloc) avec statut fait / en cours / pas commencé et compteurs (rejoué, erreurs, tours en boucle) ; carte
+  « Reprendre où je me suis arrêté » (bloc + étape + coup enregistrés) ; chaque bloc : Regarder · Rejouer · ↻ en
+  boucle (le bloc recommence seul, tour n et erreurs comptés, jusqu'à « Arrêter la boucle »). Dans un bloc : ◀ ▶ et
+  « Recommencer ce bloc » ; les coups d'avant le bloc sont déjà placés. État dans IndexedDB (`lessonState:<id>`),
+  écritures en file (aucune ne s'écrase).
+- **Lignes** : arbre groupé par carrefours (positions où son coup change ma réponse), chaque nœud « son coup → mon
+  coup » ; nom de ligne : celui de la leçon, sinon le coup-panneau (ex. « 2.♘c3 »). Filtres Toutes / À refaire /
+  Jamais jouées / Validées ; par ligne : statut, Jouer, ↻ en boucle, case à cocher. Barre du bas : « Entraîner la
+  sélection », départ « au carrefour » (les coups d'avant sont joués tout de suite) ou « au 1er coup », option « En
+  boucle ». Fin de ligne : « Rejouer cette ligne », « Ligne suivante de la sélection », « Continuer la partie ». Une
+  ligne validée se rejoue à volonté ; une erreur la repasse « À refaire ».
+- **Carrefours** : la liste des carrefours et de leurs coups-panneaux (l'exercice arrive avec le mode Carrefours).
+  **Pièges** : les pièges de cette ouverture (Englund et pion b2 pour le Londres, etc.).
+- Partout : un exercice réussi se refait depuis sa liste, avec **Refaire** et **Suivant** en fin d'exercice
+  (pièges, mats élémentaires, maîtrise de l'échiquier).
+- Tests : `src/lib/crossroads.test.ts` (carrefours, arbre, noms), `src/lib/lessonPlan.test.ts` (sommaire, statuts) ;
+  `tests/opening.cjs` (en-tête, sommaire, Rejouer, boucle, Recommencer, reprise, sélection au carrefour, Rejouer cette
+  ligne, erreur → à refaire, pièges, Refaire / Suivant).
