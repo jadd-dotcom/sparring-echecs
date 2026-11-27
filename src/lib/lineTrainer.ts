@@ -147,14 +147,18 @@ export function lessonWhy(lesson: OpeningLesson | undefined, fenBefore: string, 
   return null;
 }
 
-/** Le plan à montrer en fin de ligne : celui de la leçon, et le bloc supplémentaire qui couvre cette ligne s'il y en a un. */
+/** Le plan à montrer en fin de ligne : la phrase de plan de cette ligne (blocs par carrefour) puis celui de la leçon,
+ * et le bloc supplémentaire qui couvre cette ligne s'il y en a un. */
 export function linePlan(lesson: OpeningLesson | undefined, l: Line): { block?: { title: string; intro: string }; plan: string[] } | null {
   if (!lesson) return null;
+  // La ligne la plus proche : celle qui suit le plus loin les mêmes coups.
+  let best: { x: NonNullable<OpeningLesson['extras']>[number]; ln: NonNullable<OpeningLesson['extras']>[number]['lines'][number]; n: number } | null = null;
   for (const x of lesson.extras ?? []) {
     for (const ln of x.lines) {
       const path = [...ln.start, ...ln.moves.map((m) => m.san)];
-      if (isPrefix(path, l) || isPrefix(l, path)) return { block: { title: x.title, intro: x.intro }, plan: [...lesson.plan] };
+      if ((isPrefix(path, l) || isPrefix(l, path)) && (!best || Math.min(path.length, l.length) > best.n)) best = { x, ln, n: Math.min(path.length, l.length) };
     }
   }
+  if (best) return { block: { title: best.x.title, intro: best.x.intro }, plan: best.ln.plan ? [best.ln.plan, ...lesson.plan] : [...lesson.plan] };
   return { plan: [...lesson.plan] };
 }

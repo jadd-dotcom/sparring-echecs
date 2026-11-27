@@ -3,7 +3,7 @@ import { Chess } from 'chess.js';
 import Board, { type BoardArrow } from '../Board';
 import { db, type Opening } from '../db';
 import {
-  firstAppearances, GLOSSARY, lessonBlocks, OPENING_LESSONS, type OpeningLesson,
+  firstAppearances, GLOSSARY, lessonBlocks, OPENING_LESSONS, plainText, type OpeningLesson,
 } from '../data/openingLessons';
 import { introduceDrillCards, saveLessonProgress } from '../openings';
 import { fig } from '../lib/notation';
@@ -49,7 +49,7 @@ function positionAfter(moves: string[], n: number) {
  * Bloc à regarder puis rejouer : une suite de coups (`seq`) dont on montre les demi-coups [s, e).
  * Ligne principale : blocs de 3 coups ; blocs supplémentaires : une ligne de côté par bloc.
  */
-interface Blk { seq: string[]; whys: string[]; where: string[]; s: number; e: number; extra?: { id: string; title: string; intro: string; line: number; lines: number; name: string } }
+interface Blk { seq: string[]; whys: string[]; where: string[]; s: number; e: number; extra?: { id: string; title: string; intro: string; line: number; lines: number; name: string; plan?: string } }
 
 function lessonBlocksOf(lesson: OpeningLesson): { blocks: Blk[]; mainCount: number } {
   const sans = lesson.moves.map((m) => m.san);
@@ -63,7 +63,7 @@ function lessonBlocksOf(lesson: OpeningLesson): { blocks: Blk[]; mainCount: numb
       blocks.push({
         seq: [...ln.start, ...ln.moves.map((m) => m.san)], whys: [...pad, ...ln.moves.map((m) => m.why)],
         where: [...pad, ...ln.moves.map((_, i) => `extra:${x.id}:${j}:${i}`)], s: ln.start.length, e: ln.start.length + ln.moves.length,
-        extra: { id: x.id, title: x.title, intro: x.intro, line: j, lines: x.lines.length, name: ln.name },
+        extra: { id: x.id, title: x.title, intro: x.intro, line: j, lines: x.lines.length, name: ln.name, plan: ln.plan },
       });
     });
   }
@@ -235,7 +235,7 @@ export default function OpeningLessonScreen({ id, part, stage: stageParam }: { i
       <aside className="side-col">
         <div className="card">
           <h2>Leçon : {opening.name}</h2>
-          {cur?.extra && <h3 data-testid="extra-title">{cur.extra.title}</h3>}
+          {cur?.extra && <h3 data-testid="extra-title">{fig(cur.extra.title)}</h3>}
           <div className="lesson-steps">
             {steps.map((t, i) => <span key={t} className={i === stepIndex ? 'on' : i < stepIndex ? 'past' : ''}>{i + 1}. {t}</span>)}
           </div>
@@ -258,6 +258,9 @@ export default function OpeningLessonScreen({ id, part, stage: stageParam }: { i
                   <h3>{label(ply, seq[ply])} {ply % 2 === (me === 'w' ? 0 : 1) ? <span className="tag">ton coup</span> : null}</h3>
                   <Explained text={cur.whys[ply]} fresh={fresh[cur.where[ply]]} />
                 </>
+              )}
+              {stage.k === e - s && extra?.plan && (
+                <div className="line-plan" data-testid="line-plan"><h3>Le plan</h3><Explained text={extra.plan} fresh={fresh[`extra:${extra.id}:${extra.line}:plan`]} /></div>
               )}
               {stage.k === e - s && (
                 <button className="primary" onClick={() => setStage({ kind: 'replay', block: stage.block, k: 0, tries: 0, hint: 'none', done: false })}>
@@ -287,6 +290,7 @@ export default function OpeningLessonScreen({ id, part, stage: stageParam }: { i
                 <>
                   <h3><CircleCheck aria-hidden className="ico good-text" /> {extra ? 'Ligne réussie' : 'Bloc réussi'}{stage.loop ? ` · tour ${stage.loop.n}` : ''}</h3>
                   {stage.loop && <p className="muted small" data-testid="loop-count">En boucle : tour {stage.loop.n} terminé, {stage.loop.errors + (stage.errs ?? 0)} erreur{stage.loop.errors + (stage.errs ?? 0) > 1 ? 's' : ''} au total. Le bloc recommence…</p>}
+                  {extra?.plan && <p className="line-plan" data-testid="line-plan-done"><b>Le plan :</b> {fig(plainText(extra.plan))}</p>}
                   <p className="muted small">Ces coups entrent dans ton drill (première révision demain).</p>
                   {extra
                     ? (stage.block + 1 < blocks.length && blocks[stage.block + 1].extra?.id === extra.id
@@ -344,9 +348,17 @@ export default function OpeningLessonScreen({ id, part, stage: stageParam }: { i
             <h3><CircleCheck aria-hidden className="ico good-text" /> Leçon terminée</h3>
             <p>Les coups {stage.extra ? 'de ces lignes' : 'de la ligne principale'} sont dans ton drill. Étapes suivantes conseillées :</p>
             <div className="col">
-              {!stage.extra && lesson.extras?.map((x) => (
+              {!stage.extra && lesson.extras?.filter((x) => !x.id.startsWith('cx-')).map((x) => (
                 <button key={x.id} onClick={() => setStage({ kind: 'watch', block: extraStart(x.id), k: 0 })}>Bloc : {x.title}</button>
               ))}
+              {!stage.extra && (() => {
+                const cx = lesson.extras?.filter((x) => x.id.startsWith('cx-')) ?? [];
+                return cx.length > 0 && (
+                  <button onClick={() => setStage({ kind: 'watch', block: extraStart(cx[0].id), k: 0 })} data-testid="cx-start">
+                    Les autres lignes, par carrefour ({cx.reduce((n, x) => n + x.lines.length, 0)} lignes)
+                  </button>
+                );
+              })()}
               <button className="primary" onClick={() => go({ name: 'revise', opening: opening.id })}>2. Drill</button>
               <button onClick={() => go({ name: 'play', opening: opening.id })}>3. Partie à thème</button>
               <button onClick={() => go({ name: 'openings' })}>Retour aux ouvertures</button>

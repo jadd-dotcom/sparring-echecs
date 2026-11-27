@@ -101,7 +101,7 @@ function LessonTab({ o, entries, st, hasLesson }: { o: Opening; entries: ReturnT
           const head = e.group && e.group !== group ? (group = e.group) : null;
           return (
             <li key={e.key} className={`toc-item st-${s}`} data-testid={`toc-${e.key}`} data-status={s}>
-              {head && <h4 className="toc-group">{head}</h4>}
+              {head && <h4 className="toc-group">{fig(head)}</h4>}
               <div className="toc-row">
                 <span className="toc-check" aria-hidden>{s === 'done' ? <Check /> : null}</span>
                 <span className="toc-title"><b>{e.kind === 'extra' ? fig(e.title) : e.title}</b>

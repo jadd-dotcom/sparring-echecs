@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "validate-repertoire": "sh scripts/validate-repertoire.sh",
     "verify-mates": "sh scripts/verify-mates.sh",
+    "lesson-lines": "npx esbuild scripts/lesson-lines.ts --bundle --platform=node --format=esm --packages=external --outfile=scripts/.lesson-lines.mjs --log-level=warning && node scripts/.lesson-lines.mjs; rm -f scripts/.lesson-lines.mjs",
     "lessons-doc": "npx esbuild scripts/lessons-doc.ts --bundle --platform=node --format=esm --packages=external --outfile=scripts/.lessons-doc.mjs --log-level=warning && node scripts/.lessons-doc.mjs && rm scripts/.lessons-doc.mjs",
     "board-doc": "npx esbuild scripts/board-doc.ts --bundle --platform=node --format=esm --packages=external --outfile=scripts/.board-doc.mjs --log-level=warning && node scripts/.board-doc.mjs && rm scripts/.board-doc.mjs"
   },

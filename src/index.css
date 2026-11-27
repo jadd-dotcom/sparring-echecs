@@ -433,6 +433,9 @@ details.notation p { margin: 4px 0; }
 .trap-item.partial { border-left: 4px solid var(--inacc); }
 .trap-item.done { border-left: 4px solid var(--accent); }
 .trap-rule { background: var(--surface-2); border-radius: 10px; padding: 8px 12px; }
+.line-plan { background: var(--surface-2); border-left: 3px solid var(--primary); border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.line-plan h3 { margin: 0 0 4px; font-size: 1rem; }
+.line-plan .why { margin: 0; }
 
 /* ---------------------------------------------------------------- Navigation par onglets */
 .app.with-tabbar { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }

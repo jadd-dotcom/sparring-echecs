@@ -3,6 +3,9 @@
 // Les mots techniques sont notés [[clé]] ou [[clé|texte affiché]] ; ils sont expliqués (GLOSSARY) à leur 1re apparition.
 // Parties types : suite de la ligne principale jouée par Stockfish 16 (1 s par coup, les deux camps) — aucun vrai joueur.
 // Coups en notation anglaise standard (l'affichage les convertit en figurines).
+// Les lignes du répertoire qui ne sont dans aucun bloc écrit à la main sont ajoutées à la fin des blocs supplémentaires,
+// rangées par carrefour (src/data/lessonLines.ts, généré par npm run lesson-lines).
+import { GENERATED_EXTRAS } from './lessonLines';
 
 export interface OpeningLesson {
   openingId: string;
@@ -18,7 +21,8 @@ export interface OpeningLesson {
 }
 
 /** Une ligne d'un bloc supplémentaire : coups déjà connus (`start`, sans commentaire), puis un coup = une phrase. */
-export interface LessonLine { name: string; start: string[]; moves: { san: string; why: string }[] }
+/** `plan` : une phrase de plan à la fin de la ligne (lignes complétées par carrefour). */
+export interface LessonLine { name: string; start: string[]; moves: { san: string; why: string }[]; plan?: string }
 
 export interface LessonExtra { id: string; title: string; intro: string; lines: LessonLine[] }
 
@@ -599,6 +603,12 @@ export const OPENING_LESSONS: OpeningLesson[] = [
   },
 ];
 
+// Blocs générés (id « cx-… ») après les blocs écrits à la main.
+for (const l of OPENING_LESSONS) {
+  const gen = GENERATED_EXTRAS[l.openingId];
+  if (gen?.length) l.extras = [...(l.extras ?? []).filter((x) => !x.id.startsWith('cx-')), ...gen];
+}
+
 /** Blocs de la ligne principale : 6 demi-coups (= 3 coups de chaque camp). */
 export function lessonBlocks(n: number, size = 6): [number, number][] {
   const out: [number, number][] = [];
@@ -622,7 +632,10 @@ export function lessonTexts(l: OpeningLesson): { where: string; text: string }[]
     ...Object.entries(l.model.notes).map(([k, v]) => ({ where: `model:${k}`, text: v })),
     ...(l.extras ?? []).flatMap((x) => [
       { where: `extra:${x.id}:intro`, text: x.intro },
-      ...x.lines.flatMap((ln, j) => ln.moves.map((m, i) => ({ where: `extra:${x.id}:${j}:${i}`, text: m.why }))),
+      ...x.lines.flatMap((ln, j) => [
+        ...ln.moves.map((m, i) => ({ where: `extra:${x.id}:${j}:${i}`, text: m.why })),
+        ...(ln.plan ? [{ where: `extra:${x.id}:${j}:plan`, text: ln.plan }] : []),
+      ]),
     ]),
   ];
 }

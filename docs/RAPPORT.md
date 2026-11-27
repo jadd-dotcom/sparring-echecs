@@ -571,3 +571,26 @@ pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur �
 - Tests : `src/lib/crossroadTrainer.test.ts` (file, choix de ligne, coups acceptés, répétition espacée),
   `src/lib/signposts.test.ts` ; `tests/crossroads.cjs` (cartes, Q1 / Q2, indices, répétition espacée, progression, les
   deux camps).
+
+## Refonte, étape 5 : leçons complètes (27/11)
+- **Lignes du répertoire actif sans explication** : 66 lignes (Anglaise 14, Londres 12, …c5/…g6 24, Londres en
+  défense 16), soit 924 coups (les deux camps) qui n'avaient pas de « pourquoi » dans une leçon. Liste et contenu :
+  **docs/LECONS-OUVERTURES.md** (tableau « Lignes complétées » puis, pour chaque ouverture, « 6. Les autres lignes,
+  par carrefour »).
+- Chaque ligne commence là où elle quitte ce qui est déjà expliqué (les coups d'avant sont joués d'office, comme les
+  blocs supplémentaires) ; **un « pourquoi » à chaque coup** : l'explication déjà écrite pour la même position quand il
+  y en a une (transposition), sinon une phrase calculée sur la position (`src/lib/moveWhy.ts` : roque, prise / reprise,
+  clouage et déclouage, échec, pion qui prend le centre / prépare un fianchetto / contrôle g4 / prépare d4, avant-poste,
+  grande diagonale, colonne ouverte, idée Qd2 + Bh6 contre un fianchetto…).
+- **Une phrase de plan à la fin de chaque ligne** (`src/data/linePlans.ts`, écrite à la main d'après la suite
+  conseillée par Stockfish 19, profondeur 16, sur la position finale) ; montrée à la fin de « Regarder », après
+  « Ligne réussie », et en tête du plan dans « Jouer les lignes ».
+- **Rangées par carrefour** : un bloc « Carrefour après 1.c4 e5 2.Nc3 » par carrefour (le dernier où la ligne quitte
+  ce qui est expliqué) ; 37 blocs, après les blocs écrits à la main, dans le sommaire de la leçon. Génération :
+  `npm run lesson-lines` (`scripts/lesson-lines.ts` → `src/data/lessonLines.ts`).
+- **Stockfish** : répertoire revérifié (`npm run validate-repertoire`, profondeur 20, docs/REPERTOIRE.md) ; aucun coup
+  ne change.
+- Tests : `src/lib/moveWhy.test.ts` ; `src/data/openingLessons.test.ts` (chaque coup de chaque ligne du répertoire
+  actif a un « pourquoi », chaque ligne ajoutée est dans l'arbre, mes coups sont dans le drill, une phrase de plan,
+  rangement par carrefour) ; `tests/lessons.cjs` (sommaire par carrefour, une ligne regardée coup par coup, son plan,
+  rejouée, ✓).

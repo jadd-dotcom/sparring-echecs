@@ -281,8 +281,8 @@ export default function PlayLines({ id, sel }: { id: string; sel?: boolean }) {
             {(run.errors > 0 || (run.errorsHim ?? 0) > 0) && <p className="muted" data-testid="lines-errors">{both
               ? `Erreurs : ${run.errors} de ton côté, ${run.errorsHim ?? 0} du sien`
               : `${run.errors} erreur${run.errors > 1 ? 's' : ''}`} : cette ligne est à refaire, elle reviendra en premier.</p>}
-            {plan?.block && <><p><b>{plan.block.title}</b></p><p className="muted small">{fig(plainText(plan.block.intro))}</p></>}
-            {plan && <><p><b>Le plan</b></p><ul className="plan">{plan.plan.map((t, i) => <li key={i}>{fig(plainText(t))}</li>)}</ul></>}
+            {plan?.block && <><p><b>{fig(plan.block.title)}</b></p><p className="muted small">{fig(plainText(plan.block.intro))}</p></>}
+            {plan && <><p><b>Le plan</b></p><ul className="plan" data-testid="lines-plan">{plan.plan.map((t, i) => <li key={i}>{fig(plainText(t))}</li>)}</ul></>}
             <div className="row">
               <button onClick={replay} data-testid="line-replay"><RotateCcw aria-hidden className="ico" />Rejouer cette ligne</button>
               <button className="primary" onClick={next} data-testid="line-next">{session ? (session.keys.length > 1 || session.loop ? 'Ligne suivante de la sélection' : 'Fin de la sélection') : 'Ligne suivante'}</button>
