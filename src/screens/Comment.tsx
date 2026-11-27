@@ -9,6 +9,8 @@ import { db, type Game } from '../db';
 import { analyseGame, replay } from '../analysis';
 import { errorsToComment, gameErrorsToComment, type ToComment } from '../lib/commentQueue';
 import { reasonWords } from '../lib/whyWords';
+import SessionBack from '../SessionBack';
+import { activeStep } from '../sessionService';
 import { ErrorSuites, Notation, useSuite } from '../Suite';
 import { MOTIF_LABEL } from '../lib/report/motifs';
 import { moveSentence } from '../lib/moveClass';
@@ -76,7 +78,7 @@ export default function Comment({ id }: { id?: number }) {
           Nouvelle partie
         </button>
       )}
-      <button onClick={() => go({ name: 'home' })}>Accueil</button>
+      {activeStep() === 'game' ? <SessionBack step="game" primary={false} /> : <button onClick={() => go({ name: 'home' })}>Aujourd’hui</button>}
     </div>
   );
 

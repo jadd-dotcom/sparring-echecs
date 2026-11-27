@@ -12,6 +12,12 @@ import Openings from './screens/Openings';
 import Report from './screens/Report';
 import Mates from './screens/Mates';
 import Traps from './screens/Traps';
+import PlayMenu from './screens/PlayMenu';
+import Training from './screens/Training';
+import Progress from './screens/Progress';
+import GoalDetail from './screens/GoalDetail';
+import TabBar from './TabBar';
+import { parentOf } from './nav';
 import OpeningLessonScreen from './screens/OpeningLesson';
 import RepertoireEditor from './screens/RepertoireEditor';
 import BoardMastery, { BoardLessonScreen } from './screens/BoardMastery';
@@ -61,19 +67,24 @@ export default function App() {
     || (route.name === 'mates' && !!route.level)
     || (route.name === 'traps' && !!route.id)
     || (route.name === 'board' && !!route.view && route.view !== 'lesson');
+  const parent = parentOf(route);
   return (
-    <div className={`app${fit ? ' fit' : ''}`}>
-      {route.name !== 'home' && (
+    <div className={`app${fit ? ' fit' : ' with-tabbar'}`}>
+      {parent && (
         <header className="topbar">
-          <button className="ghost back" onClick={() => go({ name: 'home' })}><ChevronLeft aria-hidden className="ico" />Accueil</button>
+          <button className="ghost back" onClick={() => go(parent.route)} data-testid="back"><ChevronLeft aria-hidden className="ico" />{parent.label}</button>
         </header>
       )}
       {toast && <div className="toast" role="status" data-testid="auto-import" onClick={() => setToast(null)}>{toast}</div>}
       <main>{ready && <>
         {route.name === 'home' && <Home />}
+        {route.name === 'jouer' && <PlayMenu />}
+        {route.name === 'training' && <Training />}
+        {route.name === 'progress' && <Progress />}
+        {route.name === 'goal' && <GoalDetail />}
         {route.name === 'play' && <Play key={`${route.opening ?? ''}-${route.unrated ? 'nc' : ''}`} opening={route.opening} unrated={route.unrated} />}
         {route.name === 'review' && <Review key={route.id} id={route.id} />}
-        {route.name === 'revise' && <Revise key={route.opening ?? ''} opening={route.opening} />}
+        {route.name === 'revise' && <Revise key={`${route.opening ?? ''}-${route.only ?? ''}`} opening={route.opening} only={route.only} />}
         {route.name === 'cards' && <Cards />}
         {route.name === 'lines' && <PlayLines key={route.id} id={route.id} />}
         {route.name === 'comment' && <Comment key={route.id ?? 'all'} id={route.id} />}
@@ -92,6 +103,7 @@ export default function App() {
         {route.name === 'board' && route.view === 'replay' && <BoardReplay />}
         {route.name === 'board' && route.view === 'blind' && <BoardBlindGame />}
       </>}</main>
+      {!fit && ready && <TabBar route={route} />}
     </div>
   );
 }

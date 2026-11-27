@@ -24,7 +24,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
     await waitFor(async () => (await cur())?.uci.length >= g.uci.length + 2);
     return u;
   };
-  const home = async () => { await p.goto(URL + '#/stats'); await p.goto(URL); await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor(); };
+  const home = async () => { await p.goto(URL + '#/stats'); await p.goto(URL); await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor(); await p.getByTestId('tab-jouer').tap(); await p.getByRole('heading', { name: 'Jouer contre Maia' }).waitFor(); };
 
   // ---------- partie comptée
   await home();

@@ -6,6 +6,8 @@ import { loadSoundSetting, playSound, setSoundEnabled } from '../sound';
 import ChesscomImport from '../ChesscomImport';
 import { PIECE_SETS, pieceUrl, setPieceSet, setThemePref, usePrefs, type ThemePref } from '../prefs';
 import { Moon, Sun, SunMoon } from '../icons';
+import { getReviseCap, setReviseCap } from '../openings';
+import { REVISE_CAPS } from '../lib/dailyPlan';
 
 export default function Settings() {
   const [msg, setMsg] = useState<string | null>(null);
@@ -14,6 +16,8 @@ export default function Settings() {
   const [levelMsg, setLevelMsg] = useState<{ text: string; bad?: boolean } | null>(null);
   const [inProgress, setInProgress] = useState(false);
   const [sound, setSound] = useState(true);
+  const [cap, setCap] = useState<number | null>(null);
+  useEffect(() => { getReviseCap().then(setCap); }, []);
 
   useEffect(() => {
     (async () => {
@@ -102,6 +106,15 @@ export default function Settings() {
           {([[true, 'Oui'], [false, 'Non']] as const).map(([on, label]) => (
             <label key={label} className={`radio ${sound === on ? 'on' : ''}`}>
               <input type="radio" name="sound" checked={sound === on} onChange={async () => { await setSoundEnabled(on); setSound(on); if (on) playSound('move'); }} /> {label}
+            </label>
+          ))}
+        </div>
+
+        <p style={{ marginTop: 18 }}><b>Révision par jour</b> <span className="muted small">(d’abord les motifs de mon objectif, puis Lis la menace, puis les plus anciennes ; le reste attend les jours suivants)</span></p>
+        <div className="row" role="radiogroup" aria-label="Révision par jour">
+          {REVISE_CAPS.map((n) => (
+            <label key={n} className={`radio ${cap === n ? 'on' : ''}`}>
+              <input type="radio" name="cap" checked={cap === n} onChange={async () => { await setReviseCap(n); setCap(n); }} /> {n === 0 ? 'Sans limite' : n}
             </label>
           ))}
         </div>

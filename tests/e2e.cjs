@@ -13,6 +13,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   const errors = [];
   p.on('pageerror', (e) => errors.push(e.message));
   await p.goto(URL);
+  await p.getByTestId('tab-jouer').tap();
   await p.getByRole('button', { name: /^Jouer \(Blancs\)/ }).tap();
   await p.waitForSelector('[data-square="e2"]');
   const cur = () => p.evaluate(() => window.__db.meta.get('current').then((m) => m?.value ?? null));
@@ -97,10 +98,14 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   if (nCards > 0) {
     await p.evaluate(() => window.__db.cards.filter((c) => c.kind !== 'drill').modify({ due: '2000-01-01' }));
     await p.goto(URL);
-    await p.getByText(/positions? à revoir aujourd’hui/).waitFor();
+    await p.getByTestId('step-revise').waitFor();
+    assert(/\d+ cartes?/.test(await p.getByTestId('step-revise').innerText()), 'Aujourd’hui : étape « Révision » avec ses cartes');
     await p.screenshot({ path: OUT + '/5-accueil.png' });
-    await p.getByText(/positions? à revoir aujourd’hui/).tap();
-    const card = await p.evaluate(() => window.__db.cards.filter((c) => c.kind !== 'drill').toArray().then((a) => a.sort((x, y) => x.due < y.due ? -1 : 1)[0]));
+    await p.getByTestId('step-revise').getByRole('button').tap();
+    // La carte affichée (la révision commence par les motifs de l'objectif).
+    await p.locator('.play[data-best]').waitFor();
+    const shown = { best: await p.locator('.play[data-best]').getAttribute('data-best'), played: await p.locator('.play[data-best]').getAttribute('data-played') };
+    const card = await p.evaluate((sh) => window.__db.cards.filter((c) => c.bestUci === sh.best && c.playedUci === sh.played).first(), shown);
     await sq(card.bestUci.slice(0, 2)).tap(); await sq(card.bestUci.slice(2, 4)).tap();
     if (card.bestUci.length === 5) await p.getByRole('button', { name: /Dame/ }).tap();
     await p.getByText(/Bien joué/).waitFor({ timeout: 20000 });

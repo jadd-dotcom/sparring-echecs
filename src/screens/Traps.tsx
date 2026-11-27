@@ -9,6 +9,8 @@ import { getTrapProgress, recordTrapAttempt } from '../trapService';
 import TrapExercise from '../TrapExercise';
 import { useSuite, SuiteButton } from '../Suite';
 import { go } from '../router';
+import SessionBack from '../SessionBack';
+import { activeStep } from '../sessionService';
 import { CircleCheck, PartyPopper, Shield, Swords } from '../icons';
 
 const STATUS_CLASS = { nouveau: '', 'en cours': 'partial', 'maîtrisé': 'done' } as const;
@@ -32,7 +34,8 @@ export default function Traps({ id, mode }: { id?: string; mode?: 'defend' | 'pu
         actions={<>
           {mode === 'defend'
             ? <button className="primary" onClick={() => go({ name: 'traps', id: trap.id, mode: 'punish' })}><Swords aria-hidden className="ico" />Punis-le</button>
-            : <button className="primary" onClick={() => go({ name: 'traps', id: trap.id, mode: 'defend' })}><Shield aria-hidden className="ico" />Défends-toi</button>}
+            : activeStep() === 'trap' ? <SessionBack step="trap" />
+              : <button onClick={() => go({ name: 'traps', id: trap.id, mode: 'defend' })}><Shield aria-hidden className="ico" />Défends-toi</button>}
           <button onClick={() => go({ name: 'traps', id: trap.id })}>La leçon</button>
         </>} />
     );

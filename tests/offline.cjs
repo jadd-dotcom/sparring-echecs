@@ -26,6 +26,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.goto(URL);
   await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor();
   const tHome = Date.now() - t0;
+  await p.getByTestId('tab-jouer').tap();
   await p.getByRole('button', { name: /^Jouer/ }).tap();
   await p.getByText('à toi de jouer').waitFor({ timeout: 300000 });
   const tMaia = Date.now() - t0;
@@ -42,6 +43,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.goto(URL);
   await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor({ timeout: 15000 });
   assert(true, 'accueil chargé hors ligne');
+  await p.getByTestId('tab-jouer').tap();
   await p.getByRole('button', { name: /^(Jouer|Reprendre)/ }).tap();
   await p.getByText('à toi de jouer').waitFor({ timeout: 60000 });
   const cur = () => p.evaluate(() => window.__db.meta.get('current').then((m) => m?.value ?? null));

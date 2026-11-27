@@ -5,9 +5,13 @@ export type BoardMode = 'practice' | 'test' | 'review';
 
 export type Route =
   | { name: 'home' }
+  | { name: 'jouer' }
+  | { name: 'training' }
+  | { name: 'progress' }
+  | { name: 'goal' }
   | { name: 'play'; opening?: string; unrated?: boolean }
   | { name: 'review'; id: number }
-  | { name: 'revise'; opening?: string }
+  | { name: 'revise'; opening?: string; only?: 'threat' }
   | { name: 'cards' }
   | { name: 'lines'; id: string }
   | { name: 'comment'; id?: number }
@@ -33,7 +37,8 @@ export function parse(fullHash: string): Route {
     const part = hash.replace(/^#\/?/, '').split('/')[2];
     return part ? { name: 'lesson', id: arg, part: decodeURIComponent(part) } : { name: 'lesson', id: arg };
   }
-  if (name === 'play' || name === 'revise') return arg ? { name, opening: arg } : { name };
+  if (name === 'revise') return { name, ...(arg ? { opening: arg } : {}), ...(query.split('&').includes('menace') ? { only: 'threat' as const } : {}) };
+  if (name === 'play') return arg ? { name, opening: arg } : { name };
   if (name === 'mates') {
     const mode = hash.replace(/^#\/?/, '').split('/')[2];
     return arg && (mode === 'lesson' || mode === 'play') ? { name, level: arg as MateLevelId, mode } : { name };
@@ -51,7 +56,8 @@ export function parse(fullHash: string): Route {
     if (view === 'replay') return { name, view, ...(parts[2] ? { mode: parts[2] as BoardMode } : {}) };
     return { name };
   }
-  if (name === 'stats' || name === 'settings' || name === 'openings' || name === 'report' || name === 'cards') return { name };
+  if (name === 'stats' || name === 'settings' || name === 'openings' || name === 'report' || name === 'cards'
+    || name === 'jouer' || name === 'training' || name === 'progress' || name === 'goal') return { name };
   return { name: 'home' };
 }
 
@@ -59,6 +65,7 @@ export function go(r: Route) {
   const arg = r.name === 'review' || r.name === 'comment' ? r.id : r.name === 'repertoire' || r.name === 'lesson' || r.name === 'lines' ? r.id
     : (r.name === 'play' || r.name === 'revise') ? r.opening : undefined;
   if (r.name === 'lesson' && r.part) { location.hash = `/lesson/${encodeURIComponent(r.id)}/${encodeURIComponent(r.part)}`; return; }
+  if (r.name === 'revise' && r.only) { location.hash = `/revise${r.opening ? '/' + encodeURIComponent(r.opening) : ''}?menace`; return; }
   if (r.name === 'play') { location.hash = `/play${r.opening ? '/' + encodeURIComponent(r.opening) : ''}${r.unrated ? '?nc' : ''}`; return; }
   if (r.name === 'traps') { location.hash = `/traps${r.id ? '/' + encodeURIComponent(r.id) + (r.mode ? '/' + r.mode : '') : ''}`; return; }
   if (r.name === 'mates') { location.hash = r.level && r.mode ? `/mates/${r.level}/${r.mode}` : '/mates'; return; }

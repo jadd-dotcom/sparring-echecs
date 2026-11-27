@@ -24,6 +24,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   });
 
   // ---------- Liste et mini-leçon
+  await p.getByTestId('tab-training').tap();
   await p.getByRole('button', { name: /Pièges d’ouverture/ }).tap();
   for (const ch of ['mats', 'dame', 'mes']) await p.getByTestId(`trap-chapter-${ch}`).waitFor();
   assert(true, '3 chapitres : Mats rapides, Dame perdue, Pièges de mes ouvertures');

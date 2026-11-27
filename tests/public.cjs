@@ -24,6 +24,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(resp.ok(), `HTTP ${resp.status()} sur ${URL}`);
   await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor();
   const tHome = Date.now() - t0;
+  await p.getByTestId('tab-jouer').tap();
   await p.getByRole('button', { name: /^Jouer/ }).tap();
   await p.getByText('à toi de jouer').waitFor({ timeout: 600000 });
   const tReady = Date.now() - t0;
@@ -90,6 +91,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.goto(URL);
   await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor({ timeout: 20000 });
   assert(true, 'accueil rechargé hors ligne');
+  await p.getByTestId('tab-jouer').tap();
   await p.getByRole('button', { name: /^(Jouer|Reprendre)/ }).tap();
   const g0 = await waitPlies(0);
   if (g0.myColor === 'b') await waitPlies(1);

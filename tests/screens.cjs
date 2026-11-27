@@ -23,6 +23,7 @@ const DEVICES = { iphone: devices['iPhone 13'], ipad: devices['iPad (gen 7) land
       await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor();
       await shot('accueil');
       // Partie : 3 coups (mon camp joué par Stockfish)
+      await p.getByTestId('tab-jouer').tap();
       await p.getByRole('button', { name: /^(Jouer|Reprendre)/ }).tap();
       const cur = () => p.evaluate(() => window.__db.meta.get('current').then((m) => m?.value ?? null));
       for (let k = 0; k < 3; k++) {

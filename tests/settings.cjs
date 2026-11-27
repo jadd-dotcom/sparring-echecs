@@ -13,7 +13,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   p.on('pageerror', (e) => errors.push(e.message));
   const cur = () => p.evaluate(() => window.__db.meta.get('current').then((m) => m?.value ?? null));
   const prof = () => p.evaluate(() => window.__db.meta.get('profile').then((m) => m?.value ?? null));
-  const home = async () => { await p.goto(URL + '#/stats'); await p.goto(URL); await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor(); };
+  const home = async () => { await p.goto(URL + '#/stats'); await p.goto(URL); await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor(); await p.getByTestId('tab-jouer').tap(); await p.getByRole('heading', { name: 'Jouer contre Maia' }).waitFor(); };
   const waitFor = async (fn, ms = 60000) => { const end = Date.now() + ms; for (;;) { const v = await fn(); if (v) return v; if (Date.now() > end) throw new Error('délai dépassé'); await p.waitForTimeout(150); } };
   const playBtn = () => p.getByRole('button', { name: /^(Jouer|Reprendre)/ });
   const resign = async () => {

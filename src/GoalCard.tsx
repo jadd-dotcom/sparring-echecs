@@ -10,7 +10,8 @@ import { go } from './router';
 
 const fmt = (t: number) => new Date(t).toLocaleDateString('fr-FR');
 
-export default function GoalCard() {
+/** `compact` (Aujourd'hui) : nom, règle, 10 pastilles, point de départ ; « À surveiller » est dans Progrès. */
+export default function GoalCard({ compact = false }: { compact?: boolean }) {
   const [d, setD] = useState<GoalData | null>(null);
   // Rechargée quand le recalcul des motifs se termine (les parties propres peuvent changer).
   const refreshed = useSyncExternalStore(detailRefresh.subscribe, () => detailRefresh.get().finishedAt);
@@ -23,16 +24,16 @@ export default function GoalCard() {
 
   return (
     <>
-      <section className="card goal-card" data-testid="goal-card" data-goal={goal?.id ?? 'aucun'}>
+      <section className={`card goal-card${compact ? ' compact' : ''}`} data-testid="goal-card" data-goal={goal?.id ?? 'aucun'}>
         {state.messages.length > 0 && (
           <div className="goal-msg" data-testid="goal-msg">
             {state.messages.map((m, i) => <p key={i}><PartyPopper aria-hidden className="ico sm" /> {m}</p>)}
             <button className="small" onClick={() => { clearGoalMessages(); setD({ ...d, state: { ...state, messages: [] } }); }}>D’accord</button>
           </div>
         )}
-        <p className="muted small goal-kicker"><Target aria-hidden className="ico sm" /> Mon objectif</p>
+        <p className="muted small goal-kicker"><Target aria-hidden className="ico sm" /> Mon objectif{compact && goal ? <> : <b className="goal-name-inline">{goal.name}</b></> : ''}</p>
         {goal && p ? <>
-          <h2 className="goal-name" data-testid="goal-name">{goal.name}</h2>
+          {compact ? <span className="sr-only" data-testid="goal-name">{goal.name}</span> : <h2 className="goal-name" data-testid="goal-name">{goal.name}</h2>}
           <p className="goal-rule" data-testid="goal-rule">« {goal.rule} »</p>
           <p data-testid="goal-score">
             <b>{p.clean} partie{p.clean > 1 ? 's' : ''} propre{p.clean > 1 ? 's' : ''} sur les {GOAL_WINDOW} dernières</b>
@@ -46,11 +47,11 @@ export default function GoalCard() {
           </div>
           <p className="muted small" data-testid="goal-baseline">
             Point de départ : {p.baseline.n ? <>{p.baseline.clean} propre{p.baseline.clean > 1 ? 's' : ''} sur les {p.baseline.n} parties d’avant le {fmt(state.since)}</> : <>aucune partie analysée avant le {fmt(state.since)}</>}.
-            {' '}Maîtrisé à {GOAL_MASTERED}/{GOAL_WINDOW}.
+            {!compact && <>{' '}Maîtrisé à {GOAL_MASTERED}/{GOAL_WINDOW}.</>}
           </p>
         </> : <h2 className="goal-name" data-testid="goal-name">Tous les objectifs sont maîtrisés</h2>}
       </section>
-      {watch.length > 0 && (
+      {!compact && watch.length > 0 && (
         <p className="muted small goal-watch" data-testid="goal-watch">
           <b>À surveiller</b> (10 dernières parties) : {watch.map((w) => `${w.label === 'repertoire' ? 'sorties du répertoire' : MOTIF_LABEL[w.label]} ×${w.count}`).join(' · ')}
         </p>
