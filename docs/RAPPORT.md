@@ -592,5 +592,5 @@ pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur �
   ne change.
 - Tests : `src/lib/moveWhy.test.ts` ; `src/data/openingLessons.test.ts` (chaque coup de chaque ligne du répertoire
   actif a un « pourquoi », chaque ligne ajoutée est dans l'arbre, mes coups sont dans le drill, une phrase de plan,
-  rangement par carrefour) ; `tests/lessons.cjs` (sommaire par carrefour, une ligne regardée coup par coup, son plan,
+  rangement par carrefour) ; `tests/lessons-full.cjs` (sommaire par carrefour, une ligne regardée coup par coup, son plan,
   rejouée, ✓).
