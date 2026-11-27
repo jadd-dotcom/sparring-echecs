@@ -89,7 +89,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
     }
     await p.getByRole('button', { name: /Annuler la partie/ }).tap();
     await p.locator('.modal-box').getByRole('button', { name: 'Annuler la partie' }).tap();
-    await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor();
+    await p.getByRole('heading', { name: 'Jouer contre Maia' }).waitFor();
   }
   assert([...firsts].every((u) => ['d2d4', 'c2c4', 'g1f3'].includes(u)), 'premiers coups imposés : ' + [...firsts].join(', '));
 
