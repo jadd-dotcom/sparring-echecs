@@ -17,6 +17,7 @@ import { forcedMove } from '../lib/repertoire';
 import { recordBookExit } from '../openings';
 import { ThreatCheck } from '../ThreatUi';
 import { useSuite } from '../Suite';
+import { Material, materialInfo } from '../MaterialBar';
 import { BookOpen, Bot, CircleDashed, Flag, Lightbulb, Undo2, User, X } from '../icons';
 
 const MIN_THINK_MS = 450; // pour que la réponse ne soit pas instantanée
@@ -133,6 +134,8 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
   // Position affichée : actuelle, ou celle revue (lecture seule, aucun effet sur la partie).
   const shown = live ? chess : (() => { const c = new Chess(cur.startFen); cur.uci.slice(0, nav.at).forEach((u) => c.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] })); return c; })();
   const lastUci = nav.at > 0 ? cur.uci[nav.at - 1] : null;
+  const mat = materialInfo(cur.startFen, live ? cur.uci : cur.uci.slice(0, nav.at), cur.myColor);
+  const oppColor = cur.myColor === 'w' ? 'b' : 'w';
   const lastMove = lastUci ? { from: lastUci.slice(0, 2), to: lastUci.slice(2, 4) } : null;
   const canPlay = live && myTurn && loadPct === null;
   // Dernier coup de Maia (au-dessus de l'échiquier)
@@ -216,7 +219,8 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
         {op && <div className="theme-line"><BookOpen aria-hidden className="ico sm" /> Partie à thème : <b>{op.name}</b></div>}
         {cur.unrated && <div className="theme-line"><CircleDashed aria-hidden className="ico sm" /> Partie non comptée : sans effet sur ton niveau</div>}
         <div className="player-line">
-          <span className="who"><span className="avatar bot"><Bot aria-hidden /></span>Maia <b className="elo">{Math.round(cur.botElo)}</b></span>
+          <span className="who"><span className="avatar bot"><Bot aria-hidden /></span>Maia <b className="elo">{Math.round(cur.botElo)}</b>
+            <Material info={mat} side={oppColor} me={cur.myColor} /></span>
           {thinking && loadPct === null && <span className="muted pulse">réfléchit…</span>}
         </div>
         {live
@@ -228,7 +232,8 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
             onMove={onMove} lastMove={lastMove} arrows={arrows} highlight={highlight} onTap={live ? undefined : nav.toLive} />}
         <NavBar nav={nav} />
         <div className="player-line">
-          <span className="who"><span className="avatar me"><User aria-hidden /></span>Toi <b className="elo">{Math.round(cur.rating)}</b> <span className="muted small">({cur.myColor === 'w' ? 'Blancs' : 'Noirs'})</span></span>
+          <span className="who"><span className="avatar me"><User aria-hidden /></span>Toi <b className="elo">{Math.round(cur.rating)}</b> <span className="muted small">({cur.myColor === 'w' ? 'Blancs' : 'Noirs'})</span>
+            <Material info={mat} side={cur.myColor} me={cur.myColor} /></span>
           {myTurn && live && loadPct === null && <span className="muted">à toi de jouer</span>}
         </div>
       </div>

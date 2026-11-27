@@ -13,6 +13,7 @@ import { soundForMove } from './sound';
 import { ChevronLeft, RotateCcw, X } from './icons';
 import { useThreatCheck } from './ThreatUi';
 import { useSuite } from './Suite';
+import { MaterialRow, materialInfo } from './MaterialBar';
 
 export const GREEN = 'rgba(30,160,60,.9)';
 export const RED = 'rgba(220,40,40,.85)';
@@ -20,7 +21,8 @@ export const RED = 'rgba(220,40,40,.85)';
 /** « Tu gagnes / Égal / Tu perds » d'après mes chances de gain (win%). */
 export const verdict = (wpMe: number) => (wpMe >= 60 ? 'Tu gagnes' : wpMe <= 40 ? 'Tu perds' : 'Égal');
 
-export default function Explorer({ fen, me, onQuit }: { fen: string; me: 'w' | 'b'; onQuit: () => void }) {
+/** `history` : la partie jusqu'à `fen` (pour lire les pièces déjà prises) ; sans elle, les pièces qui manquent à `fen`. */
+export default function Explorer({ fen, me, onQuit, history, oppName = 'L’adversaire' }: { fen: string; me: 'w' | 'b'; onQuit: () => void; history?: { startFen: string; uci: string[] }; oppName?: string }) {
   const [moves, setMovesRaw] = useState<string[]>([]);
   const [eng, setEng] = useState<{ fen: string; best: string | null; wpMe: number } | null>(null);
   const suite = useSuite();
@@ -49,6 +51,8 @@ export default function Explorer({ fen, me, onQuit }: { fen: string; me: 'w' | '
   const arrows: BoardArrow[] = [...threat.arrows];
   if (ready && eng.best) arrows.push({ from: eng.best.slice(0, 2), to: eng.best.slice(2, 4), color: mine ? GREEN : RED });
   const mat = material(cur, me);
+  const matInfo = materialInfo(history?.startFen ?? fen, [...(history?.uci ?? []), ...moves], me);
+  const opp = me === 'w' ? 'b' : 'w';
   const last = moves[moves.length - 1];
   let state: string;
   if (pos.isCheckmate()) state = mine ? 'Tu es mat : tu perds.' : 'Il est mat : tu gagnes.';
@@ -59,11 +63,13 @@ export default function Explorer({ fen, me, onQuit }: { fen: string; me: 'w' | '
     <div className="play explorer" data-testid="explorer" data-fen={cur}>
       <div className="board-col">
         <div className="lines-banner"><b>Explorer</b><span>· {mine ? 'à toi de jouer' : 'à l’adversaire de jouer'} (tu bouges les deux camps)</span></div>
+        <MaterialRow info={matInfo} side={opp} me={me} name={oppName.charAt(0).toUpperCase() + oppName.slice(1)} />
         {suite.view
           ? <Board fen={suite.view.fen} orientation={me} movable={null} arrows={suite.view.arrows} lastMove={suite.view.lastMove} />
           : <Board fen={cur} orientation={me} movable={pos.isGameOver() ? null : pos.turn()} arrows={arrows}
             onMove={(u) => { const m = new Chess(cur).move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] }); soundForMove(m.san); setMoves([...moves, u]); }}
             lastMove={last ? { from: last.slice(0, 2), to: last.slice(2, 4) } : null} />}
+        <MaterialRow info={matInfo} side={me} me={me} name="Toi" />
         <div className="nav row">
           <button aria-label="Annuler un coup" disabled={!moves.length} onClick={() => setMoves(moves.slice(0, -1))}><ChevronLeft aria-hidden /></button>
           <button disabled={!moves.length} onClick={() => setMoves([])}><RotateCcw aria-hidden className="ico" />Revenir à la position</button>
