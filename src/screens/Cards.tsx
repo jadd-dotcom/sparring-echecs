@@ -11,7 +11,7 @@ import { cardOrigin, type CardOrigin } from '../reviseService';
 import { moveNo } from '../lib/reviseText';
 import { MATE_LEVELS } from '../lib/mates';
 import { go } from '../router';
-import { BookOpen, Crown, Layers, Trash2 } from '../icons';
+import { BookOpen, Crown, Layers, Trash2, TriangleAlert } from '../icons';
 
 const FILES = 'abcdefgh';
 
@@ -75,14 +75,15 @@ export default function Cards() {
   }, []);
 
   async function remove(c: Card) {
-    const what = c.kind === 'mate' ? 'cette position de mat' : `cette position (${fig(c.playedSan)} au lieu de ${fig(c.bestSan)})`;
+    const what = c.kind === 'mate' ? 'cette position de mat' : c.kind === 'threat' ? 'cette position « Lis la menace »' : `cette position (${fig(c.playedSan)} au lieu de ${fig(c.bestSan)})`;
     if (!confirm(`Supprimer ${what} de tes révisions ?`)) return;
     await db.cards.delete(c.id!);
     setCards((cs) => cs!.filter((x) => x.id !== c.id));
   }
 
   if (!cards) return null;
-  const mistakes = cards.filter((c) => c.kind !== 'drill' && c.kind !== 'mate');
+  const mistakes = cards.filter((c) => c.kind !== 'drill' && c.kind !== 'mate' && c.kind !== 'threat');
+  const threats = cards.filter((c) => c.kind === 'threat');
   const mates = cards.filter((c) => c.kind === 'mate');
   const drills = cards.filter((c) => c.kind === 'drill');
   const dueCount = cards.filter((c) => c.due <= today).length;
@@ -116,6 +117,32 @@ export default function Cards() {
           })}
         </ul>
       </section>
+
+      {threats.length > 0 && (
+        <section className="card" data-testid="threat-cards">
+          <h3><TriangleAlert aria-hidden className="ico sm" /> Lis la menace <span className="muted">({threats.length})</span></h3>
+          <p className="muted small">Positions de tes parties juste après un coup adverse qui menaçait quelque chose : lis sa menace, puis pare-la.</p>
+          <ul className="card-items">
+            {threats.map((c) => {
+              const read = c.attempts.filter((a) => a.q === 1);
+              return (
+                <li key={c.id} className="card-item" data-testid="card-item" data-card={c.id}>
+                  <MiniBoard fen={c.fen} orientation={c.myColor} played={c.threatUci} best={c.bestUci} />
+                  <div className="card-info">
+                    <p className="small" data-testid="card-origin"><OriginLine o={origins[c.id!]} /></p>
+                    <p>Sa menace : <b className="bad-text">{fig(c.threatSan ?? '')}</b>{c.ignored ? ' (ignorée dans la partie)' : ' (parée dans la partie)'} · pour la parer : <b className="good-text">{fig(c.bestSan)}</b></p>
+                    <p className="muted small">{dueLabel(c, today)} · menace lue {read.filter((a) => a.ok).length} fois sur {read.length}</p>
+                    <div className="row">
+                      {origins[c.id!]?.game && <button className="small" onClick={() => go({ name: 'review', id: c.gameId })}>Voir la partie</button>}
+                      <button className="small danger" onClick={() => remove(c)} aria-label="Supprimer la carte"><Trash2 aria-hidden className="ico" />Supprimer</button>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {mates.length > 0 && (
         <section className="card">

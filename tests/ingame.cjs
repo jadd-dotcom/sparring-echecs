@@ -94,9 +94,10 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByRole('button', { name: /Montrer le coup/ }).tap();
   await p.waitForTimeout(300);
   assert(await p.locator('svg line, svg path, svg polygon').count() > 0, '2e appui : flèche du coup');
-  await p.getByRole('button', { name: /Afficher les menaces/ }).tap();
-  await p.getByText(/menace|Aucune pièce menacée/).first().waitFor();
-  assert(true, 'Afficher les menaces : actif');
+  assert(await p.getByRole('button', { name: /Afficher les menaces/ }).count() === 0, '« Afficher les menaces » remplacé');
+  await p.getByRole('button', { name: /Qu’est-ce qu’il menace/ }).tap();
+  await p.getByTestId('threat-text').waitFor({ timeout: 30000 });
+  assert(/Il menace|Pas de menace sérieuse/.test(await p.getByTestId('threat-text').innerText()), '« Qu’est-ce qu’il menace ? » : ' + (await p.getByTestId('threat-text').innerText()).replace(/\s+/g, ' '));
   await myMove(); await myMove();
   const beforeTake = await cur();
   await p.getByRole('button', { name: /Reprendre mon coup/ }).tap();

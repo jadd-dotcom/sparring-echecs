@@ -30,7 +30,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   // « Ce que je pensais » en un toucher : avant de répondre, ni meilleur coup, ni raison, ni flèche verte.
   await p.getByTestId('thought-tags').waitFor();
   const before = await p.locator('.move-sentence').innerText();
-  assert(/♕g4 est une gaffe\./.test(before) && !/Meilleur/.test(before) && !/peut prendre/.test(before), 'avant la réponse : meilleur coup et raison cachés (' + before.replace(/\s+/g, ' ') + ')');
+  assert(/♕g4 est une gaffe\./.test(before) && !/Meilleur/.test(before) && !/prend ta dame/.test(before), 'avant la réponse : meilleur coup et raison cachés (' + before.replace(/\s+/g, ' ') + ')');
   assert(await p.evaluate(() => [...document.querySelectorAll('.board-wrap [stroke]')].filter((e) => /30,\s*160,\s*60/.test(e.getAttribute('stroke'))).length) === 0, 'avant la réponse : pas de flèche verte');
   assert(await p.getByText('Motif :').count() === 0, 'avant la réponse : motif caché');
   const labels = await p.getByTestId('thought-tags').getByRole('button').allInnerTexts();
@@ -41,7 +41,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert((await p.evaluate((id) => window.__db.games.get(id), id)).thoughtTags[2] === 'menace', 'réponse enregistrée (demi-coup 2 : menace)');
   assert(await p.getByPlaceholder(/Je voulais attaquer le roi/).count() === 1, 'texte libre facultatif proposé après la réponse');
   const sentence = await p.locator('.move-sentence').innerText();
-  assert(/♕g4 est une gaffe : le ♗c8 peut prendre ta ♕g4 \(pièce laissée en prise\)\. Meilleur : /.test(sentence), 'phrase : ' + sentence.replace(/\s+/g, ' '));
+  assert(/♕g4 est une gaffe : après ton coup, son fou prend ta dame g4 \(pièce laissée en prise\)\. Meilleur : /.test(sentence), 'phrase en mots : ' + sentence.replace(/\s+/g, ' '));
   await p.screenshot({ path: OUT + '/r2-1-revue.png' });
 
   // Tap sur la courbe → coup

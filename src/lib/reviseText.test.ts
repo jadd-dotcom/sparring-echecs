@@ -40,11 +40,11 @@ describe('textes de la révision « Trouve le bon coup »', () => {
     expect(whyPlayed(pp, fenOf(['e4', 'd5']), 'd1g4', 'Qg4', 'blunder')).toBe('♕g4 était une gaffe (pièce laissée en prise) : le ♗c8 peut prendre ta ♕g4. Après ♕g4 : 2… ♗xg4 3. h3, bilan matériel pour toi : −9.');
   });
 
-  it('indice « pièce en prise » et « menace ignorée » reprennent la raison de la revue', () => {
+  it('indice « pièce en prise » et « menace ignorée » : la raison en mots, sans notation', () => {
     const pp: ErrorDetail = { ...base, motif: 'piece-en-prise', motifs: ['piece-en-prise'], refutation: '2… Bxg4 3. h3' };
-    expect(motifHint(pp, fenOf(['e4', 'd5']), 'd1g4')).toBe('Ton coup laissait une pièce sans défense (le ♗c8 peut prendre ta ♕g4). Cherche un coup qui garde tes pièces protégées.');
+    expect(motifHint(pp, fenOf(['e4', 'd5']), 'd1g4')).toBe('Ton coup laissait une pièce sans défense (après ton coup, son fou prend ta dame g4). Cherche un coup qui garde tes pièces protégées.');
     const mi: ErrorDetail = { ...base, motif: 'menace-ignoree', motifs: ['menace-ignoree'], threatLine: '4… Nxd4 5. Nf3' };
-    expect(motifHint(mi, fenOf(['e4', 'e5', 'd4', 'exd4', 'Qxd4', 'Nc6']), 'a2a3')).toBe('L’adversaire avait une menace : le ♘c6 menaçait de prendre ta ♕d4. Cherche un coup qui la pare.');
+    expect(motifHint(mi, fenOf(['e4', 'e5', 'd4', 'exd4', 'Qxd4', 'Nc6']), 'a2a3')).toBe('L’adversaire avait une menace : son cavalier prend ta dame d4. Cherche un coup qui la pare.');
     expect(motifHint(base, new Chess().fen(), 'a2a3')).toMatch(/améliore le plus ta position/);
   });
 });

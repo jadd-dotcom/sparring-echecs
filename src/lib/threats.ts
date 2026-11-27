@@ -1,4 +1,4 @@
-// « Afficher les menaces » : ce que l'adversaire menace de prendre si c'était à lui de jouer.
+// Prises adverses gagnantes contre mes pièces s'il rejouait (tri rapide, sans moteur, des cartes « Lis la menace »).
 import { Chess, type Square } from 'chess.js';
 import { PIECE_VALUES } from './report/facts';
 

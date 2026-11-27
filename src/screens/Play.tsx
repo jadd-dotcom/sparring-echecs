@@ -6,7 +6,6 @@ import { MoveList, NavBanner, NavBar } from '../MoveNav';
 import { useMoveNav } from '../useMoveNav';
 import { loadSoundSetting, soundForMove } from '../sound';
 import { stockfish } from '../engines/stockfish';
-import { threatsAgainst } from '../lib/threats';
 import { maia } from '../engines/maia';
 import { getCurrent, setCurrent, db, type CurrentGame, type Game, type Opening } from '../db';
 import { autoResult, cancelCurrentGame, chessFrom, finishGame, newCurrentGame } from '../game';
@@ -16,7 +15,9 @@ import { replay } from '../analysis';
 import { waitOfflineReady } from '../offline';
 import { forcedMove } from '../lib/repertoire';
 import { recordBookExit } from '../openings';
-import { BookOpen, Bot, CircleDashed, Flag, Lightbulb, TriangleAlert, Undo2, User, X } from '../icons';
+import { ThreatCheck } from '../ThreatUi';
+import { useSuite } from '../Suite';
+import { BookOpen, Bot, CircleDashed, Flag, Lightbulb, Undo2, User, X } from '../icons';
 
 const MIN_THINK_MS = 450; // pour que la réponse ne soit pas instantanée
 /** Maia accepte la nulle si sa probabilité de gain est ≤ 55 %. */
@@ -37,7 +38,9 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
   // Assistance (partie non comptée uniquement)
   const [hint, setHint] = useState<{ fen: string; uci: string; level: 1 | 2 } | null>(null);
   const [hintBusy, setHintBusy] = useState(false);
-  const [showThreats, setShowThreats] = useState(false);
+  // « Qu'est-ce qu'il menace ? » : flèche rouge de sa menace (pour la position où elle a été demandée), « Voir la suite ».
+  const [threatArrows, setThreatArrows] = useState<{ fen: string; a: BoardArrow[] }>({ fen: '', a: [] });
+  const suite = useSuite();
   useEffect(() => { loadSoundSetting(); }, []);
 
   useEffect(() => {
@@ -145,15 +148,15 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
       highlight[hint.uci.slice(0, 2)] = 'rgba(30,160,60,.55)';
       if (hint.level === 2) arrows.push({ from: hint.uci.slice(0, 2), to: hint.uci.slice(2, 4), color: 'rgba(30,160,60,.9)' });
     }
-    if (showThreats) for (const t of threatsAgainst(chess.fen(), cur.myColor)) arrows.push({ from: t.from, to: t.to, color: 'rgba(220,40,40,.85)' });
+    if (threatArrows.fen === chess.fen()) arrows.push(...threatArrows.a);
   }
-  const threatCount = assist && showThreats ? threatsAgainst(chess.fen(), cur.myColor).length : 0;
   const myMovesCount = myMovesPlayed(cur);
 
   async function onMove(uci: string) {
     if (!cur || !canPlay || busy.current) return;
     setMsg(null);
     setHint(null);
+    suite.close();
     await apply(cur, uci);
   }
 
@@ -219,8 +222,10 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
         {live
           ? <div className="last-move">{lastMaiaSan ? <>Maia a joué : <b>{fig(lastMaiaSan)}</b></> : ''}</div>
           : <NavBanner nav={nav} />}
-        <Board fen={shown.fen()} orientation={cur.myColor} movable={canPlay ? cur.myColor : null}
-          onMove={onMove} lastMove={lastMove} arrows={arrows} highlight={highlight} onTap={live ? undefined : nav.toLive} />
+        {suite.view
+          ? <Board fen={suite.view.fen} orientation={cur.myColor} movable={null} arrows={suite.view.arrows} lastMove={suite.view.lastMove} />
+          : <Board fen={shown.fen()} orientation={cur.myColor} movable={canPlay ? cur.myColor : null}
+            onMove={onMove} lastMove={lastMove} arrows={arrows} highlight={highlight} onTap={live ? undefined : nav.toLive} />}
         <NavBar nav={nav} />
         <div className="player-line">
           <span className="who"><span className="avatar me"><User aria-hidden /></span>Toi <b className="elo">{Math.round(cur.rating)}</b> <span className="muted small">({cur.myColor === 'w' ? 'Blancs' : 'Noirs'})</span></span>
@@ -233,6 +238,7 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
             <div className="progress"><div style={{ width: loadPct + '%' }} /></div>
           </div>
         )}
+        {suite.panel}
         {msg && <div className="card notice">{msg}</div>}
         <MoveList san={san} at={nav.at} onPick={nav.goTo} />
         {assist && (
@@ -240,10 +246,11 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
             <p className="muted small">Assistance (partie non comptée)</p>
             <div className="row">
               <button disabled={!canPlay || hintBusy} onClick={askHint}><Lightbulb aria-hidden className="ico" />{hint && hint.fen === chess.fen() ? 'Montrer le coup' : 'Indice'}</button>
-              <button className={showThreats ? 'on' : ''} onClick={() => setShowThreats(!showThreats)}><TriangleAlert aria-hidden className="ico" />{showThreats ? 'Masquer' : 'Afficher'} les menaces</button>
+              <ThreatCheck fen={chess.fen()} me={cur.myColor} disabled={!canPlay}
+                onArrows={(f, a) => setThreatArrows({ fen: f, a })}
+                onSuite={(f, line, title) => suite.open(f, line, cur.myColor, title)} />
               <button disabled={!live || !myTurn || thinking || myMovesCount === 0} onClick={takeBack}><Undo2 aria-hidden className="ico" />Reprendre mon coup</button>
             </div>
-            {showThreats && <p className="muted small">{threatCount ? `${threatCount} menace${threatCount > 1 ? 's' : ''} (flèches rouges).` : 'Aucune pièce menacée.'}</p>}
           </div>
         )}
         {!ended && (

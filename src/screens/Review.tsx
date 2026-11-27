@@ -3,11 +3,12 @@ import { fig } from '../lib/notation';
 import Board, { type BoardArrow } from '../Board';
 import { db, type Game } from '../db';
 import { analyseGame, analysePlies, evaluate, replay } from '../analysis';
-import { errorReason } from '../lib/reason';
+import { reasonWords } from '../lib/whyWords';
+import { ErrorSuites, Notation, useSuite } from '../Suite';
 import { accuracyOfGame } from '../lib/accuracy';
 import { winPercent } from '../lib/winpct';
 import EvalCurve from '../EvalCurve';
-import { BookOpen, CircleCheck, CircleX, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ClassBadge, RotateCcw } from '../icons';
+import { BookOpen, CircleCheck, CircleX, Compass, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ClassBadge, RotateCcw } from '../icons';
 import { recordBookExit, treeOf } from '../openings';
 import { MOTIF_LABEL } from '../lib/report/motifs';
 import { buildIndex } from '../lib/repertoire';
@@ -16,17 +17,24 @@ import {
 } from '../lib/moveClass';
 import { Chess } from 'chess.js';
 import { ThoughtBox, ThoughtButtons } from '../ThoughtUi';
+import Explorer from '../Explorer';
+import { ThreatCheck } from '../ThreatUi';
 
 const TIME_CLASS: Record<string, string> = { bullet: 'bullet', blitz: 'blitz', rapid: 'rapide', daily: 'par jour' };
 
 export default function Review({ id }: { id: number }) {
   const [game, setGame] = useState<Game | null>(null);
   const [progress, setProgress] = useState<{ d: number; t: number; label: string } | null>(null);
-  const [ply, setPly] = useState(-1); // -1 = position de départ
+  const [ply, setPlyRaw] = useState(-1); // -1 = position de départ
   const [bookLen, setBookLen] = useState(0);
   // « Réessayer » : je cherche un meilleur coup dans la position d'une de mes erreurs.
   const [retry, setRetry] = useState<{ ply: number; tries: number; checking: boolean; result: null | { ok: boolean; text: string }; solution: boolean } | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [exploring, setExploring] = useState(false);
+  const suite = useSuite();
+  const [threatArrows, setThreatArrows] = useState<{ fen: string; a: BoardArrow[] }>({ fen: '', a: [] });
+  // Changer de coup referme la suite affichée.
+  const setPly = (p: number) => { suite.close(); setPlyRaw(p); };
   const [openingNames, setOpeningNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -110,10 +118,11 @@ export default function Review({ id }: { id: number }) {
     for (const k of Object.keys(badges)) delete badges[k];
     if (retry!.solution && pe?.bestUci) arrows.push({ from: pe.bestUci.slice(0, 2), to: pe.bestUci.slice(2, 4), color: 'rgba(30,160,60,.9)' });
   }
+  if (!retryOn && threatArrows.fen === fen) arrows.push(...threatArrows.a);
   const bar = bars[ply + 1] ?? bars[0];
   const acc = accuracyOfGame(game);
   const fmtAcc = (v: number | null | undefined) => (v == null ? '–' : `${v.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`);
-  const reason = a?.detail && pe ? errorReason(a.detail, fens[ply], pe.uci) : null;
+  const reason = a?.detail && pe ? reasonWords(a.detail, fens[ply], pe.uci, game.myColor) : null;
 
   async function onRetryMove(uci: string) {
     if (!retry || retry.checking || !pe) return;
@@ -151,10 +160,11 @@ export default function Review({ id }: { id: number }) {
             {askThought && <ThoughtButtons game={game} ply={ply} onSaved={(thoughtTags) => setGame((g) => (g ? { ...g, thoughtTags } : g))} />}
             {a?.detail && !askThought && <>
               <br />Motif : <b>{MOTIF_LABEL[a.detail.motif]}</b>
-              <br /><span className="muted small">Réfutation : {fig(a.detail.refutation) || '—'}</span>
+              {pe && <ErrorSuites d={a.detail} fenBefore={fens[ply]} myUci={pe.uci} me={game.myColor} open={suite.open} />}
+              <Notation><p>Meilleure suite : {fig(a.detail.bestLine) || '—'}</p><p>Réfutation : {fig(a.detail.refutation) || '—'}</p></Notation>
             </>}
             {a && a.severity !== 'ok' && !retryOn && !askThought && (
-              <div><button className="primary" onClick={() => setRetry({ ply, tries: 0, checking: false, result: null, solution: false })}><RotateCcw aria-hidden className="ico" />Réessayer</button></div>
+              <div><button className="primary" onClick={() => { suite.close(); setRetry({ ply, tries: 0, checking: false, result: null, solution: false }); }}><RotateCcw aria-hidden className="ico" />Réessayer</button></div>
             )}
             {retryOn && (
               <div className={`retry-card ${retry!.result ? (retry!.result.ok ? 'good' : 'bad') : ''}`}>
@@ -170,6 +180,8 @@ export default function Review({ id }: { id: number }) {
             </>}
           </div>
         );
+  if (exploring) return <Explorer fen={fen} me={game.myColor} onQuit={() => setExploring(false)} />;
+
   return (
     <div className="play">
       <div className="board-col">
@@ -178,8 +190,10 @@ export default function Review({ id }: { id: number }) {
             <div className="white" style={{ height: `${bar.wpWhite}%`, marginTop: whiteBottom ? 'auto' : 0, marginBottom: whiteBottom ? 0 : 'auto' }} />
             <span className="lbl" style={{ [bar.wpWhite >= 50 === whiteBottom ? 'bottom' : 'top']: 2, color: bar.wpWhite >= 50 ? '#333' : '#eee' }}>{bar.label}</span>
           </div>
-          <Board fen={retryOn ? fens[ply] : fen} orientation={game.myColor} movable={retryOn && !retry!.checking && !retry!.result?.ok ? game.myColor : null}
-            onMove={onRetryMove} arrows={arrows} highlight={highlight} badges={badges} lastMove={retryOn ? null : pe ? { from: pe.uci.slice(0, 2), to: pe.uci.slice(2, 4) } : null} />
+          {suite.view
+            ? <Board fen={suite.view.fen} orientation={game.myColor} movable={null} arrows={suite.view.arrows} lastMove={suite.view.lastMove} />
+            : <Board fen={retryOn ? fens[ply] : fen} orientation={game.myColor} movable={retryOn && !retry!.checking && !retry!.result?.ok ? game.myColor : null}
+              onMove={onRetryMove} arrows={arrows} highlight={highlight} badges={badges} lastMove={retryOn ? null : pe ? { from: pe.uci.slice(0, 2), to: pe.uci.slice(2, 4) } : null} />}
         </div>
         <p className="move-sentence">
           {pe && cls ? <><ClassBadge cls={cls} size={22} className="class-badge inline" />{' '}
@@ -194,10 +208,18 @@ export default function Review({ id }: { id: number }) {
           <button aria-label="Coup suivant" onClick={() => { setRetry(null); setPly(Math.min(game.uci.length - 1, ply + 1)); }}><ChevronRight aria-hidden /></button>
           <button aria-label="Fin" onClick={() => { setRetry(null); setPly(game.uci.length - 1); }}><ChevronsRight aria-hidden /></button>
           <button onClick={() => { const n = errorsPlies.find((p) => p > ply); if (n !== undefined) { setRetry(null); setPly(n); } }}>Erreur suivante</button>
+          <button onClick={() => { setRetry(null); suite.close(); setExploring(true); }} data-testid="explore-btn"><Compass aria-hidden className="ico" />Explorer</button>
         </div>
       </div>
       <aside className="side-col">
+        {suite.panel}
         {askThought && explain}
+        {!askThought && !retryOn && (
+          <div className="card threat-card">
+            <ThreatCheck fen={fen} me={game.myColor} onArrows={(f, a) => setThreatArrows({ fen: f, a })}
+              onSuite={(f, line, title) => suite.open(f, line, game.myColor, title)} />
+          </div>
+        )}
         <div className="card">
           {imported && (
             <p className="source-line"><span className="tag chesscom-tag">{game.ext?.site === 'pgn' ? 'PGN importé' : 'Chess.com'}</span>{' '}

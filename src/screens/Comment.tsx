@@ -8,7 +8,8 @@ import Board, { type BoardArrow } from '../Board';
 import { db, type Game } from '../db';
 import { analyseGame, replay } from '../analysis';
 import { errorsToComment, gameErrorsToComment, type ToComment } from '../lib/commentQueue';
-import { errorReason } from '../lib/reason';
+import { reasonWords } from '../lib/whyWords';
+import { ErrorSuites, Notation, useSuite } from '../Suite';
 import { MOTIF_LABEL } from '../lib/report/motifs';
 import { moveSentence } from '../lib/moveClass';
 import { fig } from '../lib/notation';
@@ -40,6 +41,7 @@ export default function Comment({ id }: { id?: number }) {
   const [progress, setProgress] = useState<number | null>(null);
   const [finished, setFinished] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const suite = useSuite();
 
   useEffect(() => {
     let alive = true;
@@ -120,7 +122,7 @@ export default function Comment({ id }: { id?: number }) {
   const answered = !!g.thoughtTags?.[a.ply];
   const arrows: BoardArrow[] = [{ from: a.uci.slice(0, 2), to: a.uci.slice(2, 4), color: 'rgba(220,40,40,.85)' }];
   if (answered && a.bestUci) arrows.push({ from: a.bestUci.slice(0, 2), to: a.bestUci.slice(2, 4), color: 'rgba(30,160,60,.9)' });
-  const reason = a.detail ? errorReason(a.detail, fenBefore, a.uci) : null;
+  const reason = a.detail ? reasonWords(a.detail, fenBefore, a.uci, g.myColor) : null;
   const sev = a.severity === 'blunder' ? 'blunder' : 'mistake';
   const update = (patch: Partial<Game>) => setGames((gs) => ({ ...gs, [g.id!]: { ...gs[g.id!], ...patch } }));
   const last = idx + 1 >= queue.length;
@@ -128,9 +130,10 @@ export default function Comment({ id }: { id?: number }) {
   return (
     <div className="play comment" data-ply={a.ply} data-game={g.id}>
       <div className="board-col">
-        <Board key={`${g.id}-${a.ply}`} fen={fenBefore} orientation={g.myColor} movable={null} arrows={arrows} />
+        <Board key={`${g.id}-${a.ply}`} fen={suite.view?.fen ?? fenBefore} orientation={g.myColor} movable={null} arrows={suite.view?.arrows ?? arrows} lastMove={suite.view?.lastMove ?? null} />
       </div>
       <aside className="side-col">
+        {suite.panel}
         <div className="card">
           <p className="muted small" data-testid="comment-origin">
             Erreur {idx + 1}/{queue.length} · {g.source === 'chesscom' ? `${sourceOf(g)} contre ${oppOf(g)}` : `Contre ${oppOf(g)}`} · {new Date(g.date).toLocaleDateString('fr-FR')}
@@ -141,12 +144,13 @@ export default function Comment({ id }: { id?: number }) {
           {answered && (
             <div data-testid="comment-best">
               <p className="move-sentence">{moveSentence(fig(a.san), sev, a.bestSan ? fig(a.bestSan) : null, reason, reason && a.detail ? MOTIF_LABEL[a.detail.motif] : null)} <span className="muted small">(flèche verte)</span></p>
-              {a.detail?.refutation && <p className="muted small">Réfutation : {fig(a.detail.refutation)}</p>}
+              {a.detail && <ErrorSuites d={a.detail} fenBefore={fenBefore} myUci={a.uci} me={g.myColor} open={suite.open} />}
+              {a.detail && <Notation><p>Meilleure suite : {fig(a.detail.bestLine) || '—'}</p><p>Réfutation : {fig(a.detail.refutation) || '—'}</p></Notation>}
               <ThoughtBox key={`${g.id}-${a.ply}`} game={g} ply={a.ply} onSaved={(thoughts) => update({ thoughts })} />
             </div>
           )}
           <div className="row comment-actions">
-            {answered && <button className="primary" onClick={() => setIdx(idx + 1)}>{last ? 'Terminer' : 'Erreur suivante'}</button>}
+            {answered && <button className="primary" onClick={() => { suite.close(); setIdx(idx + 1); }}>{last ? 'Terminer' : 'Erreur suivante'}</button>}
             <button onClick={() => setFinished(true)}>Plus tard</button>
           </div>
         </div>

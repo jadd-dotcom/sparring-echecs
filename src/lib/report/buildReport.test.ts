@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Chess } from 'chess.js';
 import type { Card, Game, MoveAnalysis } from '../../db';
-import { annotatedPgn, buildReport, costliestMoves, gamesToShow, linesSection, opponentExits, repText, selectGames, worstErrors } from './buildReport';
+import { annotatedPgn, buildReport, costliestMoves, gamesToShow, linesSection, opponentExits, threatsSection, repText, selectGames, worstErrors } from './buildReport';
 import { parsePgn } from '../repertoire';
 
 const DAY = 86400000;
@@ -231,5 +231,37 @@ describe('section « Lignes du répertoire »', () => {
     const { games, period } = selectGames([G1], 'since-last', null, NOW);
     const md = buildReport({ now: NOW, period, games, allGames: [G1], cards: [], lines: ls });
     expect(md).toContain('## 6. Lignes du répertoire');
+  });
+});
+
+describe('section « Lecture des menaces »', () => {
+  const fen = new Chess('r1bqkbnr/pppp1ppp/2n5/8/3QP3/8/PPP2PPP/RNB1KBNR w KQkq - 1 4').fen();
+  const card = (attempts: Card['attempts'], ignored = true): Card => ({
+    id: 1, kind: 'threat', gameId: 1, source: 'app', fen, myColor: 'w', playedUci: 'a2a3', playedSan: 'a3', bestUci: 'd4e3', bestSan: 'Qe3',
+    wpBefore: 50, drop: 40, severity: 'blunder', step: 0, due: '2026-11-15', createdAt: NOW, attempts,
+    threatUci: 'c6d4', threatSan: 'Nxd4', threatWp: 95, threatMate: false, ignored,
+  });
+  it('réussies / ratées (Q1 lire, Q2 parer), puis les 5 dernières Q1 ratées : FEN, menace, coup joué', () => {
+    const md = threatsSection([card([
+      { date: NOW - DAY, uci: 'a7a6', ok: false, q: 1 },
+      { date: NOW - DAY + 1, uci: 'c6d4', ok: true, q: 1 },
+      { date: NOW - DAY + 2, uci: 'd4e3', ok: true, q: 2 },
+      { date: NOW - 2 * DAY, uci: '', ok: false, q: 1 },
+    ])], null).join('\n');
+    expect(md).toContain('## 7. Lecture des menaces');
+    expect(md).toContain('Cartes : **1** (dont 1 menaces que j’avais ignorées dans la partie)');
+    expect(md).toContain('| Q1 — lire sa menace | 1 | 2 |');
+    expect(md).toContain('| Q2 — la parer | 1 | 0 |');
+    expect(md).toContain('### Les 2 dernières menaces mal lues (Q1 ratée)');
+    expect(md).toContain(`| \`${fen}\` | Nxd4 | a6 |`);
+    expect(md).toContain('| Nxd4 | (solution demandée) |');
+    expect(md.indexOf('| a6 |')).toBeLessThan(md.indexOf('(solution demandée)'));   // la plus récente d'abord
+    expect(threatsSection([], null).join('\n')).toContain('Aucune carte « Lis la menace »');
+  });
+  it('dans le rapport complet, et compté à part dans la révision', () => {
+    const { games, period } = selectGames([G1], 'since-last', null, NOW);
+    const md = buildReport({ now: NOW, period, games, allGames: [G1], cards: [card([{ date: NOW - DAY, uci: 'a7a6', ok: false, q: 1 }])] });
+    expect(md).toContain('## 7. Lecture des menaces');
+    expect(md).toContain('- Lis la menace : 1 tentatives, réussite 0 %');
   });
 });
