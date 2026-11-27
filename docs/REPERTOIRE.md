@@ -5,7 +5,7 @@ Perte d'un de mes coups = éval du meilleur coup − éval de mon coup (même po
 
 ## Anglaise (système fermé) (Blancs)
 
-Coups adverses imposés : aucun · 15 lignes · 111 coups vérifiés · 184 s
+Coups adverses imposés : aucun · 15 lignes · 111 coups vérifiés · 172 s
 
 ```pgn
 [Event "Anglaise (système fermé)"]
@@ -36,7 +36,7 @@ Coups les plus coûteux : d4 (31 cp, SF préfère Nf3), e4 (29 cp, SF préfère 
 
 ## Système de Londres (Blancs)
 
-Coups adverses imposés : aucun · 13 lignes · 87 coups vérifiés · 171 s
+Coups adverses imposés : aucun · 13 lignes · 87 coups vérifiés · 162 s
 
 ```pgn
 [Event "Système de Londres"]
@@ -65,7 +65,7 @@ Coups les plus coûteux : Bf4 (35 cp, SF préfère e4), Bg3 (30 cp, SF préfère
 
 ## Système …c5 / …g6 (Dragon accéléré) (Noirs)
 
-Coups adverses imposés : aucun · 30 lignes · 161 coups vérifiés · 284 s
+Coups adverses imposés : aucun · 30 lignes · 161 coups vérifiés · 254 s
 
 ```pgn
 [Event "Système …c5 / …g6 (Dragon accéléré)"]
@@ -111,7 +111,7 @@ Coups les plus coûteux : g6 (37 cp, SF préfère e6), Nf6 (36 cp, SF préfère 
 
 ## Londres en défense (Noirs)
 
-Coups adverses imposés : d4 ou c4 ou Nf3 · 17 lignes · 105 coups vérifiés · 206 s
+Coups adverses imposés : d4 ou c4 ou Nf3 · 17 lignes · 105 coups vérifiés · 175 s
 
 ```pgn
 [Event "Londres en défense"]
@@ -148,6 +148,6 @@ Coups les plus coûteux : Bd6 (46 cp, SF préfère Be7), Qc8 (44 cp, SF préfèr
 
 Consultables dans l’onglet « Archives » de l’écran Ouvertures ; vérification conservée :
 
-- Système …c5/…g6 contre 1.d4, 1.c4, 1.♘f3 (ancien) (Noirs) : 63 coups vérifiés, perte max 21 cp.
-- Gambit Dame refusé (Noirs) : 51 coups vérifiés, perte max 47 cp.
-- Défense française (Noirs) : 67 coups vérifiés, perte max 36 cp.
+- Système …c5/…g6 contre 1.d4, 1.c4, 1.♘f3 (ancien) (Noirs) : 63 coups vérifiés en V2, perte max 21 cp.
+- Gambit Dame refusé (Noirs) : 51 coups vérifiés en V2, perte max 47 cp.
+- Défense française (Noirs) : 67 coups vérifiés en V2, perte max 36 cp.
