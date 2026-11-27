@@ -366,3 +366,26 @@
   les autres coups blancs » ; Londres : bloc « Contre les autres premiers coups noirs » (dont le piège de l'Englund).
   `docs/LECONS-OUVERTURES.md`. Drill et parties à thème (l'adversaire commence au hasard par 1.d4, 1.c4 ou 1.Nf3).
 - **Mise à jour** d'un répertoire déjà enregistré : faite une seule fois, sans perdre mes propres lignes.
+
+## « Jouer les lignes » (27/11)
+- Écran Ouvertures : **1. Leçon → 2. Drill → 3. Jouer les lignes → 4. Partie à thème** (texte d'aide à jour) ; le
+  bouton 3 montre les lignes validées du tour en cours (ex. « 3. Jouer les lignes (3/16) »).
+- Une partie = une ligne du répertoire (une feuille de l'arbre), dans la couleur de l'ouverture. L'adversaire joue
+  exactement la ligne. Mon coup doit être celui du répertoire ; un autre coup du répertoire depuis la même position
+  (même début de partie, ou par transposition) est accepté et fait basculer sur sa ligne. Coup hors répertoire :
+  refusé (annulé) ; 1er refus « Pas le coup de ton répertoire, réessaie. » ; 2e refus : flèche verte sur le bon coup
+  et commentaire de la leçon pour ce coup (ligne principale ou blocs supplémentaires). Toute erreur rend la ligne
+  « à refaire ».
+- Bandeau : nom de l'ouverture · « Ligne 4/16 » · « Coup 5/11 » (mes coups dans la ligne) · « à refaire » ou ✓.
+- Fin : « Ligne terminée » (+ ✓ sans erreur), le plan de la leçon (et le bloc supplémentaire qui couvre la ligne), puis
+  « Continuer la partie » (Maia à mon niveau, R + 50 ; partie non comptée, enregistrée et analysée comme les autres)
+  ou « Ligne suivante ». Une ligne jouée sans « Continuer la partie » n'est pas enregistrée comme partie : seules sa
+  progression et ses erreurs le sont.
+- Choix : d'abord les lignes « à refaire », puis les lignes jamais jouées, dans l'ordre de la leçon (ligne principale,
+  lignes des blocs supplémentaires, puis l'ordre de l'arbre) ; quand toutes ont le ✓, un nouveau tour commence.
+  Progression par ouverture dans IndexedDB (clé `lineProgress`, sauvegardée avec l'export JSON).
+- Rapport pour Claude : section 6 « Lignes du répertoire » — par ouverture, X/Y validées et le tour ; chaque erreur de
+  la période : ligne, coup attendu, coup joué, date.
+- Tests : `src/lib/lineTrainer.test.ts` (ordre et choix des lignes, coups acceptés, bascule y compris par
+  transposition, refus 1 et 2, compteur, commentaire de la leçon, plan) ; section du rapport ; `tests/lines.cjs` sur le
+  Londres (refus, ligne à refaire reprise en premier, ✓, progression, « Continuer la partie »).

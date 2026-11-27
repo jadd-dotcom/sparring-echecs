@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react';
 import { fig } from '../lib/notation';
 import { db, DUE_NEW, type Opening } from '../db';
 import { go } from '../router';
-import { lines, parsePgn } from '../lib/repertoire';
+import { emptyProgress, orderedLines, validatedCount } from '../lib/lineTrainer';
+import { getAllLineProgress } from '../linesService';
+import { parsePgn } from '../lib/repertoire';
 import { dayKey } from '../lib/srs';
 import { getLessonProgress, setArchived, syncDrillCards, type LessonProgress } from '../openings';
 import { BUILTIN_OPENINGS } from '../data/openings';
 import { OPENING_LESSONS } from '../data/openingLessons';
 import { Check } from '../icons';
 
-interface Row { o: Opening; lines: number; due: number; fresh: number; holes: number; lesson?: LessonProgress }
+interface Row { o: Opening; lines: number; due: number; fresh: number; holes: number; lesson?: LessonProgress; linesOk: number }
 
 export default function Openings() {
   const [rows, setRows] = useState<Row[] | null>(null);
@@ -21,11 +23,13 @@ export default function Openings() {
   async function load() {
     const today = dayKey();
     const progress = await getLessonProgress();
+    const lineProgress = await getAllLineProgress();
     const out: Row[] = [];
     for (const o of await db.openings.toArray()) {
       const cards = await db.cards.where('openingId').equals(o.id).toArray();
+      const ordered = orderedLines(parsePgn(o.pgn).root);
       out.push({
-        o, lines: lines(parsePgn(o.pgn).root).length,
+        o, lines: ordered.length, linesOk: validatedCount(ordered, lineProgress[o.id] ?? emptyProgress()),
         due: cards.filter((c) => c.due !== DUE_NEW && c.due <= today).length,
         fresh: cards.filter((c) => c.due === DUE_NEW).length,
         holes: await db.holes.where('openingId').equals(o.id).count(),
@@ -65,14 +69,15 @@ export default function Openings() {
         <button role="tab" aria-selected={tab === 'archives'} className={tab === 'archives' ? 'primary' : ''} onClick={() => setTab('archives')}>Archives{nArch ? ` (${nArch})` : ''}</button>
       </div>
       {tab === 'active' ? (
-        <p className="notice">Ordre conseillé pour chaque ouverture : <b>1. Leçon → 2. Drill → 3. Partie à thème</b>.
-          {' '}Commence par l’Anglaise (Blancs), puis le système …c5/…g6 (Noirs).</p>
+        <p className="notice">Ordre conseillé pour chaque ouverture : <b>1. Leçon → 2. Drill → 3. Jouer les lignes → 4. Partie à thème</b>.
+          {' '}« Jouer les lignes » : une partie par ligne du répertoire, l’adversaire joue exactement la ligne et tu dois
+          {' '}trouver tes coups ; le bouton montre les lignes validées (jouées sans erreur).</p>
       ) : (
         <p className="notice">Ouvertures rangées : tu peux relire leur leçon et leur répertoire. Elles ne comptent plus
           {' '}dans le drill du jour, le « livre » de la revue ni les parties à thème.</p>
       )}
       {shown.length === 0 && <p className="muted">Aucune ouverture ici.</p>}
-      {shown.map(({ o, lines: n, due, fresh, holes, lesson }) => (
+      {shown.map(({ o, lines: n, due, fresh, holes, lesson, linesOk }) => (
         <section key={o.id} className="card opening" data-opening={o.id}>
           <div className="opening-head">
             <h3>{o.name}</h3>
@@ -93,7 +98,8 @@ export default function Openings() {
                 <button disabled={due + fresh === 0} onClick={() => go({ name: 'revise', opening: o.id })}>
                   2. Drill · {due} à revoir{fresh ? ` · ${fresh} nouvelles` : ''}
                 </button>
-                <button className={lesson?.done ? 'primary' : ''} disabled={n === 0} onClick={() => go({ name: 'play', opening: o.id })}>3. Partie à thème</button>
+                <button disabled={n === 0} onClick={() => go({ name: 'lines', id: o.id })} data-testid={`lines-${o.id}`}>3. Jouer les lignes ({linesOk}/{n})</button>
+                <button className={lesson?.done ? 'primary' : ''} disabled={n === 0} onClick={() => go({ name: 'play', opening: o.id })}>4. Partie à thème</button>
               </>
             )}
             <button onClick={() => go({ name: 'repertoire', id: o.id })}>

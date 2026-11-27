@@ -46,6 +46,7 @@ const DEVS = [['iPhone portrait', devices['iPhone 13']], ['iPad portrait', devic
       ['Maîtrise (cases)', '#/board/ex/1a/practice', '.tapboard'],
       ['Maîtrise (clavier)', '#/board/ex/1e/practice', '.tapboard'],
       ['répertoire', '#/repertoire/english', '.board-wrap'],
+      ['jouer les lignes', '#/lines/london', '.board-wrap'],
     ];
     for (const [name, hash, sel] of pages) {
       await p.goto(URL + '#/stats'); await p.goto(URL + hash);

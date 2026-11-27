@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Chess } from 'chess.js';
 import type { Card, Game, MoveAnalysis } from '../../db';
-import { annotatedPgn, buildReport, costliestMoves, gamesToShow, opponentExits, repText, selectGames, worstErrors } from './buildReport';
+import { annotatedPgn, buildReport, costliestMoves, gamesToShow, linesSection, opponentExits, repText, selectGames, worstErrors } from './buildReport';
 import { parsePgn } from '../repertoire';
 
 const DAY = 86400000;
@@ -206,5 +206,30 @@ describe('section « Échiquier »', () => {
     expect(md).toMatch(/\| c6 \| claire \| 3 \/ 3 \| 3 s \| \d+ % \|/);
     expect(md.indexOf('| c6 |')).toBeLessThan(md.indexOf('| e4 |'));
     expect(boardSection({ progress: emptyProgress(), stats: {}, today: '2026-11-20' }).join('\n')).toContain('Mode pas encore commencé.');
+  });
+});
+
+describe('section « Lignes du répertoire »', () => {
+  const ls = [
+    { name: 'Système de Londres', color: 'w' as const, done: 3, total: 13, round: 1, errors: [
+      { line: ['d4', 'd5', 'Bf4', 'Nf6', 'e3'], ply: 2, expected: 'Bf4', played: 'Nf3', date: NOW - DAY },
+      { line: ['d4', 'e5', 'dxe5', 'Nc6', 'Nf3', 'Qe7', 'Bg5'], ply: 6, expected: 'Bg5', played: 'Bf4', date: NOW - 30 * DAY },
+    ] },
+    { name: 'Londres en défense', color: 'b' as const, done: 0, total: 17, round: 2, errors: [] },
+  ];
+  it('par ouverture X/Y validées, puis chaque erreur de la période : ligne, coup attendu, coup joué, date', () => {
+    const md = linesSection(ls, NOW - 7 * DAY).join('\n');
+    expect(md).toContain('## 6. Lignes du répertoire');
+    expect(md).toContain('| Système de Londres | Blancs | 3 / 13 | 1 |');
+    expect(md).toContain('| Londres en défense | Noirs | 0 / 17 | 2 |');
+    expect(md).toContain('### Erreurs de la période (1)');
+    expect(md).toMatch(/\| Système de Londres \| 1\. d4 d5 2\. Bf4 Nf6 3\. e3 \| 2\. Bf4 \| 2\. Nf3 \| \d{2}\/\d{2}\/\d{4}/);
+    expect(md).not.toContain('Qe7');                                      // erreur hors période
+    expect(linesSection(ls, null).join('\n')).toContain('### Erreurs (2)');
+  });
+  it('dans le rapport complet, après la section Échiquier', () => {
+    const { games, period } = selectGames([G1], 'since-last', null, NOW);
+    const md = buildReport({ now: NOW, period, games, allGames: [G1], cards: [], lines: ls });
+    expect(md).toContain('## 6. Lignes du répertoire');
   });
 });

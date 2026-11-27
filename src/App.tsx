@@ -5,6 +5,7 @@ import Review from './screens/Review';
 import Revise from './screens/Revise';
 import Cards from './screens/Cards';
 import Comment from './screens/Comment';
+import PlayLines from './screens/PlayLines';
 import Stats from './screens/Stats';
 import Settings from './screens/Settings';
 import Openings from './screens/Openings';
@@ -49,7 +50,7 @@ export default function App() {
     return () => removeEventListener('hashchange', f);
   }, []);
   // Écrans avec un échiquier : tout tient dans la hauteur de l'écran (échiquier ajusté, texte qui défile seul).
-  const fit = ['play', 'review', 'revise', 'lesson', 'comment', 'repertoire'].includes(route.name)
+  const fit = ['play', 'review', 'revise', 'lesson', 'comment', 'repertoire', 'lines'].includes(route.name)
     || (route.name === 'mates' && !!route.level)
     || (route.name === 'board' && !!route.view && route.view !== 'lesson');
   return (
@@ -66,6 +67,7 @@ export default function App() {
         {route.name === 'review' && <Review key={route.id} id={route.id} />}
         {route.name === 'revise' && <Revise key={route.opening ?? ''} opening={route.opening} />}
         {route.name === 'cards' && <Cards />}
+        {route.name === 'lines' && <PlayLines key={route.id} id={route.id} />}
         {route.name === 'comment' && <Comment key={route.id ?? 'all'} id={route.id} />}
         {route.name === 'openings' && <Openings />}
         {route.name === 'repertoire' && <RepertoireEditor key={route.id} id={route.id} />}
