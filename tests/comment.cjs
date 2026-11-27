@@ -84,7 +84,7 @@ const RED = /220,\s*40,\s*40/, GREEN = /30,\s*160,\s*60/;
   // Accueil : badge « X erreurs à commenter » (parties importées ou « plus tard ») → même écran.
   // Une partie importée analysée, avec une gaffe, s'ajoute au compte.
   await p.evaluate(async () => {
-    const g = { source: 'chesscom', externalId: 'test:1', date: Date.now() - 3600e3, myColor: 'w', startFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+    const g = { source: 'chesscom', externalId: 'test:1', date: Date.now() - 60e3, myColor: 'w', startFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       uci: ['e2e4', 'd7d5', 'd1g4', 'c8g4'], san: ['e4', 'd5', 'Qg4', 'Bxg4'], result: '0-1', score: 0, termination: 'Abandon',
       ext: { site: 'chess.com', me: { name: 'moi' }, opp: { name: 'Adversaire7', rating: 500 } } };
     window.__testImported = await window.__db.games.add(g);
@@ -92,10 +92,19 @@ const RED = /220,\s*40,\s*40/, GREEN = /30,\s*160,\s*60/;
   const imported = await p.evaluate(() => window.__testImported);
   await p.goto(URL + '#/review/' + imported);
   await p.locator('table.classes').waitFor({ timeout: 180000 });
+  // Une partie plus ancienne (20/11), analysée, avec une gaffe : pas dans le badge, mais commentable dans la revue.
+  const oldId = await p.evaluate(() => window.__db.games.add({
+    source: 'chesscom', externalId: 'test:old', date: new Date(2026, 10, 20, 18).getTime(), myColor: 'w',
+    startFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', uci: ['e2e4', 'd7d5', 'd1g4', 'c8g4'], san: ['e4', 'd5', 'Qg4', 'Bxg4'],
+    result: '0-1', score: 0, termination: 'Abandon', ext: { site: 'chess.com', me: { name: 'moi' }, opp: { name: 'Ancien', rating: 480 } } }));
+  await p.goto(URL + '#/review/' + oldId);
+  await p.locator('table.classes').waitFor({ timeout: 180000 });
+  await p.locator('.moves .mv').nth(2).tap();
+  assert(await p.getByTestId('thought-tags').count() === 1, 'partie du 20/11 : l’erreur reste commentable dans la revue');
   await p.goto(URL);
   await p.getByTestId('to-comment').waitFor();
   const badge = await p.getByTestId('to-comment').innerText();
-  assert(new RegExp(`^${left + 1} erreurs? à commenter$`).test(badge.trim()), 'accueil : badge « ' + badge.trim() + ' »');
+  assert(new RegExp(`^${left + 1} erreurs? à commenter$`).test(badge.trim()), 'accueil : badge « ' + badge.trim() + ' » (parties d’aujourd’hui seulement, pas celle du 20/11)');
   await p.screenshot({ path: OUT + '/c-3-accueil.png' });
   await p.getByTestId('to-comment').tap();
   await p.locator('.comment[data-ply]').waitFor();

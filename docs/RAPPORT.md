@@ -336,8 +336,9 @@
   erreurs et gaffes : position AVANT mon coup, mon coup en flèche rouge, les 5 réponses en un toucher, PUIS le meilleur
   coup (flèche verte, raison, réfutation) et le texte libre facultatif. « Plus tard » à tout moment ; ensuite « Revoir
   la partie », « Nouvelle partie » ou « Accueil ».
-- **Accueil** : badge « X erreurs à commenter » (parties importées analysées et « plus tard », jouées depuis le 16/11)
-  qui ouvre le même écran, les parties les plus récentes d'abord.
+- **Accueil** : badge « X erreurs à commenter » (parties importées analysées et « plus tard ») qui ouvre le même écran,
+  les parties les plus récentes d'abord. Depuis le 27/11 (relecture) : seulement les parties jouées à partir du
+  27/11/2026 ; les erreurs plus anciennes restent commentables dans la revue, sans badge.
 - Le rapport pour Claude garde le tableau « Ce que je pensais, par motif ».
 
 ## Mise en page : tout tient dans l'écran (27/11)
