@@ -5,14 +5,14 @@ import { firstAppearances, GLOSSARY, lessonBlocks, OPENING_LESSONS, plainText } 
 
 const num = (ply: number, san: string) => `${Math.floor(ply / 2) + 1}${ply % 2 ? '...' : '.'} ${san}`;
 let md = `# Leçons d'ouvertures (mode Leçon)\n\nContenu affiché dans l'appli, généré depuis \`src/data/openingLessons.ts\` ` +
-  `(\`npm run lessons-doc\`). Ordre conseillé : l’Anglaise (Blancs), puis le système …c5/…g6 (Noirs) ; pour chacune : ` +
-  `1. Leçon → 2. Drill → 3. Partie à thème. Les leçons de l’ancien répertoire (Londres, Gambit Dame refusé, Défense française) ` +
+  `(\`npm run lessons-doc\`). Ordre conseillé : Blancs — l’Anglaise (1.c4) et le Londres (1.d4) ; Noirs — le système …c5/…g6 (contre 1.e4) et le Londres en défense (contre 1.d4, 1.c4, 1.Nf3) ; pour chacune : ` +
+  `1. Leçon → 2. Drill → 3. Partie à thème. Les leçons de l’ancien répertoire (Gambit Dame refusé, Défense française) ` +
   `restent consultables dans l’onglet « Archives » ; elles sont reprises en fin de document.\n\nDéroulé d'une leçon : (1) la ligne principale par blocs de 3 coups, une phrase ` +
   `par coup ; (2) après chaque bloc, l'élève rejoue ses coups (1re erreur : case de départ surlignée ; 2e : solution) ; ` +
-  `(3) le plan en 3 phrases ; (4) une partie type commentée ; (5) pour le système …c5/…g6, un bloc supplémentaire ` +
-  `« Contre les attaques rapides sur f7 » (lignes de côté vues dans mes parties Chess.com). Les coups appris entrent dans le drill (1re révision le lendemain).\n\n` +
+  `(3) le plan en 3 phrases ; (4) une partie type commentée ; (5) parfois un bloc supplémentaire (lignes de côté : attaques rapides ` +
+  `sur f7, autres premiers coups…). Les coups appris entrent dans le drill (1re révision le lendemain).\n\n` +
   `Toutes les lignes du répertoire et leur vérification Stockfish : \`docs/REPERTOIRE.md\`.\n\n` +
-  `Les parties types prolongent la ligne principale avec Stockfish 16 (1 s par coup, les deux camps) : ce ne sont pas des parties de joueurs réels.\n\n`;
+  `Les parties types prolongent la ligne principale avec Stockfish (1 s par coup, les deux camps) : ce ne sont pas des parties de joueurs réels.\n\n`;
 md += '## Glossaire (expliqué à la 1re apparition dans chaque leçon)\n\n' + Object.entries(GLOSSARY).map(([k, v]) => `- **${k}** : ${v}`).join('\n') + '\n\n';
 for (const l of OPENING_LESSONS) {
   const o = BUILTIN_OPENINGS.find((x) => x.id === l.openingId)!;
@@ -36,7 +36,7 @@ for (const l of OPENING_LESSONS) {
   for (const x of l.extras ?? []) {
     md += `### 5. Bloc supplémentaire : ${x.title}\n\n${plainText(x.intro)}${termsNote(`extra:${x.id}:intro`)}\n\n` +
       'Chaque ligne se regarde puis se rejoue comme un bloc de la leçon ; ses coups entrent dans le drill. ' +
-      'Accès direct : écran Ouvertures → « Leçon : contre les attaques rapides sur f7 ».\n\n';
+      `Accès direct : écran Ouvertures → « Leçon : ${x.title.charAt(0).toLowerCase() + x.title.slice(1)} ».\n\n`;
     x.lines.forEach((ln, j) => {
       md += `**Ligne ${j + 1} — ${ln.name}**${ln.start.length ? ` (début : ${ln.start.map((s, i) => (i % 2 ? '' : `${i / 2 + 1}. `) + s).join(' ')})` : ''}\n\n`;
       ln.moves.forEach((m, i) => { md += `- ${num(ln.start.length + i, m.san)} — ${plainText(m.why)}${termsNote(`extra:${x.id}:${j}:${i}`)}\n`; });

@@ -1,6 +1,7 @@
 // Répertoire pré-chargé : lignes principales, ~10 coups, en PGN avec variantes.
 // Pour ajouter une ouverture : ajouter une entrée ici (ou via l'écran Ouvertures).
-// Répertoire actuel : Anglaise (Blancs) et système …c5/…g6 (Noirs). L'ancien (Londres, GDR, Française) est archivé.
+// Répertoire actuel : Anglaise (1.c4) et Londres (1.d4) avec les Blancs ; avec les Noirs, …c5/…g6 contre 1.e4 et
+// « Londres en défense » contre 1.d4, 1.c4, 1.Nf3. Archives : …c5/…g6 contre 1.d4/1.c4/1.Nf3, GDR, Française.
 import { addLine, lines, parsePgn, toPgn, type Color } from '../lib/repertoire';
 
 export interface OpeningDef {
@@ -12,8 +13,20 @@ export interface OpeningDef {
   pgn: string;
   /** Rangée dans les Archives (ancien répertoire, consultable). */
   archived?: boolean;
-  /** Lignes ajoutées après coup : fusionnées une seule fois dans le répertoire déjà enregistré (révision `rev`). */
-  updates?: { rev: number; pgn: string }[];
+  /**
+   * Changements faits après coup, appliqués une seule fois au répertoire déjà enregistré (révision `rev`) :
+   * lignes ajoutées (`pgn`), premiers coups retirés (`removeRoot`, passés dans une ouverture archivée),
+   * ouverture sortie des Archives ou rangée (`archived`).
+   */
+  updates?: { rev: number; pgn?: string; removeRoot?: string[]; archived?: boolean }[];
+}
+
+/** Sépare un répertoire selon ses premiers coups : [lignes gardées, lignes qui commencent par `moves`]. */
+function splitByFirstMove(pgn: string, moves: string[], keptHeaders: Record<string, string>, movedHeaders: Record<string, string>): [string, string] {
+  const root = parsePgn(pgn).root;
+  const kept = { ...root, children: root.children.filter((c) => !moves.includes(c.san)) };
+  const moved = { ...root, children: root.children.filter((c) => moves.includes(c.san)) };
+  return [toPgn(kept, keptHeaders), toPgn(moved, movedHeaders)];
 }
 
 /** PGN de base + lignes ajoutées, en un seul arbre (pour une première installation). */
@@ -48,16 +61,48 @@ export const G6_ATTACKS_PGN = `[Event "Contre les attaques rapides sur f7 et les
 1. e4 (1. e3 c5 2. d4 g6 3. c4 Bg7 4. Nc3 Nf6 5. d5 d6 6. Nf3 O-O 7. Bd3 e6 8. h3 exd5) 1... c5 2. Qh5 (2. Qf3 Nc6 3. Bc4 Nf6 4. d3 g6 5. Nc3 Bg7 6. Nge2 d6 7. Qg3 O-O 8. O-O Bd7) (2. Bc4 Nc6 3. Qf3 (3. Qh5 e6 4. Nf3 Nf6 5. Qh4 d5 6. exd5 exd5 7. Bb5 Bd6 8. O-O O-O) 3... Nf6 4. d3 g6 5. Nc3 Bg7 6. Nge2 d6 7. Qg3 O-O 8. O-O Bd7) (2. Nc3 Nc6 3. Bc4 (3. Bb5 g6 4. Bxc6 bxc6 5. f4 Bg7 6. d3 Nf6 7. Nf3 d6 8. h3 O-O) 3... g6 4. Qf3 (4. Nf3 Bg7 5. d3 Nf6 6. h3 d6 7. O-O O-O 8. Be3 e6) 4... Nf6 5. d3 Bg7 6. Nge2 d6 7. O-O O-O 8. Qg3 Bd7) (2. Nf3 Nc6 3. c3 Nf6 4. d4 cxd4 5. e5 Nd5 6. cxd4 d6 7. Bc4 Nb6 8. Bb3 dxe5) (2. d3 g6 3. g3 Bg7 4. Bg2 Nc6 5. c3 Nf6 6. d4 d6 7. d5 Na5 8. Na3 O-O) (2. c4 Nc6 3. Nc3 g6 4. Nge2 Bg7 5. d3 d6 6. g3 Nf6 7. h3 O-O 8. Bg2 Bd7) 2... d6 3. Bc4 g6 4. Qe2 (4. Qf3 Nf6 5. d3 Bg7 6. Ne2 Nc6 7. Nbc3 O-O 8. O-O e6) 4... Bg7 5. Nf3 Nc6 6. O-O Nf6 7. h3 O-O 8. d3 Rb8 *
 `;
 
-export const G6_SYSTEM_PGN = withUpdates(G6_SYSTEM_BASE_PGN, [G6_ATTACKS_PGN],
-  { Event: 'Système …c5 / …g6 (Dragon accéléré)', Orientation: 'black' });
+/**
+ * 27/11 : contre 1.d4, 1.c4 et 1.Nf3, je joue désormais le « Londres en défense » ; les anciennes lignes …c5/…g6
+ * contre ces coups passent dans les Archives. Contre 1.e4 (et 1.e3), je garde …c5/…g6.
+ */
+export const [G6_SYSTEM_PGN, G6_OLD_PGN] = splitByFirstMove(
+  withUpdates(G6_SYSTEM_BASE_PGN, [G6_ATTACKS_PGN], { Event: 'x', Orientation: 'black' }), ['d4', 'c4', 'Nf3'],
+  { Event: 'Système …c5 / …g6 (Dragon accéléré)', Orientation: 'black' },
+  { Event: 'Système …c5/…g6 contre 1.d4, 1.c4, 1.Nf3 (ancien)', Orientation: 'black' });
+
+/**
+ * Noirs : « Londres en défense » contre 1.d4, 1.c4 et 1.Nf3 — même placement autant que possible : …d5, …c6, …Nf6,
+ * …Bf5 (le fou sort AVANT …e6), …e6, …Bd6, …Nbd7, petit roque. Stockfish refuse …Bf5 quand c4 et Nc3 permettent
+ * cxd5 puis Qb3 (pion b7) : là, …e6 d'abord. Contre 2.e3, …Bf5 tout de suite ; contre g3 + Nh4, …Bg4.
+ */
+export const LONDON_DEF_PGN = `[Event "Londres en défense"]
+[Orientation "black"]
+
+1. d4 (1. c4 c6 2. Nf3 (2. e4 d5 3. exd5 Nf6 4. d4 cxd5 5. Nf3 e6 6. Nc3 Be7 7. cxd5 Nxd5 8. Bd3 Nf6 9. O-O O-O 10. Re1 Nc6) (2. Nc3 d5 3. cxd5 cxd5 4. d4 Nf6 5. Bf4 e6 6. e3 Bd6 7. Bg3 O-O 8. Bd3 h6 9. Rc1 Be7 10. Nf3 Qb6) 2... d5 3. e3 Nf6 4. d4 Bf5 5. Nc3 e6 6. Nh4 Bg6 7. Qb3 Qc7 8. Nxg6 hxg6 9. h4 Bd6 10. Bd2 Nbd7) (1. Nf3 d5 2. c4 (2. d4 c6 3. Bf4 Nf6 4. e3 Bf5 5. c4 e6) (2. g3 c6 3. Bg2 Nf6 4. O-O Bf5 5. d3 e6 6. Nh4 Bg4 7. Qe1 Nbd7 8. h3 Bh5 9. e4 h6 10. f4 Qb6+) (2. e3 c6 3. c4 Nf6 4. d4 Bf5 5. Nc3 e6) 2... c6 3. e3 Nf6 4. d4 Bf5 5. Nc3 e6) 1... d5 2. c4 (2. Nf3 c6 3. Bf4 (3. c4 Nf6 4. e3 Bf5 5. Nc3 e6) 3... Nf6 4. e3 Bf5 5. c4 e6 6. Qb3 Qc8 7. Nc3 Nbd7 8. cxd5 Nxd5 9. Bg3 Bg6 10. Rc1 h6) (2. Bf4 Nf6 3. e3 Bf5 4. Nf3 c6 5. c4 e6 6. Qb3 Qc8 7. Nc3 Nbd7 8. cxd5 Nxd5 9. Bg3 Bg6 10. Rc1 h6) (2. e3 Bf5 3. c4 (3. Bd3 e6 4. Nf3 c6 5. c4 Nf6 6. O-O Nbd7 7. Bxf5 exf5 8. Qd3 g6 9. cxd5 Nxd5 10. e4 fxe4) 3... e6 4. Qb3 Nc6 5. Bd2 Rb8 6. Nf3 Nf6 7. Bc3 Bd6 8. c5 Be7 9. Nbd2 O-O 10. Bb5 Qc8) (2. Nc3 Nf6 3. Bf4 c6 4. e3 Bf5 5. f3 e6 6. g4 Bg6 7. h4 h6 8. Nge2 Nbd7 9. Qd2 Nb6 10. Ng3 Bd6) 2... c6 3. Nf3 (3. Nc3 Nf6 4. e3 e6 5. Nf3 Bd6 6. Bd3 Nbd7 7. e4 dxc4 8. Bxc4 b5 9. Bb3 b4 10. Na4 Be7) (3. cxd5 cxd5 4. Nc3 Nf6 5. Bf4 e6 6. e3 Bd6 7. Bg3 O-O 8. Nf3 h6 9. Bh4 Nbd7 10. Bd3 Be7) 3... Nf6 4. e3 (4. Nc3 e6 5. Bg5 Nbd7 6. cxd5 exd5 7. Qc2 Bd6 8. e3 O-O 9. Bd3 h6 10. Bh4 Be7) 4... Bf5 5. Nc3 e6 6. Nh4 Bg6 7. Nxg6 hxg6 8. Bd3 Bd6 9. Qb3 Qc7 10. cxd5 exd5 11. Bd2 Nbd7 *
+`;
+
 
 // ---------------------------------------------------------------- Archives (ancien répertoire)
 
-export const LONDON_PGN = `[Event "Système de Londres"]
+const LONDON_BASE_PGN = `[Event "Système de Londres"]
 [Orientation "white"]
 
 1. d4 d5 (1... Nf6 2. Bf4 g6 (2... e6 3. e3 c5 4. c3 Nc6 5. Nd2 d5 6. Ngf3 Bd6 7. Bg3 O-O 8. Bd3 b6 9. Ne5 Bb7 10. f4) 3. e3 Bg7 4. Nf3 O-O 5. Be2 d6 6. h3 c5 7. c3 Nc6 8. O-O b6 9. a4 Bb7 10. Nbd2) 2. Bf4 Nf6 (2... c5 3. e3 Nc6 4. Nf3 Nf6 5. Nbd2 e6 6. c3 Bd6 7. Bg3 O-O 8. Bd3 b6 9. Ne5 Bb7 10. f4) (2... Bf5 3. e3 e6 4. Bd3 Bxd3 5. Qxd3 Nf6 6. Nf3 c5 7. c3 Nc6 8. Nbd2 Bd6 9. Bxd6 Qxd6 10. O-O O-O) 3. e3 c5 (3... e6 4. Nf3 c5 5. c3 Nc6 6. Nbd2 Bd6 7. Bg3 O-O 8. Bd3 b6 9. Ne5 Bb7 10. f4) (3... g6 4. Nf3 Bg7 5. Be2 O-O 6. O-O c5 7. c3 Nc6 8. h3 b6 9. Nbd2 Bb7 10. Ne5) 4. c3 Nc6 5. Nd2 e6 6. Ngf3 Bd6 7. Bg3 O-O 8. Bd3 b6 9. Ne5 Bb7 10. f4 *
 `;
+
+/**
+ * 27/11 : le Londres revient dans mon répertoire (1.d4 ; 1.c4 = Anglaise). Lignes ajoutées contre 1…e6, 1…c5, 1…g6,
+ * 1…f5 et 1…e5 (gambit Englund). Contre 1…c5, Stockfish refuse le placement du Londres (c3/e3 : −0,6) : 2.d5.
+ * Contre 1…g6, le cavalier d'abord (2.Nf3), puis Bf4. Contre l'Englund, 4.Bg5 : pas de 4.Bf4 automatique (piège
+ * …Qb4+ 5.Bd2 Qxb2 6.Bc3?? Bb4! 7.Qd2 Bxc3 8.Qxc3 Qc1#).
+ */
+export const LONDON_ADDS_PGN = `[Event "Londres : autres premiers coups noirs"]
+[Orientation "white"]
+
+1. d4 e6 (1... c5 2. d5 Nf6 3. Nf3 e6 4. Nc3 exd5 5. Nxd5 Nxd5 6. Qxd5 Nc6 7. e4 d6 8. Ng5 Qe7 9. Bb5 Bd7 10. Bc4 Nd8) (1... g6 2. Nf3 Nf6 3. Bf4 Bg7 4. e3 O-O 5. Be2 d6 6. h3 c5 7. c3 Nc6 8. O-O b6 9. a4 Bb7 10. Nbd2) (1... f5 2. Bf4 d6 3. e3 Nf6 4. Nf3 g6 5. h3 Nc6 6. Bd3 Bg7 7. O-O O-O 8. Bg3 Qe8 9. Qe2 Kh8 10. Nc3 a6) (1... e5 2. dxe5 Nc6 3. Nf3 Qe7 4. Bg5 Qb4+ (4... Qc5 5. Be3 Qe7 6. Nc3 Nxe5 7. Bf4 Nxf3+ 8. gxf3 c6 9. Qd2 d5 10. O-O-O Nf6) 5. Nc3 Qa5 6. Qd5 Bc5 7. a3 h6 8. Bh4 g5 9. Bg3 g4 10. Nd2 Nge7) 2. Bf4 c5 3. e3 d5 4. Nf3 Nf6 5. c3 Nc6 6. Nbd2 Nh5 7. Bg3 Nxg3 8. hxg3 Qb6 9. Qc2 g6 10. Bd3 Bd7 *
+`;
+
+export const LONDON_PGN = withUpdates(LONDON_BASE_PGN, [LONDON_ADDS_PGN], { Event: 'Système de Londres', Orientation: 'white' });
 
 export const QGD_PGN = `[Event "Gambit Dame refusé"]
 [Orientation "black"]
@@ -73,9 +118,12 @@ export const FRENCH_PGN = `[Event "Défense française"]
 
 export const BUILTIN_OPENINGS: OpeningDef[] = [
   { id: 'english', name: 'Anglaise (système fermé)', color: 'w', forced: [], pgn: ENGLISH_PGN },
+  { id: 'london', name: 'Système de Londres', color: 'w', forced: [], pgn: LONDON_PGN,
+    updates: [{ rev: 1, pgn: LONDON_ADDS_PGN, archived: false }] },
   { id: 'g6-system', name: 'Système …c5 / …g6 (Dragon accéléré)', color: 'b', forced: [], pgn: G6_SYSTEM_PGN,
-    updates: [{ rev: 1, pgn: G6_ATTACKS_PGN }] },
-  { id: 'london', name: 'Système de Londres', color: 'w', forced: [], pgn: LONDON_PGN, archived: true },
+    updates: [{ rev: 1, pgn: G6_ATTACKS_PGN }, { rev: 2, removeRoot: ['d4', 'c4', 'Nf3'] }] },
+  { id: 'london-def', name: 'Londres en défense', color: 'b', forced: ['d4|c4|Nf3'], pgn: LONDON_DEF_PGN },
+  { id: 'g6-old', name: 'Système …c5/…g6 contre 1.d4, 1.c4, 1.♘f3 (ancien)', color: 'b', forced: [], pgn: G6_OLD_PGN, archived: true },
   { id: 'qgd', name: 'Gambit Dame refusé', color: 'b', forced: ['d4', 'c4'], pgn: QGD_PGN, archived: true },
   { id: 'french', name: 'Défense française', color: 'b', forced: ['e4'], pgn: FRENCH_PGN, archived: true },
 ];

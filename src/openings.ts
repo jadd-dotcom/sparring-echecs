@@ -65,16 +65,27 @@ export async function applyBuiltinUpdates() {
     const o = await db.openings.get(def.id);
     if (o) {
       const root = treeOf(o);
-      let added = 0;
+      let touched = false;
+      let archived: boolean | undefined;
       for (const u of def.updates!.filter((x) => x.rev > (revs[def.id] ?? 0))) {
-        for (const l of lines(parsePgn(u.pgn).root)) {
-          try { added += addLine(root, l); } catch { /* ligne devenue illégale : ignorée */ }
+        if (u.pgn) {
+          for (const l of lines(parsePgn(u.pgn).root)) {
+            try { if (addLine(root, l)) touched = true; } catch { /* ligne devenue illégale : ignorée */ }
+          }
         }
+        if (u.removeRoot?.length) {
+          // Ces lignes vivent désormais dans une ouverture archivée (créée par ensureOpenings).
+          const before = root.children.length;
+          root.children = root.children.filter((c) => !u.removeRoot!.includes(c.san));
+          if (root.children.length !== before) touched = true;
+        }
+        if (u.archived !== undefined) archived = u.archived;
       }
-      if (added) {
+      if (touched) {
         const builtin = (builtinChecks as Record<string, Record<string, MoveCheck>>)[def.id] ?? {};
         await saveTree(def.id, root, { ...builtin, ...o.checks });
       }
+      if (archived !== undefined && !!o.archived !== archived) await db.openings.update(def.id, { archived });
     }
     revs[def.id] = last;
     changed = true;

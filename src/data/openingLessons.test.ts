@@ -5,10 +5,10 @@ import { firstAppearances, GLOSSARY, lessonBlocks, lessonTexts, OPENING_LESSONS,
 import { drillPositions, fenKey, parsePgn } from '../lib/repertoire';
 
 describe('leçons d’ouvertures', () => {
-  it('ordre conseillé : Anglaise, système …c5/…g6 ; puis les leçons archivées (Londres, GDR, Française)', () => {
-    expect(OPENING_LESSONS.map((l) => l.openingId)).toEqual(['english', 'g6-system', 'london', 'qgd', 'french']);
+  it('ordre conseillé : Blancs (Anglaise, Londres), Noirs (…c5/…g6, Londres en défense) ; puis les leçons archivées (GDR, Française)', () => {
+    expect(OPENING_LESSONS.map((l) => l.openingId)).toEqual(['english', 'london', 'g6-system', 'london-def', 'qgd', 'french']);
     const arch = BUILTIN_OPENINGS.filter((o) => o.archived).map((o) => o.id);
-    expect(arch).toEqual(['london', 'qgd', 'french']);
+    expect(arch).toEqual(['g6-old', 'qgd', 'french']);
   });
   it('corrections de la relecture : 7.Bg3 (Londres), 7.Bh4 (GDR)', () => {
     const why = (id: string, ply: number) => OPENING_LESSONS.find((l) => l.openingId === id)!.moves[ply];
@@ -111,5 +111,57 @@ describe('bloc « Contre les attaques rapides sur f7 » (système …c5/…g6)',
     expect(mates('e4 c5 Qh5 d6 Bc4', 'Qxf7+')).toBe(false);
     // …g6 trop tôt contre ♕h5 : la dame prend c5.
     expect(() => after('e4 c5 Qh5 g6 Qxc5')).not.toThrow();
+  });
+});
+
+describe('blocs supplémentaires de toutes les leçons', () => {
+  for (const l of OPENING_LESSONS) {
+    const o = BUILTIN_OPENINGS.find((x) => x.id === l.openingId)!;
+    const root = parsePgn(o.pgn).root;
+    const drill = new Map(drillPositions(root, o.color).map((d) => [d.key, d]));
+    for (const x of l.extras ?? []) {
+      for (const [j, ln] of x.lines.entries()) {
+        it(`${l.openingId} / ${x.id} / ligne ${j + 1} (${ln.name}) : dans le répertoire, une phrase par coup, mes coups dans le drill`, () => {
+          const c = new Chess();
+          let n = root;
+          for (const m of ln.start) { c.move(m); n = n.children.find((k) => k.san === m)!; expect(n, m).toBeDefined(); }
+          for (const m of ln.moves) {
+            if (c.turn() === o.color) {
+              const d = drill.get(fenKey(c.fen()));
+              expect(d, `position avant ${m.san}`).toBeDefined();
+              expect(d!.acceptSan).toContain(m.san);
+            }
+            expect(() => c.move(m.san), m.san).not.toThrow();
+            n = n.children.find((k) => k.san === m.san)!;
+            expect(n, `${m.san} dans l’arbre du répertoire`).toBeDefined();
+            const t = plainText(m.why);
+            expect(t.length, t).toBeLessThan(160);
+            expect(t.trim().endsWith('.'), t).toBe(true);
+            expect((t.slice(0, -1).match(/[.!?](\s|$)/g) ?? []).length, `deux phrases au plus : ${t}`).toBeLessThanOrEqual(1);
+          }
+        });
+      }
+    }
+  }
+});
+
+describe('Londres (Blancs) et Londres en défense (Noirs) : affirmations des leçons', () => {
+  const after = (sans: string) => { const c = new Chess(); sans.split(' ').forEach((s) => c.move(s)); return c; };
+  it('gambit Englund : le piège 4.Bf4 Qb4+ 5.Bd2 Qxb2 6.Bc3 Bb4 7.Qd2 Bxc3 8.Qxc3 Qc1 est bien mat ; après 4.Bg5 Qb4+ 5.Nc3 Qxb2 6.Bd2, Rb1 attaque la dame', () => {
+    expect(after('d4 e5 dxe5 Nc6 Nf3 Qe7 Bf4 Qb4+ Bd2 Qxb2 Bc3 Bb4 Qd2 Bxc3 Qxc3 Qc1#').isCheckmate()).toBe(true);
+    const c = after('d4 e5 dxe5 Nc6 Nf3 Qe7 Bg5 Qb4+ Nc3 Qxb2 Bd2 a6 Rb1');
+    expect(c.get('b2')).toMatchObject({ type: 'q', color: 'b' });
+    expect(c.isAttacked('b2', 'w')).toBe(true);
+  });
+  it('Londres en défense : après 2.e3 Bf5 3.c4 e6 4.Qb3 Nc6, si Qxb7 alors Nb4 menace Nc2+ (roi et tour a1)', () => {
+    const c = after('d4 d5 e3 Bf5 c4 e6 Qb3 Nc6 Qxb7 Nb4 a3');
+    const m = c.move('Nc2+');
+    expect(c.inCheck()).toBe(true);
+    expect(m.to).toBe('c2');
+  });
+  it('Londres en défense : le fou d6 et la dame c7 visent h2 (rien entre eux)', () => {
+    const c = after('d4 d5 c4 c6 Nf3 Nf6 e3 Bf5 Nc3 e6 Nh4 Bg6 Nxg6 hxg6 Bd3 Bd6 Qb3 Qc7');
+    for (const sq of ['e5', 'f4', 'g3'] as const) expect(c.get(sq)).toBeFalsy();
+    expect(c.get('h2')).toMatchObject({ type: 'p', color: 'w' });
   });
 });

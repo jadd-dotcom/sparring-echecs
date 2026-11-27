@@ -247,7 +247,7 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
           </div>
         )}
         {!ended && (
-          <div className="row">
+          <div className="row actions">
             {canCancel(cur) && (
               <button onClick={() => setConfirmCancel(true)} title={`Possible pendant tes ${CANCEL_MAX_MY_MOVES} premiers coups`}><X aria-hidden className="ico" />Annuler la partie</button>
             )}

@@ -76,10 +76,11 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.waitForTimeout(2000);
   assert(calls.length === 0, 'réouverture dans les 2 minutes : aucune requête');
   // Plus tard : seulement le mois en cours est redemandé, et rien de nouveau → pas de message.
+  // (une seule ouverture : un 2e rechargement couperait l'import en cours, et le délai de 2 min l'empêcherait de reprendre)
   await p.evaluate(() => window.__db.meta.put({ key: 'chesscomAutoAt', value: Date.now() - 3600e3 }));
-  await p.goto(URL); await p.reload();
-  await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor();
-  for (let i = 0; i < 40 && calls.length < 2; i++) await p.waitForTimeout(250);
+  await p.reload();
+  await p.getByRole('heading', { name: /Sparring Échecs|Réglages/ }).first().waitFor();
+  for (let i = 0; i < 120 && calls.length < 2; i++) await p.waitForTimeout(250);
   await p.waitForTimeout(1500);
   assert(calls.length === 2 && !calls.some((c) => c.endsWith('2026/10')), `réouverture plus tard : ${calls.join(', ')} (mois passé non redemandé)`);
   assert(await p.getByTestId('auto-import').count() === 0 && await ccCount() === n, 'aucune nouvelle partie : aucun message, aucun doublon');
