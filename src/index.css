@@ -196,7 +196,7 @@ table.classes td:first-child, table.classes th:first-child { text-align: left; }
 .why { font-size: 1.05rem; line-height: 1.5; }
 .term { background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 10px; padding: 10px; font-size: .95rem; }
 .nav-banner { background: var(--blue); color: #fff; border-radius: 12px; padding: 8px 12px; margin: 4px 0 8px; font-weight: 700; text-align: center; box-shadow: 0 3px 0 var(--blue-edge); }
-.last-move { padding: 4px 2px; font-weight: 600; min-height: 1.6em; }
+.last-move { padding: 4px 2px; font-weight: 600; box-sizing: border-box; height: calc(1.5em + 8px); line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @keyframes blink { 50% { opacity: .45; } }
 .blink { animation: blink .9s infinite; }
 .assist .row > button.on { box-shadow: inset 0 0 0 3px var(--accent), 0 4px 0 var(--raised-edge); }
@@ -554,3 +554,18 @@ button.link-title:active { transform: none; box-shadow: none; }
 .tag.st-new { background: var(--surface-2); color: var(--muted); }
 .cross-cards { list-style: none; padding: 0; display: grid; gap: 8px; margin: 4px 0; } .cross-cards li .tag { margin-left: 6px; } .cross-choices { display: grid; gap: 8px; }
 .train-bar .both-toggle { grid-column: 1 / -1; grid-row: 3; }
+
+/* ---------------------------------------------------------------- Matériel (pièces prises, +N) */
+.mat { display: inline-flex; align-items: center; gap: 6px; height: 20px; overflow: hidden; white-space: nowrap; vertical-align: middle; }
+.mat-caps { display: inline-flex; align-items: center; gap: 4px; }
+.mat-group { display: inline-flex; }
+.mat-group img { width: 18px; height: 18px; display: block; }
+.mat-group img + img { margin-left: -11px; }
+.mat-adv { display: inline-block; font-size: .85rem; font-weight: 700; color: var(--muted); line-height: 20px; transform-origin: center; }
+.pulse-loss { animation: mat-pulse 1s ease-in-out 1; }
+@keyframes mat-pulse { 0%, 100% { transform: scale(1); color: var(--muted); } 25%, 75% { transform: scale(1.45); color: var(--blund); } }
+@media (prefers-reduced-motion: reduce) { .pulse-loss { animation: mat-flash 1s steps(1) 1; } }
+@keyframes mat-flash { 0%, 50% { color: var(--blund); } 100% { color: var(--muted); } }
+.mat-row { display: flex; align-items: center; gap: 8px; height: 26px; min-height: 26px; flex: none; overflow: hidden; white-space: nowrap; font-weight: 700; padding: 0 2px; }
+.mat-name { font-size: .9rem; overflow: hidden; text-overflow: ellipsis; }
+.player-line .who { min-width: 0; display: inline-flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; }

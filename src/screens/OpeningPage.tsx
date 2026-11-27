@@ -220,7 +220,7 @@ function CrossroadsTab({ o }: { o: Opening }) {
               <li key={card.id} data-testid="cross-card" data-state={state(card.id)}>
                 <b>{fig(moveLabel(card.ply, card.his))}</b>{card.mine && <> → {fig(moveLabel(card.ply + 1, card.mine))}</>}
                 <span className={`tag ${state(card.id) === 'maîtrisée' ? 'st-good' : state(card.id) === 'à revoir' ? 'st-bad' : 'st-new'}`}>{state(card.id)}</span>
-                <div className="muted small">{fig(signpostSentence(card, o.color))}</div>
+                <div className="muted small">{fig(signpostSentence(card, o.color, { lesson: OPENING_LESSONS.find((l) => l.openingId === o.id) }))}</div>
               </li>
             ))}</ul>
           </li>

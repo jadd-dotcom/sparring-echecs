@@ -93,6 +93,25 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByTestId('tab-training').tap();
   assert(/^Révision10 cartes aujourd’hui/.test((await p.getByTestId('nav-revise').innerText()).replace(/\s+/g, '')) || /10 cartes aujourd’hui/.test(await p.getByTestId('nav-revise').innerText()), 'réglage : 10 par jour');
 
+  // ---------- « Lis la menace » : 5 positions au plus, pas recomptées dans la Révision (plafond 10)
+  const ids = await p.evaluate(async () => {
+    const d = new Date(); const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const drill = (await window.__db.cards.filter((c) => c.kind === 'drill').toArray())[0];
+    const out = [];
+    for (let i = 0; i < 7; i++) { const { id, openingId, ...rest } = drill; out.push(await window.__db.cards.add({ ...rest, kind: 'threat', due: today, createdAt: Date.now() + i, attempts: [] })); }
+    return out;
+  });
+  await p.getByTestId('tab-today').tap();
+  await p.getByTestId('tab-training').tap();
+  const thr = (await p.getByTestId('nav-threat').innerText()).replace(/\s+/g, ' ');
+  const rev = (await p.getByTestId('nav-revise').innerText()).replace(/\s+/g, ' ');
+  assert(/5 positions aujourd’hui/.test(thr) && /5 cartes aujourd’hui/.test(rev), `7 menaces dues : « Lis la menace » 5 positions, Révision 5 cartes (10 en tout, sans doublon) : ${thr} | ${rev}`);
+  await p.getByTestId('tab-today').tap();
+  await p.getByTestId('step-threat').waitFor();
+  const stx = (await p.getByTestId('step-threat').innerText()) + ' | ' + (await p.getByTestId('step-revise').innerText());
+  assert(/5 positions/.test(stx) && /5 cartes/.test(stx), 'séance du jour : 5 positions à lire, 5 cartes à réviser (' + stx.replace(/\s+/g, ' ') + ')');
+  await p.evaluate((ids) => window.__db.cards.bulkDelete(ids), ids);
+
   // ---------- Jouer : couleur, comptée / non comptée, raccourcis
   await p.getByTestId('tab-jouer').tap();
   await p.getByRole('heading', { name: 'Jouer contre Maia' }).waitFor();

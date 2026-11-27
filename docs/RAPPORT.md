@@ -594,3 +594,29 @@ pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur �
   actif a un « pourquoi », chaque ligne ajoutée est dans l'arbre, mes coups sont dans le drill, une phrase de plan,
   rangement par carrefour) ; `tests/lessons-full.cjs` (sommaire par carrefour, une ligne regardée coup par coup, son plan,
   rejouée, ✓).
+
+## Étape 6 : matériel pendant la partie, phrases-panneaux, « Lis la menace » (27/11)
+- **Matériel (comme Chess.com)** : à côté du nom de chaque joueur (en haut l'adversaire, en bas moi), les pièces qu'il
+  a prises (petites icônes du jeu de pièces choisi, groupées : pions, cavaliers, fous, tours, dame) et « +N » pour le
+  camp qui a plus de matériel (1/3/3/5/9) ; égalité : rien. Pièces prises lues dans l'historique des coups (pour une
+  position de départ autre que l'initiale ou une carte de révision : les pièces qui manquent) ; points calculés sur
+  l'échiquier (une promotion compte). Partie contre Maia (et suite de partie après une ligne), revue (suit le coup
+  affiché), Explorer. Quand son coup me fait perdre au moins 2 points nets et qu'il passe devant, son « +N » pulse
+  1 seconde (pas de son ; simple changement de couleur si « réduire les animations »). aria-label « Les Noirs ont 3
+  points de plus ». Hauteur fixe : l'échiquier ne grandit pas et ne bouge pas (la ligne « Maia a joué : … » a aussi
+  une hauteur fixe). `src/lib/materialBar.ts`, `src/MaterialBar.tsx`.
+- **Phrases-panneaux** : 4 étaient fausses (menaces de mat sur f7 non vues). Partie gauche : d'abord la menace de son
+  coup, calculée « s'il rejouait » sur 4 demi-coups comme « Qu'est-ce qu'il menace ? » (Stockfish profondeur 16, une
+  fois pour toutes : `npm run signpost-threats` → `src/data/signpostThreats.ts`, 7 menaces sur 109 cartes) : mat →
+  « Il menace Qxf7 mat », gain ≥ 2 → « Il menace de prendre ton fou f5 » ; sinon le « pourquoi » de la leçon pour son
+  coup. Partie droite : le « pourquoi » de la leçon pour mon coup ; sinon ce que mon coup fait contre la menace (prend,
+  s'écarte, bouche la ligne, défend). Mon coup entre parenthèses. Dans 1.e4 c5 2.Qh5 d6 3.Bc4 g6 4.Qf3, Qxf7+ n'est
+  pas mat (le roi va en d7) : la phrase dit « elle menace encore Qxf7+ » (la leçon). Deux « pourquoi » générés
+  améliorés : interposition (« Ton cavalier bouche la diagonale de sa dame : ta tour h8 n'est plus attaquée ») et pion
+  qui protège une pièce attaquée (« Le pion e6 protège ton fou f5, attaqué par son fou d3 »). docs/CARREFOURS.md
+  régénéré (`npm run crossroads-doc`).
+- **Séance du jour** : l'étape « Lis la menace » propose 5 positions au plus ; ces positions ne sont plus comptées une
+  deuxième fois dans l'étape « Révision » (ni dans l'onglet Entraînement). `splitToday` dans `src/lib/dailyPlan.ts`.
+- Tests : `src/lib/materialBar.test.ts`, `src/lib/signposts.test.ts` (les 4 positions), `src/lib/dailyPlan.test.ts`,
+  `src/lib/moveWhy.test.ts` ; navigateur : `tests/material.cjs` (nouveau), `tests/today.cjs` (5 positions, pas de
+  doublon), `tests/crossroads.cjs`.

@@ -2674,7 +2674,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nf6",
-       "why": "Ton cavalier se développe en f6 et surveille d5 et e4."
+       "why": "Ton cavalier bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée."
       },
       {
        "san": "e5",
@@ -2690,7 +2690,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "f6",
-       "why": "Le pion f6 surveille e5, au centre."
+       "why": "Le pion f6 bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée."
       },
       {
        "san": "exd7+",
@@ -4051,7 +4051,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "e6",
-       "why": "Le pion e6 soutient ton pion d5."
+       "why": "Le pion e6 protège ton fou f5, attaqué par son fou d3."
       },
       {
        "san": "Nf3",

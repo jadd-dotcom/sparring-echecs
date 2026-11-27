@@ -9,7 +9,7 @@ import {
 import { stockfish } from './engines/stockfish';
 import { evalToCp, type Eval } from './lib/winpct';
 import { addDays, dayKey, INTERVALS } from './lib/srs';
-import { allowance, DEFAULT_REVISE_CAP, prioritize, reviewedToday } from './lib/dailyPlan';
+import { allowance, DEFAULT_REVISE_CAP, prioritize, reviewedToday, splitToday } from './lib/dailyPlan';
 import { GOALS, type GoalState } from './lib/goals';
 
 export const MAX_LOSS_CP = 50;         // 0,5 pion
@@ -202,25 +202,29 @@ async function prioritized(): Promise<Card[]> {
   return prioritize(cards, motifOf, goalDef?.motifs ?? []);
 }
 
+/** Les cartes du jour réparties entre l'étape « Lis la menace » (au plus 5) et la Révision (les autres). */
+async function todaySplit() {
+  const [all, cards] = await Promise.all([prioritized(), db.cards.toArray()]);
+  const left = allowance(await getReviseCap(), reviewedToday(cards));
+  return splitToday(all, left, reviewedToday(cards.filter((c) => c.kind === 'threat')));
+}
+
 /**
  * Cartes à revoir aujourd'hui. Avec `openingId` : cette ouverture seulement (drill), sans plafond, jusqu'à 10
  * nouvelles positions. Sinon : plafond quotidien (Réglages), d'abord les cartes des motifs de l'objectif, puis « Lis la
- * menace », puis les plus anciennes ; le reste attend les jours suivants. `only: 'threat'` : les « Lis la menace ».
+ * menace », puis les plus anciennes ; le reste attend les jours suivants. `only: 'threat'` : l'étape « Lis la menace »
+ * (au plus 5 positions) ; sans `only` : la Révision, sans ces positions-là.
  */
 export async function reviewQueue(openingId?: string, opts: { only?: 'threat' } = {}): Promise<Card[]> {
   if (openingId) return dueCards(openingId);
-  const all = await prioritized();
-  const left = allowance(await getReviseCap(), reviewedToday(await db.cards.toArray()));
-  const list = opts.only === 'threat' ? all.filter((c) => c.kind === 'threat') : all;
-  return list.slice(0, left === Infinity ? undefined : left);
+  const split = await todaySplit();
+  return opts.only === 'threat' ? split.threat : split.revise;
 }
 
-/** Révision : cartes permises aujourd'hui et cartes qui attendent les jours suivants. */
+/** Révision (sans les « Lis la menace » du jour), « Lis la menace » (au plus 5), et cartes des jours suivants. */
 export async function reviewCounts(): Promise<{ today: number; waiting: number; threat: number }> {
-  const all = await prioritized();
-  const left = allowance(await getReviseCap(), reviewedToday(await db.cards.toArray()));
-  const today = Math.min(all.length, left);
-  return { today, waiting: all.length - today, threat: all.slice(0, today).filter((c) => c.kind === 'threat').length };
+  const split = await todaySplit();
+  return { today: split.revise.length, waiting: split.waiting, threat: split.threat.length };
 }
 
 // ---------------------------------------------------------------- suivi du répertoire (toutes les parties)

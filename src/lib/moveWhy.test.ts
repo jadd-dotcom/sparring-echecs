@@ -37,6 +37,13 @@ describe('moveWhy : une phrase par coup, les deux camps', () => {
     expect(why('c4 d5 cxd5 Nf6 Nf3 Nxd5 d4 g6 e4 Nb6 h3 Bg7 Nc3 O-O Be3 Nc6 Qd2')).toBe('Ta dame sort en d2 : avec ton fou e3, Bh6 échangera son fou g7, le meilleur défenseur de son roi.');
     expect(why('c4 e5 Nc3 Nc6 g3 Nf6 Bg2 Bc5 e3 O-O Nge2 d6 O-O a6 d4 Ba7 h3 Re8')).toBe('Sa tour vient en e8 et soutient son pion e5.');
   });
+  it('interposition (vraie menace seulement) ; pion qui protège une pièce attaquée', () => {
+    expect(why('e4 c5 Nf3 Nc6 d4 cxd4 Nxd4 g6 Nxc6 bxc6 Qd4 Nf6', 'b')).toBe('Ton cavalier bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée.');
+    expect(why('e4 c5 Nf3 Nc6 d4 cxd4 Nxd4 g6 Nxc6 bxc6 Qd4 Nf6 e5 Nd5 e6 f6', 'b')).toBe('Le pion f6 bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée.');
+    expect(why('d4 d5 e3 Bf5 Bd3 e6', 'b')).toBe('Le pion e6 protège ton fou f5, attaqué par son fou d3.');
+    // Fou contre cavalier défendu (même valeur) : pas une menace, pas d'interposition annoncée.
+    expect(why('d4 d5 c4 c6 cxd5 cxd5 Nc3 Nf6 Bf4 e6 e3 Bd6', 'b')).not.toMatch(/bouche/);
+  });
   it('toujours une seule phrase qui finit par un point', () => {
     const c = new Chess();
     for (const m of 'd4 d5 Bf4 Nf6 e3 e6 Nf3 c5 c3 Nc6 Nbd2 Bd6 Bg3 O-O Bd3 b6 Ne5 Bb7 f4'.split(' ')) {

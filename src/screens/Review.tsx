@@ -17,6 +17,7 @@ import {
 } from '../lib/moveClass';
 import { Chess } from 'chess.js';
 import { ThoughtBox, ThoughtButtons } from '../ThoughtUi';
+import { MaterialRow, materialInfo } from '../MaterialBar';
 import Explorer from '../Explorer';
 import { ThreatCheck } from '../ThreatUi';
 import { activeGoal, exitsOf } from '../goalService';
@@ -200,11 +201,13 @@ export default function Review({ id }: { id: number }) {
             </>}
           </div>
         );
-  if (exploring) return <Explorer fen={fen} me={game.myColor} onQuit={() => setExploring(false)} />;
+  if (exploring) return <Explorer fen={fen} me={game.myColor} onQuit={() => setExploring(false)} history={{ startFen: game.startFen, uci: game.uci.slice(0, ply + 1) }} oppName={opp} />;
+  const mat = materialInfo(game.startFen, game.uci.slice(0, ply + 1), game.myColor);
 
   return (
     <div className="play">
       <div className="board-col">
+        <MaterialRow info={mat} side={game.myColor === 'w' ? 'b' : 'w'} me={game.myColor} name={opp.charAt(0).toUpperCase() + opp.slice(1)} />
         <div className="review-board">
           <div className="evalbar" style={{ flexDirection: whiteBottom ? 'column' : 'column-reverse' }} aria-label={`Évaluation ${bar.label}`}>
             <div className="white" style={{ height: `${bar.wpWhite}%`, marginTop: whiteBottom ? 'auto' : 0, marginBottom: whiteBottom ? 0 : 'auto' }} />
@@ -215,6 +218,7 @@ export default function Review({ id }: { id: number }) {
             : <Board fen={retryOn ? fens[ply] : fen} orientation={game.myColor} movable={retryOn && !retry!.checking && !retry!.result?.ok ? game.myColor : null}
               onMove={onRetryMove} arrows={arrows} highlight={highlight} badges={badges} lastMove={retryOn ? null : pe ? { from: pe.uci.slice(0, 2), to: pe.uci.slice(2, 4) } : null} />}
         </div>
+        <MaterialRow info={mat} side={game.myColor} me={game.myColor} name="Toi" />
         <p className="move-sentence">
           {pe && cls ? <><ClassBadge cls={cls} size={22} className="class-badge inline" />{' '}
             {askThought ? moveSentence(fig(pe.san), cls, null, null, null)

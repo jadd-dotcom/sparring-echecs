@@ -25,7 +25,9 @@ const dayKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,
   await p.getByTestId('cross-train').waitFor();
   const nCards = await p.getByTestId('cross-card').count();
   assert(nCards === 24, 'une carte par coup-panneau (24)');
-  assert(/Il attaque ton pion d5 → tu le soutiens : …c6/.test(await p.locator('.cross-list').innerText()), 'phrase-panneau : « Il attaque ton pion d5 → tu le soutiens : …c6 »');
+  const crossText = await p.locator('.cross-list').innerText();
+  assert(/attaquent ton pion d5 avec le pion c : c’est le Gambit Dame → le pion c6 soutient d5 .* \(…♙?c6\)/.test(crossText), 'phrase-panneau : le « pourquoi » de la leçon des deux côtés (« … Gambit Dame → le pion c6 soutient d5 … (…c6) »)');
+  assert(/Il menace de prendre ton fou f5 → le pion e6 protège ton fou f5/.test(crossText), 'phrase-panneau : la menace d’abord (« Il menace de prendre ton fou f5 → … »)');
   assert(/0 à revoir · 8 nouvelles/.test(await p.getByTestId('cross-train').innerText()), 'bouton : 0 à revoir · 8 nouvelles');
   await p.getByTestId('cross-train').tap();
 

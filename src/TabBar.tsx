@@ -22,7 +22,7 @@ export default function TabBar({ route }: { route: Route }) {
       setBadges({
         today: t.steps.filter((s) => !s.done).length,
         jouer: cur ? 1 : 0,
-        training: rc.today + errorsToComment(games).length,
+        training: rc.today + rc.threat + errorsToComment(games).length,
         progress: ((goals?.value as { messages?: string[] } | undefined)?.messages ?? []).length,
       });
     })().catch(() => {});

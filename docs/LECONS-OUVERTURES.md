@@ -1174,11 +1174,11 @@ _Le plan :_ Ta tour b8 attaque b2 : joue ensuite …Qc7 et …Nd7 pour libérer 
 **Ligne 1 — 6.Qd4** (début : 1. e4 c5 2. Nf3 Nc6 3. d4 cxd4 4. Nxd4 g6 5. Nxc6 bxc6)
 
 - 6. Qd4 — Sa dame va en d4 et attaque ta tour h8.
-- 6... Nf6 — Ton cavalier se développe en f6 et surveille d5 et e4.
+- 6... Nf6 — Ton cavalier bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée.
 - 7. e5 — Le pion e5 chasse ton cavalier f6.
 - 7... Nd5 — Ton cavalier se met à l’abri en d5.
 - 8. e6 — Le pion e6 gagne de l’espace au centre.
-- 8... f6 — Le pion f6 surveille e5, au centre.
+- 8... f6 — Le pion f6 bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée.
 - 9. exd7+ — Son pion prend ton pion d7, avec échec : la colonne e s’ouvre pour ses tours.
 - 9... Bxd7 — Ton fou reprend en d7 : le matériel reste égal.
 - 10. Bc4 — Son fou se développe en c4 et vise ton cavalier d5.
@@ -1716,7 +1716,7 @@ _Le plan :_ Plan : …Ne4 installe ton cavalier au centre et propose des échang
 **Ligne 2 — 3.Bd3** (début : 1. d4 d5 2. e3 Bf5)
 
 - 3. Bd3 — Son fou va en d3 et attaque ton fou f5.
-- 3... e6 — Le pion e6 soutient ton pion d5.
+- 3... e6 — Le pion e6 protège ton fou f5, attaqué par son fou d3.
 - 4. Nf3 — Son cavalier se développe en f3 et surveille d4 et e5.
 - 4... c6 — Le pion c6 soutient ton pion d5.
 - 5. c4 — Le pion c4 prend de l’espace au centre et surveille d5.
