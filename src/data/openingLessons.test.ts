@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Chess } from 'chess.js';
 import { BUILTIN_OPENINGS } from './openings';
 import { firstAppearances, GLOSSARY, lessonBlocks, lessonTexts, OPENING_LESSONS, plainText, termsOf } from './openingLessons';
-import { drillPositions, fenKey, parsePgn } from '../lib/repertoire';
+import { drillPositions, fenKey, lines, parsePgn } from '../lib/repertoire';
+import { crossroads } from '../lib/crossroads';
 
 describe('leçons d’ouvertures', () => {
   it('ordre conseillé : Blancs (Anglaise, Londres), Noirs (…c5/…g6, Londres en défense) ; puis les leçons archivées (GDR, Française)', () => {
@@ -164,4 +165,56 @@ describe('Londres (Blancs) et Londres en défense (Noirs) : affirmations des le�
     for (const sq of ['e5', 'f4', 'g3'] as const) expect(c.get(sq)).toBeFalsy();
     expect(c.get('h2')).toMatchObject({ type: 'p', color: 'w' });
   });
+});
+
+describe('leçons complètes (répertoire actif)', () => {
+  const fk = (fen: string) => fen.split(' ').slice(0, 4).join(' ');
+  const fmt = (sans: string[]) => sans.map((m, i) => (i % 2 ? '' : `${i / 2 + 1}.`) + m).join(' ');
+  for (const o of BUILTIN_OPENINGS.filter((x) => !x.archived)) {
+    const l = OPENING_LESSONS.find((x) => x.openingId === o.id)!;
+    const root = parsePgn(o.pgn).root;
+    it(`${o.id} : chaque coup de chaque ligne du répertoire (les deux camps) a un « pourquoi » dans la leçon`, () => {
+      const whys = new Map<string, string>();
+      const add = (seq: string[], from: number, texts: string[]) => {
+        const c = new Chess();
+        seq.forEach((m, i) => { if (i >= from) whys.set(fk(c.fen()) + ' ' + m, texts[i - from]); c.move(m); });
+      };
+      add(l.moves.map((m) => m.san), 0, l.moves.map((m) => m.why));
+      for (const x of l.extras ?? []) for (const ln of x.lines) add([...ln.start, ...ln.moves.map((m) => m.san)], ln.start.length, ln.moves.map((m) => m.why));
+      const missing: string[] = [];
+      for (const line of lines(root)) {
+        const c = new Chess();
+        for (const m of line) { if (!whys.get(fk(c.fen()) + ' ' + m)) missing.push(`${fmt(c.history())} … ${m}`); c.move(m); }
+      }
+      expect(missing).toEqual([]);
+    });
+    const cx = (l.extras ?? []).filter((x) => x.id.startsWith('cx-'));
+    it(`${o.id} : lignes ajoutées rangées par carrefour, une phrase de plan à la fin de chacune`, () => {
+      expect(cx.length).toBeGreaterThan(0);
+      const cs = crossroads(root, o.color);
+      for (const x of cx) {
+        const m = x.title.match(/^Carrefour (?:après (.+)|au premier coup)$/);
+        expect(m, x.title).toBeTruthy();
+        const cr = cs.find((c) => (c.path.length ? fmt(c.path) : undefined) === m![1]);
+        expect(cr, x.title).toBeDefined();
+        for (const ln of x.lines) {
+          const full = [...ln.start, ...ln.moves.map((mv) => mv.san)];
+          expect(full.slice(0, cr!.path.length), `${x.title} / ${ln.name}`).toEqual(cr!.path);
+          expect(cr!.branches.map((b) => b.his), ln.name).toContain(full[cr!.path.length]);
+          // Le plan : une phrase (deux au plus), en fin de ligne.
+          expect(ln.plan, ln.name).toBeTruthy();
+          const t = plainText(ln.plan!);
+          expect(t.length, t).toBeLessThan(200);
+          expect(t.trim().endsWith('.'), t).toBe(true);
+          expect((t.slice(0, -1).match(/[.!?](\s|$)/g) ?? []).length, `deux phrases au plus : ${t}`).toBeLessThanOrEqual(1);
+        }
+      }
+    });
+    it(`${o.id} : les blocs écrits à la main restent en premier, les noms de lignes sont distincts dans un bloc`, () => {
+      const ids = (l.extras ?? []).map((x) => x.id);
+      const firstCx = ids.findIndex((id) => id.startsWith('cx-'));
+      expect(ids.slice(firstCx).every((id) => id.startsWith('cx-'))).toBe(true);
+      for (const x of cx) expect(new Set(x.lines.map((ln) => ln.name)).size, x.title).toBe(x.lines.length);
+    });
+  }
 });

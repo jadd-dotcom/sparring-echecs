@@ -5,6 +5,7 @@ import {
   startRound, validatedCount, withError, withLineDone, type LineProgress,
 } from './lineTrainer';
 import { BUILTIN_OPENINGS } from '../data/openings';
+import { LINE_PLANS } from '../data/linePlans';
 import { OPENING_LESSONS } from '../data/openingLessons';
 
 // Répertoire Blancs de test : deux de mes coups possibles après 1.e4 e5 (2.Nf3 ou 2.Bc4), et une transposition
@@ -99,5 +100,12 @@ describe('« Jouer les lignes » : textes de la leçon', () => {
     expect(linePlan(lesson, englund)?.block?.title).toBe('Contre les autres premiers coups noirs');
     expect(linePlan(lesson, lesson.moves.map((m) => m.san))).toEqual({ plan: lesson.plan });
     expect(linePlan(undefined, englund)).toBeNull();
+  });
+  it('plan de fin de ligne : la phrase de plan de la ligne complétée (carrefour), puis celui de la leçon', () => {
+    const full = 'd4 e5 dxe5 Nc6 Nf3 Qe7 Bg5 Qb4+ Nc3 Qa5 Qd5 Bc5 a3 h6 Bh4 g5 Bg3 g4 Nd2 Nge7'.split(' ');
+    const p = linePlan(lesson, full)!;
+    expect(p.block?.title).toBe('Carrefour après 1.d4');
+    expect(p.plan[0]).toBe(LINE_PLANS.london[full.join(' ')]);
+    expect(p.plan.slice(1)).toEqual(lesson.plan);
   });
 });

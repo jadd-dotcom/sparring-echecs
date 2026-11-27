@@ -93,8 +93,9 @@ const E6 = ['d4', 'e6', 'Bf4', 'c5', 'e3', 'd5', 'Nf3', 'Nf6', 'c3', 'Nc6', 'Nbd
   assert(/1\.d4 e6/.test(await p.locator('.line-text').innerText()), 'ligne 2 : 1…e6 (l’adversaire joue la ligne)');
 
   await playMain({ line: E6, from: 2 });
-  assert(await p.getByTestId('line-ok').count() === 1 && /Contre les autres premiers coups noirs/.test(await p.getByTestId('lines-done').innerText()),
-    'ligne 2 ✓, avec le bloc de la leçon qui la couvre (« Contre les autres premiers coups noirs »)');
+  const done2 = await p.getByTestId('lines-done').innerText();
+  assert(await p.getByTestId('line-ok').count() === 1 && /Carrefour après 1\.d4/.test(done2) && /protègent ton centre et le pion b2/.test(done2),
+    'ligne 2 ✓, avec le bloc de la leçon qui la couvre (« Carrefour après 1.d4 ») et sa phrase de plan');
 
   // « Continuer la partie » : Maia reprend depuis la fin de la ligne, partie non comptée.
   const before = await p.evaluate(() => window.__db.meta.get('profile').then((m) => m?.value ?? null));
