@@ -1,6 +1,7 @@
 // Carte « Mon objectif » (en haut de l'accueil) : une règle à la fois, « X parties propres sur les 10 dernières »,
 // une pastille par partie, le point de départ pour comparer, les messages (maîtrise, retour) et « À surveiller ».
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { detailRefresh } from './detailRefresh';
 import { clearGoalMessages, loadGoals, type GoalData } from './goalService';
 import { GOAL_MASTERED, GOAL_WINDOW, goalProgress, toWatch } from './lib/goals';
 import { MOTIF_LABEL } from './lib/report/motifs';
@@ -11,7 +12,9 @@ const fmt = (t: number) => new Date(t).toLocaleDateString('fr-FR');
 
 export default function GoalCard() {
   const [d, setD] = useState<GoalData | null>(null);
-  useEffect(() => { loadGoals().then(setD).catch(() => {}); }, []);
+  // Rechargée quand le recalcul des motifs se termine (les parties propres peuvent changer).
+  const refreshed = useSyncExternalStore(detailRefresh.subscribe, () => detailRefresh.get().finishedAt);
+  useEffect(() => { loadGoals().then(setD).catch(() => {}); }, [refreshed]);
   if (!d) return null;
   const { state, goal, games, exits } = d;
   const watch = toWatch(goal, games, exits);

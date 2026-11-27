@@ -44,7 +44,7 @@ const DAY = 86400000;
     san: Array.from({ length: 24 }, (_, i) => ['Nf3', 'Nf6', 'Ng1', 'Ng8'][i % 4]),
     result: '1-0', score: 1, termination: 'Abandon', ext: { site: 'chess.com', me: { name: 'moi' }, opp: { name: 'X' } },
     analysis: Array.from({ length: 12 }, (_, i) => ({ ply: 2 * i, san: i % 2 ? 'Ng1' : 'Nf3', uci: i % 2 ? 'f3g1' : 'g1f3', bestUci: null, bestSan: null, wpBefore: 50, wpAfter: 50, drop: 0, severity: 'ok',
-      ...(motifs[i] ? { severity: 'blunder', drop: 40, detail: { v: 2, depth: 12, bestLine: '', bestMaterial: 0, refutation: '', refutationMaterial: 0, motifs: [motifs[i]], motif: motifs[i] } } : {}) })),
+      ...(motifs[i] ? { severity: 'blunder', drop: 40, detail: { v: 3, depth: 12, bestLine: '', bestMaterial: 0, refutation: '', refutationMaterial: 0, motifs: [motifs[i]], motif: motifs[i] } } : {}) })),
   }))), games);
   await add([[20, []], [19, ['piece-en-prise']], [18, []], [17, ['menace-ignoree']], [16, []], [15, ['piece-en-prise']], [14, []], [13, ['piece-en-prise']], [12, ['piece-en-prise']], [11, ['menace-ignoree']]]);
   await add([[4.5, []], [4, ['piece-en-prise']], [3.5, ['gain-rate']], [3, []], [2, ['menace-ignoree', 'gain-rate']], [1, []]]);
@@ -71,7 +71,7 @@ const DAY = 86400000;
   await p.screenshot({ path: OUT + '/goal-2-maitrise.png' });
   await p.getByRole('button', { name: 'D’accord' }).tap();
   assert(await p.getByTestId('goal-msg').count() === 0, 'message lu : il disparaît');
-  await p.waitForFunction(() => window.__db.meta.get('goals').then((m) => m.value.messages.length === 0));
+  for (let i = 0; i < 50 && !(await p.evaluate(() => window.__db.meta.get('goals').then((m) => m.value.messages.length === 0))); i++) await p.waitForTimeout(200);
   const st = await p.evaluate(() => window.__db.meta.get('goals').then((m) => m.value));
   assert(st.active === 1 && st.mastered['rien-donner'] && st.messages.length === 0, 'état enregistré (objectif 2 actif, objectif 1 maîtrisé)');
 

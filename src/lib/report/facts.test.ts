@@ -55,16 +55,16 @@ describe('plateau ASCII et suites', () => {
 });
 
 describe('règles des motifs (faits donnés)', () => {
-  const base: MotifFacts = { mateForMeBefore: null, playedKeepsMate: false, mateAgainstMeAfter: null, refutationGain2: 0, threat: { mate: null, gain2: 0 }, threatStillWorks: false };
+  const base: MotifFacts = { mateForMeBefore: null, playedKeepsMate: false, mateAgainstMeAfter: null, refutationGain: 0, threat: { mate: null, gain: 0 }, threatStillWorks: false };
   it('autre', () => expect(detectMotifs(base)).toEqual({ motifs: ['autre'], motif: 'autre' }));
-  it('pièce en prise', () => expect(detectMotifs({ ...base, refutationGain2: 3 }).motif).toBe('piece-en-prise'));
-  it('gain de 1 pt : pas en prise', () => expect(detectMotifs({ ...base, refutationGain2: 1 }).motif).toBe('autre'));
+  it('pièce en prise', () => expect(detectMotifs({ ...base, refutationGain: 3 }).motif).toBe('piece-en-prise'));
+  it('gain de 1 pt : pas en prise', () => expect(detectMotifs({ ...base, refutationGain: 1 }).motif).toBe('autre'));
   it('menace ignorée prioritaire sur pièce en prise', () => {
-    const r = detectMotifs({ ...base, threat: { mate: null, gain2: 9 }, threatStillWorks: true, refutationGain2: 9 });
+    const r = detectMotifs({ ...base, threat: { mate: null, gain: 9 }, threatStillWorks: true, refutationGain: 9 });
     expect(r).toEqual({ motifs: ['menace-ignoree', 'piece-en-prise'], motif: 'menace-ignoree' });
   });
   it('menace parée : pas de « menace ignorée »', () => {
-    expect(detectMotifs({ ...base, threat: { mate: null, gain2: 9 }, threatStillWorks: false }).motif).toBe('autre');
+    expect(detectMotifs({ ...base, threat: { mate: null, gain: 9 }, threatStillWorks: false }).motif).toBe('autre');
   });
   it('en échec : pas de menace évaluée', () => expect(detectMotifs({ ...base, threat: null }).motif).toBe('autre'));
   it('mat raté (sauf si mon coup garde le mat)', () => {
@@ -75,7 +75,7 @@ describe('règles des motifs (faits donnés)', () => {
 });
 
 describe('motif « Gain raté » (faits donnés)', () => {
-  const base = { mateForMeBefore: null, playedKeepsMate: false, mateAgainstMeAfter: null, refutationGain2: 0, threat: null, threatStillWorks: false };
+  const base = { mateForMeBefore: null, playedKeepsMate: false, mateAgainstMeAfter: null, refutationGain: 0, threat: null, threatStillWorks: false };
   it('pièce gratuite non prise : gain raté', () => expect(detectMotifs({ ...base, bestGain3: 3, playedGain3: 0 }).motif).toBe('gain-rate'));
   it('gain de 1 seul point : pas un gain raté', () => expect(detectMotifs({ ...base, bestGain3: 1, playedGain3: 0 }).motif).toBe('autre'));
   it('gain pris (ou presque) : pas un gain raté', () => expect(detectMotifs({ ...base, bestGain3: 3, playedGain3: 2 }).motif).toBe('autre'));
@@ -85,8 +85,19 @@ describe('motif « Gain raté » (faits donnés)', () => {
     expect(detectMotifs({ ...base, mateForMeAny: true, playedKeepsMate: true }).motifs).toEqual(['autre']);
   });
   it('priorité : pièce en prise avant gain raté, gain raté avant « Autre »', () => {
-    expect(detectMotifs({ ...base, refutationGain2: 3, bestGain3: 3 }).motifs).toEqual(['piece-en-prise', 'gain-rate']);
-    expect(detectMotifs({ ...base, refutationGain2: 3, bestGain3: 3 }).motif).toBe('piece-en-prise');
+    expect(detectMotifs({ ...base, refutationGain: 3, bestGain3: 3 }).motifs).toEqual(['piece-en-prise', 'gain-rate']);
+    expect(detectMotifs({ ...base, refutationGain: 3, bestGain3: 3 }).motif).toBe('piece-en-prise');
     expect(MOTIF_ORDER.slice(-2)).toEqual(['gain-rate', 'autre']);
+  });
+});
+
+describe('horizon de 4 demi-coups (lui, moi, lui, moi)', () => {
+  it('fourchette avec échec : rien sur 2 demi-coups, la tour sur 4', async () => {
+    const { Chess } = await import('chess.js');
+    const c = new Chess();
+    for (const s of ['e4', 'e5', 'Nf3', 'Nc6', 'Nc3', 'Nf6', 'Nb5', 'Qe7']) c.move(s);
+    const pv = ['b5c7', 'e8d8', 'c7a8', 'd7d5'];
+    expect(opponentGain(c.fen(), pv, 'b', 2)).toBe(1);        // Nxc7+ Kd8 : un pion
+    expect(opponentGain(c.fen(), pv, 'b', 4)).toBe(6);        // puis Nxa8 : la tour
   });
 });
