@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { db, type Game } from '../db';
 import { addErrorDetails, analyseGame, isError, needsDetail } from '../analysis';
+import { getAllLineProgress } from '../linesService';
+import { emptyProgress, orderedLines, validatedCount } from '../lib/lineTrainer';
+import { OPENING_LESSONS } from '../data/openingLessons';
 import { buildReport, inaccuraciesToDetail, selectGames, type PeriodKind, type RepInfo } from '../lib/report/buildReport';
-import { repertoireInfoWith } from '../openings';
+import { repertoireInfoWith, treeOf } from '../openings';
 import { getBoardProgress, getBoardStats } from '../boardService';
 import { dayKey } from '../lib/srs';
 
@@ -75,7 +78,17 @@ export default function Report() {
     }
     const repertoire = openings.filter((o) => !o.archived).map((o) => ({ name: o.name, color: o.color }));
     const board = { progress: await getBoardProgress(), stats: await getBoardStats(), today: dayKey() };
-    const report = buildReport({ now, period, games: fresh, allGames: all, cards: await db.cards.toArray(), rep, repertoire, board });
+    // « Jouer les lignes » : par ouverture active, lignes validées et erreurs.
+    const lp = await getAllLineProgress();
+    const linesRep = openings.filter((o) => !o.archived).map((o) => {
+      const ordered = orderedLines(treeOf(o), OPENING_LESSONS.find((l) => l.openingId === o.id));
+      const prog = lp[o.id] ?? emptyProgress();
+      return {
+        name: o.name, color: o.color, done: validatedCount(ordered, prog), total: ordered.length, round: prog.round,
+        errors: prog.errors.map((e) => ({ line: e.line.split(' '), ply: e.ply, expected: e.expected, played: e.played, date: e.date })),
+      };
+    });
+    const report = buildReport({ now, period, games: fresh, allGames: all, cards: await db.cards.toArray(), rep, repertoire, board, lines: linesRep });
     setGeneratedAt(now);
     setMd(report);
     if (skipped) setMsg(`${skipped} partie${skipped > 1 ? 's' : ''} non analysée${skipped > 1 ? 's' : ''} : elle${skipped > 1 ? 's' : ''} ne compte${skipped > 1 ? 'nt' : ''} que pour les résultats.`);

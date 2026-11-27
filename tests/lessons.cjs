@@ -18,7 +18,7 @@ const MODEL_LEN = 16;
   const tap = async (u) => { await sq(u.slice(0, 2)).tap(); await sq(u.slice(2, 4)).tap(); };
 
   await p.goto(URL + '#/openings');
-  await p.getByText(/Ordre conseillé pour chaque ouverture : 1\. Leçon → 2\. Drill → 3\. Partie à thème/).waitFor();
+  await p.getByText(/Ordre conseillé pour chaque ouverture : 1\. Leçon → 2\. Drill → 3\. Jouer les lignes → 4\. Partie à thème/).waitFor();
   const titles = await p.locator('section.opening h3').allInnerTexts();
   assert(titles.join(' | ') === 'Anglaise (système fermé) | Système de Londres | Système …c5 / …g6 (Dragon accéléré) | Londres en défense', 'ordre : Anglaise, Londres (Blancs), puis …c5/…g6 et Londres en défense (Noirs)');
   await p.getByRole('tab', { name: /Archives \(3\)/ }).tap();

@@ -388,3 +388,8 @@ details > summary { cursor: pointer; min-height: 48px; display: flex; align-item
   .app.fit .board-ex > .tap-fit:not(.compact) { flex-basis: calc(100vw - 6px); width: calc(100vw - 6px); margin-left: calc(50% - 50vw + 3px); }
   .app.fit .board-ex > .tap-fit:not(.compact) > .tapboard { border-radius: 4px; }
 }
+
+/* « Jouer les lignes » */
+.lines-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 4px 2px 8px; font-weight: 600; }
+.lines-banner .tag { font-size: .8rem; }
+ul.plan { padding-left: 1.2em; margin: 4px 0 10px; }

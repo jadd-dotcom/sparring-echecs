@@ -218,6 +218,39 @@ export interface ReportInput {
   repertoire?: { name: string; color: 'w' | 'b' }[];
   /** Mode « Maîtrise de l'échiquier » : progression et statistiques par case. */
   board?: { progress: BoardProgress; stats: SquareStats; today: string };
+  /** « Jouer les lignes » : par ouverture, lignes validées dans le tour et erreurs. */
+  lines?: LinesReport[];
+}
+
+export interface LinesReport {
+  name: string;
+  color: 'w' | 'b';
+  done: number;
+  total: number;
+  round: number;
+  errors: { line: string[]; ply: number; expected: string; played: string; date: number }[];
+}
+
+/** Section « Lignes du répertoire » : X/Y validées par ouverture, puis chaque erreur (ligne, coup attendu, joué, date). */
+export function linesSection(ls: LinesReport[], from: number | null): string[] {
+  const L: string[] = ['## 6. Lignes du répertoire (« Jouer les lignes »)', ''];
+  if (!ls.length) return [...L, 'Aucune ouverture active.', ''];
+  L.push('Une partie = une ligne du répertoire ; l’adversaire joue exactement la ligne, je dois trouver mes coups. ✓ = ligne jouée sans erreur dans le tour en cours.', '');
+  L.push('| Ouverture | Couleur | Lignes validées (✓) | Tour |', '|---|---|---|---|');
+  for (const o of ls) L.push(`| ${o.name} | ${colorName(o.color)} | ${o.done} / ${o.total} | ${o.round} |`);
+  L.push('');
+  const errs = ls.flatMap((o) => o.errors.filter((e) => e.date >= (from ?? 0)).map((e) => ({ ...e, name: o.name })));
+  L.push(`### Erreurs${from ? ' de la période' : ''} (${errs.length})`, '');
+  if (!errs.length) L.push('Aucune.', '');
+  else {
+    L.push('| Ouverture | Ligne | Coup attendu | Coup joué | Date |', '|---|---|---|---|---|');
+    for (const e of errs.sort((a, b) => a.date - b.date)) {
+      const line = e.line.map((m, i) => (i % 2 ? '' : `${Math.floor(i / 2) + 1}. `) + m).join(' ');
+      L.push(`| ${e.name} | ${line} | ${moveLabel(e.ply, e.expected)} | ${moveLabel(e.ply, e.played)} | ${fmtDateTime(e.date)} |`);
+    }
+    L.push('');
+  }
+  return L;
 }
 
 /** Section « Échiquier » : chapitres validés, meilleurs scores, mes 10 cases les plus faibles. */
@@ -257,7 +290,7 @@ export function boardSection(b: NonNullable<ReportInput['board']>): string[] {
   return L;
 }
 
-export function buildReport({ now, period, games, allGames, cards, rep = {}, repertoire = [], board }: ReportInput): string {
+export function buildReport({ now, period, games, allGames, cards, rep = {}, repertoire = [], board, lines }: ReportInput): string {
   const order = [...allGames].sort((a, b) => a.date - b.date);
   const numberOf = (g: Game) => order.findIndex((x) => x.id === g.id) + 1;
   const L: string[] = [];
@@ -462,5 +495,6 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
     push('');
   }
   if (board) push(...boardSection(board));
+  if (lines) push(...linesSection(lines, period.from));
   return L.join('\n');
 }
