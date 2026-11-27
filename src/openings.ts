@@ -9,6 +9,8 @@ import {
 import { stockfish } from './engines/stockfish';
 import { evalToCp, type Eval } from './lib/winpct';
 import { addDays, dayKey, INTERVALS } from './lib/srs';
+import { allowance, DEFAULT_REVISE_CAP, prioritize, reviewedToday } from './lib/dailyPlan';
+import { GOALS, type GoalState } from './lib/goals';
 
 export const MAX_LOSS_CP = 50;         // 0,5 pion
 export const NEW_DRILL_PER_DAY = 10;   // nouvelles positions de répertoire introduites par jour
@@ -163,11 +165,15 @@ export async function markIntroduced() {
   await db.meta.put({ key: 'drillIntroduced', value: { day: dayKey(), count: n + 1 } });
 }
 
-/**
- * Cartes à revoir aujourd'hui : échues + nouvelles positions de répertoire (quota quotidien).
- * Avec `openingId`, seulement cette ouverture, et jusqu'à 10 nouvelles positions quel que soit le quota.
- */
-export async function reviewQueue(openingId?: string): Promise<Card[]> {
+/** Plafond quotidien de la révision (Réglages) : 10, 15 (défaut), 25 ou 0 = sans limite. */
+export async function getReviseCap(): Promise<number> {
+  const v = (await db.meta.get('reviseCap'))?.value;
+  return typeof v === 'number' ? v : DEFAULT_REVISE_CAP;
+}
+export const setReviseCap = (n: number) => db.meta.put({ key: 'reviseCap', value: n });
+
+/** Toutes les cartes à revoir (échues + nouvelles positions de répertoire du jour), sans plafond. */
+async function dueCards(openingId?: string): Promise<Card[]> {
   const today = dayKey();
   let due = await db.cards.where('due').belowOrEqual(today).sortBy('due');
   let fresh = await db.cards.where('due').equals(DUE_NEW).toArray();
@@ -183,6 +189,38 @@ export async function reviewQueue(openingId?: string): Promise<Card[]> {
   fresh.sort((a, b) => (a.openingId ?? '').localeCompare(b.openingId ?? '') || (a.order ?? 0) - (b.order ?? 0));
   const quota = openingId ? NEW_DRILL_PER_DAY : Math.max(0, NEW_DRILL_PER_DAY - (await introducedToday()));
   return [...due, ...fresh.slice(0, quota)];
+}
+
+/** Toutes les cartes à revoir, dans l'ordre de priorité : motifs de l'objectif, Lis la menace, puis les plus anciennes. */
+async function prioritized(): Promise<Card[]> {
+  const cards = await dueCards();
+  const goal = (await db.meta.get('goals'))?.value as GoalState | undefined;
+  const goalDef = goal ? (goal.active === null ? null : GOALS[goal.active]) : GOALS[0];
+  const ids = [...new Set(cards.filter((c) => (c.kind ?? 'mistake') === 'mistake' && c.gameId).map((c) => c.gameId))];
+  const games = new Map((await db.games.bulkGet(ids)).filter((g): g is Game => !!g).map((g) => [g.id!, g]));
+  const motifOf = (c: Card) => games.get(c.gameId)?.analysis?.find((a) => a.uci === c.playedUci && a.bestUci === c.bestUci)?.detail?.motif;
+  return prioritize(cards, motifOf, goalDef?.motifs ?? []);
+}
+
+/**
+ * Cartes à revoir aujourd'hui. Avec `openingId` : cette ouverture seulement (drill), sans plafond, jusqu'à 10
+ * nouvelles positions. Sinon : plafond quotidien (Réglages), d'abord les cartes des motifs de l'objectif, puis « Lis la
+ * menace », puis les plus anciennes ; le reste attend les jours suivants. `only: 'threat'` : les « Lis la menace ».
+ */
+export async function reviewQueue(openingId?: string, opts: { only?: 'threat' } = {}): Promise<Card[]> {
+  if (openingId) return dueCards(openingId);
+  const all = await prioritized();
+  const left = allowance(await getReviseCap(), reviewedToday(await db.cards.toArray()));
+  const list = opts.only === 'threat' ? all.filter((c) => c.kind === 'threat') : all;
+  return list.slice(0, left === Infinity ? undefined : left);
+}
+
+/** Révision : cartes permises aujourd'hui et cartes qui attendent les jours suivants. */
+export async function reviewCounts(): Promise<{ today: number; waiting: number; threat: number }> {
+  const all = await prioritized();
+  const left = allowance(await getReviseCap(), reviewedToday(await db.cards.toArray()));
+  const today = Math.min(all.length, left);
+  return { today, waiting: all.length - today, threat: all.slice(0, today).filter((c) => c.kind === 'threat').length };
 }
 
 // ---------------------------------------------------------------- suivi du répertoire (toutes les parties)

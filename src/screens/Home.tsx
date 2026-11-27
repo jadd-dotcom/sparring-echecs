@@ -1,101 +1,87 @@
-import { useEffect, useState, useSyncExternalStore } from 'react';
-import { db, getCurrent, getProfile, type Profile } from '../db';
-import { botRating, CALIBRATION_GAMES } from '../lib/rating';
-import { colorForNewGame, gamesSinceCalibration, inCalibration } from '../lib/profile';
+// « Aujourd'hui » : niveau, objectif (carte compacte), « Ta séance du jour » en 5 étapes avec durée et coche, un seul
+// gros bouton « Continuer : <étape suivante> » ; liens vers les erreurs à commenter et une partie libre. Réglages :
+// roue dentée en haut. Quand rien n'est à revoir, on cherche discrètement de nouvelles cartes « Lis la menace ».
+import { useEffect, useState } from 'react';
 import { go } from '../router';
-import { reviewQueue } from '../openings';
 import { isOfflineReady, waitOfflineReady } from '../offline';
-import { BookOpen, ChartLine, CircleCheck, Crown, FileText, Flame, Grid3x3, Layers, PartyPopper, Play, Settings, Swords } from '../icons';
-import { getBoardProgress } from '../boardService';
-import { dueChapters } from '../lib/board/levels';
-import { dayKey } from '../lib/srs';
-import { errorsToComment } from '../lib/commentQueue';
-import { bgAnalysis } from '../chesscomImport';
-import { fillThreatCards } from '../threatService';
+import { Check, CircleCheck, Clock, MessageCircleQuestion, Play, Settings } from '../icons';
 import GoalCard from '../GoalCard';
-import { MessageCircleQuestion } from '../icons';
+import { loadToday, startStep, type TodayData } from '../sessionService';
+import { fillThreatCards } from '../threatService';
+import type { StepState } from '../lib/dailyPlan';
+
+/** Où mène chaque étape de la séance. */
+function openStep(s: StepState, d: TodayData) {
+  startStep(s.id);
+  switch (s.id) {
+    case 'warmup': go({ name: 'board', view: 'warmup' }); break;
+    case 'trap': if (d.trapId) go({ name: 'traps', id: d.trapId, mode: 'defend' }); break;
+    case 'threat': go({ name: 'revise', only: 'threat' }); break;
+    case 'revise': go({ name: 'revise' }); break;
+    case 'game': go({ name: 'play' }); break;
+  }
+}
 
 export default function Home() {
-  const [p, setP] = useState<Profile | null>(null);
-  const [due, setDue] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [inProgress, setInProgress] = useState(false);
-  const [unrated, setUnrated] = useState(false);
-  const [boardDue, setBoardDue] = useState(0);
+  const [d, setD] = useState<TodayData | null>(null);
   const [offline, setOffline] = useState<string>(isOfflineReady() ? 'ready' : '');
-  const [toComment, setToComment] = useState(0);
-  const bg = useSyncExternalStore(bgAnalysis.subscribe, bgAnalysis.get);
-  // Erreurs à commenter : recalculées à l'ouverture et à chaque fin d'analyse en arrière-plan (parties importées).
-  useEffect(() => { db.games.toArray().then((gs) => setToComment(errorsToComment(gs).length)); }, [bg.running, bg.last?.at]);
   useEffect(() => {
+    let alive = true;
     (async () => {
-      // Tout charger avant le premier affichage (pas de « Jouer » qui devient « Reprendre la partie »).
-      const [prof, queue, nCards, current, bp] = await Promise.all([getProfile(), reviewQueue(), db.cards.count(), getCurrent(), getBoardProgress()]);
-      setBoardDue(dueChapters(bp, dayKey()).length);
-      setDue(queue.length);
-      setTotal(nCards);
-      setInProgress(!!current);
-      setP(prof);
-      // Rien à revoir et pas de partie en cours : on cherche discrètement de nouvelles cartes « Lis la menace ».
-      if (queue.length === 0 && !current) {
-        fillThreatCards({ maxChecks: 8 }).then((made) => {
-          if (made.length) { setDue((d) => d + made.length); setTotal((t) => t + made.length); }
-        }).catch(() => {});
+      const t = await loadToday();
+      if (!alive) return;
+      setD(t);
+      // Rien à revoir et pas de partie en cours : nouvelles cartes « Lis la menace » (au plus 5 par jour).
+      if (t.reviseLeft === 0 && !t.inProgress) {
+        fillThreatCards({ maxChecks: 8 }).then(async (made) => { if (made.length && alive) setD(await loadToday()); }).catch(() => {});
       }
       if (!isOfflineReady()) {
-        const ok = await waitOfflineReady((b, t) => setOffline(`${Math.round((100 * b) / t)} %`));
-        setOffline(ok ? 'ready' : '');
+        const ok = await waitOfflineReady((b, tt) => alive && setOffline(`${Math.round((100 * b) / tt)} %`));
+        if (alive) setOffline(ok ? 'ready' : '');
       }
     })();
+    return () => { alive = false; };
   }, []);
-  if (!p) return null;
+  if (!d) return null;
+  const doneN = d.steps.filter((s) => s.done).length;
+  const totalMin = d.steps.filter((s) => !s.done).reduce((t, s) => t + s.minutes, 0);
+  const date = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
   return (
-    <div className="home">
-      <h1>Sparring Échecs</h1>
-      <GoalCard />
-      <section className="card rating-card">
-        <div className="big rating-num">{Math.round(p.rating)}</div>
-        <div className="muted">
-          Ton niveau estimé · Maia jouera à {Math.round(botRating(p.rating))}
-          {inCalibration(p) && <><br />Calibration : partie {gamesSinceCalibration(p) + 1}/{CALIBRATION_GAMES}</>}
-        </div>
+    <div className="home today">
+      <div className="today-top">
+        <h1>Sparring Échecs</h1>
+        <span className="level-chip" data-testid="level-chip" title="Ton niveau estimé · Maia jouera à ce niveau">{Math.round(d.rating)} · Maia {Math.round(d.bot)}</span>
+        <button className="icon-btn" aria-label="Réglages" onClick={() => go({ name: 'settings' })}><Settings aria-hidden /></button>
+      </div>
+      <p className="muted today-date">Aujourd’hui · {date}</p>
+      <GoalCard compact />
+
+      <section className="card flat session" data-testid="session">
+        <h2>Ta séance du jour <span className="muted small">({doneN}/5{totalMin ? ` · encore ≈ ${totalMin} min` : ''})</span></h2>
+        {d.next
+          ? <button className="primary main-action" data-testid="continue" onClick={() => openStep(d.next!, d)}><Play aria-hidden className="ico" />Continuer : {d.next.label}</button>
+          : <p className="good-text" data-testid="session-done"><CircleCheck aria-hidden className="ico" /> Séance terminée : bravo ! Une partie libre, si tu veux.</p>}
+        <ol className="session-steps">
+          {d.steps.map((s, i) => (
+            <li key={s.id} className={`session-step ${s.done ? 'done' : ''} ${d.next?.id === s.id ? 'next' : ''}`} data-testid={`step-${s.id}`} data-done={s.done}>
+              <button className="step-btn" onClick={() => openStep(s, d)} disabled={s.done && (s.id === 'threat' || s.id === 'revise')}>
+                <span className="step-check" aria-hidden>{s.done ? <Check /> : i + 1}</span>
+                <span className="step-text"><b>{s.label}</b><span className="muted small">{s.detail}</span></span>
+                <span className="step-min muted small"><Clock aria-hidden className="ico sm" />{s.minutes} min</span>
+              </button>
+            </li>
+          ))}
+        </ol>
       </section>
-      {!inProgress && (
-        <label className="unrated-toggle">
-          <input type="checkbox" checked={unrated} onChange={(e) => setUnrated(e.target.checked)} />
-          Partie non comptée <span className="muted small">(analysée normalement, sans effet sur mon niveau)</span>
-        </label>
-      )}
-      <button className="primary huge play-btn" onClick={() => go({ name: 'play', ...(unrated && !inProgress ? { unrated: true } : {}) })}>
-        <Play aria-hidden className="ico" />{inProgress ? 'Reprendre la partie' : `Jouer (${colorForNewGame(p) === 'w' ? 'Blancs' : 'Noirs'})`}
-      </button>
-      <button className="huge" disabled={due === 0} onClick={() => go({ name: 'revise' })}>
-        {due === 0 && total > 0 ? <PartyPopper aria-hidden className="ico" /> : <Layers aria-hidden className="ico" />}
-        {due === 0
-          ? total === 0 ? 'Aucune position à revoir pour l’instant' : 'Rien à revoir aujourd’hui'
-          : `${due} position${due > 1 ? 's' : ''} à revoir aujourd’hui`}
-      </button>
-      {total > 0 && <button className="ghost small all-cards" onClick={() => go({ name: 'cards' })}>Voir toutes mes cartes</button>}
-      {toComment > 0 && (
-        <button className="comment-badge" data-testid="to-comment" onClick={() => go({ name: 'comment' })}>
-          <MessageCircleQuestion aria-hidden className="ico" />{toComment} erreur{toComment > 1 ? 's' : ''} à commenter
-        </button>
-      )}
-      <div className="row">
-        <button className="huge" onClick={() => go({ name: 'openings' })}><BookOpen aria-hidden className="ico" />Ouvertures</button>
-        <button className="huge" onClick={() => go({ name: 'traps' })}><Swords aria-hidden className="ico" />Pièges d’ouverture</button>
-      </div>
-      <div className="row">
-        <button className="huge" onClick={() => go({ name: 'mates' })}><Crown aria-hidden className="ico" />Mats élémentaires</button>
-        <button className="huge" onClick={() => go({ name: 'board' })}><Grid3x3 aria-hidden className="ico" />Maîtrise de l’échiquier</button>
-      </div>
-      <div className="row">
-        <button className="huge" onClick={() => go({ name: 'board', view: 'warmup' })}><Flame aria-hidden className="ico" />Échauffement échiquier (3 min){boardDue ? ` · ${boardDue}` : ''}</button>
-      </div>
-      <div className="row">
-        <button onClick={() => go({ name: 'stats' })}><ChartLine aria-hidden className="ico" />Statistiques et parties</button>
-        <button onClick={() => go({ name: 'report' })}><FileText aria-hidden className="ico" />Rapport pour Claude</button>
-        <button onClick={() => go({ name: 'settings' })}><Settings aria-hidden className="ico" />Réglages et sauvegarde</button>
+
+      <div className="today-links">
+        {d.toComment > 0 && (
+          <button className="link-row" data-testid="to-comment" onClick={() => go({ name: 'comment' })}>
+            <MessageCircleQuestion aria-hidden className="ico" />{d.toComment} erreur{d.toComment > 1 ? 's' : ''} à commenter
+          </button>
+        )}
+        <button className="link-row" data-testid="free-game" onClick={() => go({ name: 'jouer' })}><Play aria-hidden className="ico" />Partie libre</button>
       </div>
       <p className="muted small center-text">
         {offline === 'ready' ? <><CircleCheck aria-hidden className="ico sm" /> Disponible hors ligne</> : offline ? `Préparation du mode hors ligne… ${offline}` : ''}

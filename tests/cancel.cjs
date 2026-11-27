@@ -15,7 +15,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   const cur = () => p.evaluate(() => window.__db.meta.get('current').then((m) => m?.value ?? null));
   const prof = () => p.evaluate(() => window.__db.meta.get('profile').then((m) => m?.value ?? null));
   const nGames = () => p.evaluate(() => window.__db.games.count());
-  const home = async () => { await p.goto(URL + '#/stats'); await p.goto(URL); await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor(); };
+  const home = async () => { await p.goto(URL + '#/stats'); await p.goto(URL); await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor(); await p.getByTestId('tab-jouer').tap(); await p.getByRole('heading', { name: 'Jouer contre Maia' }).waitFor(); };
   const waitFor = async (fn, ms = 60000) => { const end = Date.now() + ms; for (;;) { const v = await fn(); if (v) return v; if (Date.now() > end) throw new Error('délai dépassé'); await p.waitForTimeout(120); } };
   const playMyMove = async () => {
     await p.getByText('à toi de jouer').waitFor({ timeout: 120000 });
@@ -41,7 +41,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await playMyMove(); await playMyMove();
   await p.getByRole('button', { name: 'Annuler la partie' }).tap();
   await p.locator('.modal-box').getByRole('button', { name: 'Annuler la partie' }).tap();
-  await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor();
+  await p.getByRole('heading', { name: 'Jouer contre Maia' }).waitFor();
   const p1 = (await prof()) ?? p0;
   assert(!(await cur()) && (await nGames()) === 0, 'partie annulée après 2 coups : supprimée (aucune partie enregistrée)');
   assert(p1.rating === p0.rating && p1.gamesPlayed === p0.gamesPlayed && p1.nextColor === p0.nextColor, `aucun effet sur le profil (niveau ${p1.rating}, couleur suivante ${p1.nextColor})`);

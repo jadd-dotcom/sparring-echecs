@@ -200,7 +200,7 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
     setConfirmCancel(false);
     try {
       await cancelCurrentGame();
-      go({ name: 'home' });
+      go({ name: 'jouer' });
     } catch (e) { setMsg((e as Error).message); }
   }
 

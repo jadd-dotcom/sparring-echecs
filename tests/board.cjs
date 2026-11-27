@@ -65,6 +65,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   }
 
   // --- Accueil et écran du mode
+  await p.getByTestId('tab-training').tap();
   await p.getByRole('button', { name: /Maîtrise de l’échiquier/ }).waitFor();
   assert(await p.getByRole('button', { name: /Échauffement échiquier \(3 min\)/ }).count() === 1, 'accueil : « Maîtrise de l’échiquier » et « Échauffement échiquier (3 min) »');
   await p.getByRole('button', { name: /Maîtrise de l’échiquier/ }).tap();
@@ -164,7 +165,8 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   prog.chapters[1].due = today;
   await setMeta('boardProgress', prog);
   await p.goto(URL + '#/stats'); await p.goto(URL);
-  await p.getByRole('button', { name: /Échauffement échiquier \(3 min\) · 1/ }).tap();
+  await p.getByTestId('tab-training').tap();
+  await p.getByRole('button', { name: /Échauffement échiquier \(3 min\).*1 chapitre à revoir/ }).tap();
   await p.getByText('Révisions du jour :').waitFor();
   await p.getByRole('button', { name: 'Commencer' }).tap();
   r = await runTest();

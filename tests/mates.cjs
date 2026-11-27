@@ -42,6 +42,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   const sfPick = (fen) => p.evaluate((f) => window.__sfBest(f, 300), fen);
 
   await p.goto(URL);
+  await p.getByTestId('tab-training').tap();
   await p.getByRole('button', { name: /Mats élémentaires/ }).tap();
   await p.getByRole('heading', { name: /1\. Dame \+ roi/ }).waitFor();
   const locked = await p.locator('section.locked').count();

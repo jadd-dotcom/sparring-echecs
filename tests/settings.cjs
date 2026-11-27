@@ -13,7 +13,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   p.on('pageerror', (e) => errors.push(e.message));
   const cur = () => p.evaluate(() => window.__db.meta.get('current').then((m) => m?.value ?? null));
   const prof = () => p.evaluate(() => window.__db.meta.get('profile').then((m) => m?.value ?? null));
-  const home = async () => { await p.goto(URL + '#/stats'); await p.goto(URL); await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor(); };
+  const home = async () => { await p.goto(URL + '#/stats'); await p.goto(URL); await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor(); await p.getByTestId('tab-jouer').tap(); await p.getByRole('heading', { name: 'Jouer contre Maia' }).waitFor(); };
   const waitFor = async (fn, ms = 60000) => { const end = Date.now() + ms; for (;;) { const v = await fn(); if (v) return v; if (Date.now() > end) throw new Error('délai dépassé'); await p.waitForTimeout(150); } };
   const playBtn = () => p.getByRole('button', { name: /^(Jouer|Reprendre)/ });
   const resign = async () => {
@@ -62,6 +62,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.goto(URL + '#/settings');
   await p.getByText('Prochaine partie : Noirs').waitFor();
   await p.locator('label.radio', { hasText: 'Noirs' }).tap();
+  await p.locator('label.radio.on', { hasText: 'Noirs' }).waitFor();
   await home();
   assert(await playBtn().innerText() === 'Jouer (Noirs)', 'réglage « Noirs » → « Jouer (Noirs) »');
   g = await start(); assert(g.myColor === 'b', 'partie 4 avec les Noirs'); await resign();
@@ -69,10 +70,12 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   g = await start(); assert(g.myColor === 'b', 'partie 5 encore avec les Noirs'); await resign();
   await p.goto(URL + '#/settings');
   await p.locator('label.radio', { hasText: 'Blancs' }).tap();
+  await p.locator('label.radio.on', { hasText: 'Blancs' }).waitFor();
   await home();
   assert(await playBtn().innerText() === 'Jouer (Blancs)', 'réglage « Blancs » → « Jouer (Blancs) »');
   await p.goto(URL + '#/settings');
   await p.locator('label.radio', { hasText: 'Alterner' }).tap();
+  await p.locator('label.radio.on', { hasText: 'Alterner' }).waitFor();
   await home();
   assert(await playBtn().innerText() === 'Jouer (Blancs)', 'retour à « Alterner » : l’inverse de la dernière partie (Noirs) → Blancs');
 

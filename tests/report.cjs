@@ -30,6 +30,7 @@ const THOUGHTS = [
   await p.goto(URL);
   for (let n = 0; n < 3; n++) {
     await p.goto(URL);
+    await p.getByTestId('tab-jouer').tap();
     await p.getByRole('button', { name: /^(Jouer|Reprendre)/ }).tap();
     await p.waitForSelector('[data-square="e2"]');
     let myMoves = 0;
@@ -127,7 +128,8 @@ const THOUGHTS = [
 
   // Rapport
   await p.goto(URL);
-  await p.getByRole('button', { name: 'Rapport pour Claude' }).tap();
+  await p.getByTestId('tab-progress').tap();
+  await p.getByRole('button', { name: /Rapport pour Claude/ }).tap();
   await p.getByText(/Depuis le début/).tap();
   await p.getByRole('button', { name: 'Générer le rapport' }).tap();
   await p.locator('.md-preview').waitFor({ timeout: 300000 });

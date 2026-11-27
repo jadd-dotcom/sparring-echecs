@@ -22,6 +22,7 @@ const RED = /220,\s*40,\s*40/, GREEN = /30,\s*160,\s*60/;
   assert(await p.getByTestId('to-comment').count() === 0, 'accueil : pas de badge au départ');
 
   // Partie : 3 coups où ma dame se met en prise (si possible), puis abandon.
+  await p.getByTestId('tab-jouer').tap();
   await p.getByRole('button', { name: /^Jouer/ }).tap();
   let myMoves = 0;
   for (let guard = 0; myMoves < 3 && guard < 200; guard++) {
@@ -115,7 +116,7 @@ const RED = /220,\s*40,\s*40/, GREEN = /30,\s*160,\s*60/;
     await p.getByRole('button', { name: /Erreur suivante|Terminer/ }).tap();
   }
   assert(/Merci : \d+ erreurs? commentées?/.test(await p.getByTestId('comment-done').innerText()), 'toutes commentées : « Merci »');
-  await p.getByTestId('comment-done').getByRole('button', { name: 'Accueil' }).tap();
+  await p.getByTestId('comment-done').getByRole('button', { name: 'Aujourd’hui' }).tap();
   await p.getByRole('heading', { name: 'Sparring Échecs' }).waitFor();
   await p.waitForTimeout(500);
   assert(await p.getByTestId('to-comment').count() === 0, 'accueil : badge disparu');

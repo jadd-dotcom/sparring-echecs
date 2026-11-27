@@ -10,6 +10,7 @@
   --bg: #1f2023; --surface: #2a2c30; --surface-2: #34373c; --raised: #3d4046; --raised-edge: #1b1c1f;
   --ink: #f3f3f1; --muted: #a8aab0; --line: #3b3e44;
   --accent: #5fae44; --accent-edge: #3b7a28; --accent-ink: #fff;
+  --primary: #4a9a33; --primary-edge: #2f6a1f;
   --danger: #d9493f; --danger-edge: #8f2a23; --blue: #3b7fdc; --blue-edge: #2558a0;
   --inacc: #e4b43a; --mist: #f08a40; --blund: #ff6a5e; --chart: #79c35f;
   --card-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 8px 22px rgba(0,0,0,.28);
@@ -20,6 +21,7 @@
   --bg: #e8e6e1; --surface: #ffffff; --surface-2: #f1f0ec; --raised: #f7f6f3; --raised-edge: #c4c1b8;
   --ink: #1c1d1f; --muted: #5f6167; --line: #dcd9d2;
   --accent: #4e9c35; --accent-edge: #336d21; --accent-ink: #fff;
+  --primary: #4a9a33; --primary-edge: #2f6a1f;
   --danger: #c9372d; --danger-edge: #8a231c; --blue: #2f6fc9; --blue-edge: #1f4f94;
   --inacc: #a87700; --mist: #c95a0c; --blund: #c0221a; --chart: #3f8a2c;
   --card-shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 20px rgba(40,35,20,.10);
@@ -59,8 +61,9 @@ button, .button {
 button:hover:not(:disabled) { filter: brightness(1.06); }
 button:active:not(:disabled), .button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--raised-edge); }
 button:disabled { opacity: .45; cursor: default; }
-button.primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 4px 0 var(--accent-edge); }
-button.primary:active:not(:disabled) { box-shadow: 0 1px 0 var(--accent-edge); }
+/* Action principale : vert #4a9a33 à relief, texte blanc gras ≥ 18 px (contraste suffisant). */
+button.primary { background: var(--primary); color: #fff; font-size: max(18px, 1.05rem); font-weight: 800; box-shadow: 0 4px 0 var(--primary-edge); }
+button.primary:active:not(:disabled) { box-shadow: 0 1px 0 var(--primary-edge); }
 button.danger { background: var(--danger); color: #fff; box-shadow: 0 4px 0 var(--danger-edge); }
 button.danger:active:not(:disabled) { box-shadow: 0 1px 0 var(--danger-edge); }
 button.ghost { background: transparent; box-shadow: none; padding-left: 4px; color: var(--muted); }
@@ -69,8 +72,8 @@ button.huge { width: 100%; min-height: 76px; font-size: 1.25rem; font-weight: 80
 button.huge .ico { width: 1.45em; height: 1.45em; }
 .row > button.huge { width: auto; }
 @media (max-width: 520px) { button.huge { min-height: 68px; font-size: 1.12rem; } .row > button.huge { flex-direction: column; gap: 4px; } .row > button.huge .ico { margin: 0; } }
-button.play-btn { min-height: 96px; font-size: 1.65rem; letter-spacing: -.01em; box-shadow: 0 6px 0 var(--accent-edge); }
-button.play-btn:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--accent-edge) !important; }
+button.play-btn { min-height: 96px; font-size: 1.65rem; letter-spacing: -.01em; box-shadow: 0 6px 0 var(--primary-edge); }
+button.play-btn:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--primary-edge) !important; }
 button.small { min-height: 48px; padding: 6px 12px; font-size: .92rem; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; } .row > * { flex: 1; }
 .col { display: flex; flex-direction: column; gap: 10px; }
@@ -430,3 +433,75 @@ details.notation p { margin: 4px 0; }
 .trap-item.partial { border-left: 4px solid var(--inacc); }
 .trap-item.done { border-left: 4px solid var(--accent); }
 .trap-rule { background: var(--surface-2); border-radius: 10px; padding: 8px 12px; }
+
+/* ---------------------------------------------------------------- Navigation par onglets */
+.app.with-tabbar { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; justify-content: center;
+  background: var(--surface); border-top: 1px solid var(--line); padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); }
+.tabbar .tab { flex: 1; max-width: 160px; min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; color: var(--muted); text-decoration: none; font-size: .78rem; font-weight: 700; border-radius: 10px; }
+.tabbar .tab.active { color: var(--primary); }
+.tabbar .tab-ico { position: relative; display: inline-flex; }
+.tabbar .tab-ico svg { width: 26px; height: 26px; }
+.tabbar .tab-badge { position: absolute; top: -6px; right: -12px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: var(--danger); color: #fff; font-size: .7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.tabbar .tab-label { white-space: nowrap; }
+@media (min-width: 700px) { .tabbar .tab { font-size: .9rem; flex-direction: row; gap: 8px; } }
+
+/* Cartes plates (le reste de l'écran) et rangées de navigation */
+.card.flat { box-shadow: none; border: 1px solid var(--line); }
+.nav-cards { display: grid; gap: 10px; margin: 10px 0 16px; }
+@media (min-width: 700px) { .nav-cards { grid-template-columns: 1fr 1fr; } }
+button.nav-card, button.flat-btn, button.link-row, button.step-btn {
+  background: var(--surface); box-shadow: none; border: 1px solid var(--line); min-height: 52px; font-weight: 600; }
+button.nav-card:active, button.flat-btn:active, button.link-row:active, button.step-btn:active { transform: none; box-shadow: none; filter: brightness(1.1); }
+button.nav-card { justify-content: flex-start; gap: 12px; text-align: left; width: 100%; padding: 12px 14px; }
+.nav-card-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+button.flat-btn { font-size: .95rem; min-height: 44px; }
+button.flat-btn.wide { width: 100%; justify-content: flex-start; gap: 8px; text-align: left; }
+.nav-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
+.nav-row { display: flex; flex-direction: column; gap: 6px; }
+.nav-row-title { font-weight: 700; }
+button.link-row { width: 100%; justify-content: flex-start; gap: 10px; margin-bottom: 8px; }
+button.icon-btn { min-width: 48px; min-height: 48px; padding: 8px; background: transparent; box-shadow: none; }
+button.icon-btn svg { width: 26px; height: 26px; }
+button.main-action { width: 100%; min-height: 60px; font-size: 1.2rem; margin: 10px 0 6px; border-radius: 14px; }
+
+/* Aujourd'hui */
+.today-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.level-chip { display: inline-flex; align-items: center; min-height: 36px; padding: 4px 14px; border-radius: 18px;
+  background: var(--surface-2); font-weight: 800; font-variant-numeric: tabular-nums; }
+.today h1 { font-size: 1.6rem; margin: 6px 0 0; }
+.today-date { margin: 0 0 12px; text-transform: none; }
+.goal-card.compact .goal-rule { font-size: 1.02rem; }
+.session h2 { font-size: 1.15rem; margin: 0 0 8px; }
+.session-steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+button.step-btn { width: 100%; justify-content: flex-start; gap: 12px; text-align: left; padding: 8px 12px; }
+.session-step .step-check { flex: none; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-2); font-weight: 800; }
+.session-step.done .step-check { background: var(--primary); color: #fff; }
+.session-step.done .step-check svg { width: 18px; height: 18px; }
+.session-step.done .step-text b { color: var(--muted); }
+.session-step.next button.step-btn { border-color: var(--primary); }
+.step-text { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.step-min { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.today-links { margin-top: 12px; }
+
+/* Jouer */
+.segmented { display: flex; gap: 0; margin: 10px 0 6px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.segmented > button { flex: 1; border-radius: 0; box-shadow: none; background: var(--surface); min-height: 48px; margin: 0; font-weight: 700; }
+.segmented > button.on { background: var(--surface-2); color: var(--ink); box-shadow: inset 0 -3px 0 var(--primary); }
+.segmented > button:active { transform: none; }
+.goal-list { padding-left: 20px; display: grid; gap: 8px; }
+.goal-list li.active b { color: var(--primary); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.today-top { gap: 10px; }
+.today-top h1 { font-size: 1.15rem; margin: 0; flex: 1; }
+.today-date { font-size: .9rem; margin: 2px 0 10px; }
+.goal-card.compact { padding-top: 10px; padding-bottom: 10px; }
+.goal-card.compact .goal-kicker { text-transform: none; letter-spacing: 0; font-size: .95rem; }
+.goal-card.compact .goal-name-inline { color: var(--ink); font-size: 1.05rem; }
+.goal-card.compact .goal-rule { font-size: 1rem; margin-bottom: 6px; }
+.goal-card.compact .goal-dots { margin: 4px 0; }
+.goal-card.compact p { margin: 4px 0; }
+.session .main-action { margin: 4px 0 10px; }

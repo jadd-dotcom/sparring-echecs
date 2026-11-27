@@ -7,6 +7,7 @@ import { dayKey } from '../lib/srs';
 import { ExerciseRunner, type RunResult } from './BoardExercise';
 import { BoardReplay } from './BoardBlind';
 import { go } from '../router';
+import { endStep, markWarmupDone } from '../sessionService';
 import { CircleCheck, CircleX } from '../icons';
 
 const BUDGET_MS = 3 * 60 * 1000;
@@ -19,6 +20,8 @@ export default function BoardWarmup() {
   const [over, setOver] = useState(false);
   const t0 = useRef(0);
 
+  // Échauffement terminé : l'étape 1 de la séance du jour est cochée.
+  useEffect(() => { if (over) markWarmupDone(); }, [over]);
   useEffect(() => {
     getBoardProgress().then((prog) => {
       setP(prog);
@@ -62,7 +65,7 @@ export default function BoardWarmup() {
       <div className="board-mastery">
         <h2>Échauffement : mes cases faibles</h2>
         <ExerciseRunner level={drillLevel} mode="drill" seconds={180} onDone={() => setOver(true)} />
-        {over && <button className="primary" onClick={() => go({ name: 'home' })}>Terminer</button>}
+        {over && <button className="primary" data-testid="session-back" onClick={() => { endStep(); go({ name: 'home' }); }}>Retour à Aujourd’hui</button>}
       </div>
     );
   }
@@ -78,7 +81,7 @@ export default function BoardWarmup() {
           ))}</ul>
           {results.length < queue.length && <p className="muted">{queue.length - results.length} révision{queue.length - results.length > 1 ? 's' : ''} restante{queue.length - results.length > 1 ? 's' : ''} : elle{queue.length - results.length > 1 ? 's' : ''} reste{queue.length - results.length > 1 ? 'nt' : ''} due{queue.length - results.length > 1 ? 's' : ''}.</p>}
           <div className="row">
-            <button className="primary" onClick={() => go({ name: 'home' })}>Accueil</button>
+            <button className="primary" data-testid="session-back" onClick={() => { endStep(); go({ name: 'home' }); }}>Retour à Aujourd’hui</button>
             <button onClick={() => go({ name: 'board' })}>Maîtrise de l’échiquier</button>
           </div>
         </section>

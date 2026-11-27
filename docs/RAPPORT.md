@@ -499,3 +499,29 @@ pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur �
 - Tests : `motifs.sf.test.ts` (vrai Stockfish : 4.Nb5 Qe7?? 5.Nxc7+ Kd8 6.Nxa8 = « Pièce laissée en prise »),
   `facts.test.ts` (1 pion sur 2 demi-coups, la tour sur 4), `detailRefresh.test.ts` ; `tests/motifs.cjs` (un détail
   ancien recalculé au démarrage, revue, rapport).
+
+## Refonte, étape 2 : navigation par onglets et « Aujourd'hui » (27/11)
+- Barre d'onglets en bas (iPhone et iPad, masquée sur les écrans avec échiquier pour garder l'échiquier grand) :
+  **Aujourd'hui · Jouer · Ouvertures · Entraînement · Progrès**, avec des pastilles de nombre (étapes du jour
+  restantes, partie en cours, cartes du jour + erreurs à commenter, messages de l'objectif). Réglages : roue dentée en
+  haut d'Aujourd'hui.
+- Retour = écran parent (`src/nav.ts`), avec son nom : « ‹ Pièges d'ouverture », « ‹ Entraînement »… jamais
+  l'accueil d'office. Les racines des onglets n'ont pas de bouton retour ; annuler une partie ramène à « Jouer ».
+- **Aujourd'hui** : chip niveau (« 900 · Maia 950 »), carte Objectif compacte (nom, règle, 10 pastilles, départ),
+  « Ta séance du jour » en 5 étapes avec durée et coche — échauffement échiquier (chapitre dû), un piège non maîtrisé
+  (mes ouvertures d'abord, gardé toute la journée), Lis la menace, Révision, une partie contre Maia — et un seul gros
+  bouton « Continuer : <étape suivante> ». Les étapes sont cochées d'après les données (échauffement terminé, les
+  deux exercices du piège faits aujourd'hui, plus de carte du jour, une partie contre Maia jouée aujourd'hui) ; la
+  fin d'une étape lancée depuis Aujourd'hui propose « Retour à Aujourd'hui ». Liens : erreurs à commenter, partie libre.
+- **Révision plafonnée** : 15 par jour par défaut (Réglages : 10 / 15 / 25 / sans limite) ; d'abord les cartes des
+  motifs de l'objectif, puis Lis la menace, puis les plus anciennes ; le reste attend les jours suivants (compteur
+  dans Entraînement). Le drill d'une ouverture n'est pas plafonné.
+- **Jouer** : couleur (Blancs / Noirs / Alterner), interrupteur « Partie comptée / Partie non comptée », reprendre la
+  partie en cours, raccourcis « Jouer les lignes » et « Partie à thème » par ouverture. **Entraînement** : révision,
+  Lis la menace, pièges, mats, échiquier, échauffement, erreurs à commenter, toutes mes cartes. **Progrès** : objectif
+  en détail (les 3 objectifs, les parties depuis le début de l'objectif), statistiques et parties, rapport.
+- Style : une seule action principale par écran (bouton vert à relief **#4a9a33**, texte blanc gras ≥ 18 px) ; le
+  reste en cartes plates ; cibles ≥ 44 px. Identité gardée (anthracite, vert, pièces Relief, Inter).
+- Tests : `src/lib/dailyPlan.test.ts` (plafond et priorités, étapes, piège du jour) ; `tests/today.cjs` (chip,
+  séance, couleurs et tailles, retour au parent, étape cochée au retour, plafond réglable, onglets) ; les tests
+  existants passent par les onglets.

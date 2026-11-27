@@ -7,6 +7,7 @@ import { markIntroduced, reviewQueue } from '../openings';
 import { formatLine } from '../lib/repertoire';
 import { uciToSan } from '../analysis';
 import { go } from '../router';
+import { endStep } from '../sessionService';
 import ReviseMistake from './ReviseMistake';
 import ReviseThreat from './ReviseThreat';
 import TrapExercise from '../TrapExercise';
@@ -21,14 +22,14 @@ type Outcome = { ok: boolean; uci: string; san: string };
 
 const allCards = <p className="center-text"><button className="ghost" onClick={() => go({ name: 'cards' })}><Layers aria-hidden className="ico" />Toutes mes cartes</button></p>;
 
-export default function Revise({ opening }: { opening?: string }) {
+export default function Revise({ opening, only }: { opening?: string; only?: 'threat' }) {
   const [queue, setQueue] = useState<Card[] | null>(null);
   const [checking, setChecking] = useState(false);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [stats, setStats] = useState({ ok: 0, ko: 0 });
 
   const [openingName, setOpeningName] = useState<Record<string, string>>({});
-  useEffect(() => { reviewQueue(opening).then(setQueue); }, [opening]);
+  useEffect(() => { reviewQueue(opening, { only }).then(setQueue); }, [opening, only]);
   // Nouvelles cartes « Lis la menace » (au plus 5 par jour) : cherchées quand la file est vide, pour ne pas faire
   // attendre Stockfish pendant les autres cartes ; elles s'ajoutent alors à la révision.
   const [scan, setScan] = useState<'todo' | 'running' | 'done'>('todo');
@@ -61,10 +62,10 @@ export default function Revise({ opening }: { opening?: string }) {
   if (!card) {
     return (
       <div className="card center">
-        <h2>Révision terminée</h2>
+        <h2>{only === 'threat' ? 'Lis la menace : terminé' : 'Révision du jour terminée'}</h2>
         <p>{stats.ok} juste{stats.ok > 1 ? 's' : ''} · {stats.ko} à retravailler</p>
         <div className="row center-row">
-          <button className="primary" onClick={() => go({ name: 'home' })}>Retour à l’accueil</button>
+          <button className="primary" data-testid="session-back" onClick={() => { endStep(); go({ name: 'home' }); }}>Retour à Aujourd’hui</button>
           <button onClick={() => go({ name: 'cards' })}><Layers aria-hidden className="ico" />Toutes mes cartes</button>
         </div>
       </div>

@@ -55,8 +55,11 @@ const DAY = 86400000;
   assert(/^4 parties propres sur les 10 dernières/.test(score) && /6 jouées depuis le/.test(score), 'carte : « 4 parties propres sur les 10 dernières » (6 jouées) : ' + score);
   assert(await p.locator('.goal-dot.ok').count() === 4 && await p.locator('.goal-dot.ko').count() === 2 && await p.locator('.goal-dot.empty').count() === 4, 'une pastille par partie (4 propres, 2 non, 4 à venir)');
   assert(/Point de départ : 4 propres sur les 10 parties d’avant le/.test(await p.getByTestId('goal-baseline').innerText()), 'point de départ : 4/10 avant le début');
+  // « À surveiller » : dans Progrès › Objectif en détail.
+  await p.goto(URL + '#/goal');
   const watch = await p.getByTestId('goal-watch').innerText();
   assert(/À surveiller/.test(watch) && /Gain raté ×2/.test(watch) && !/Pièce laissée en prise/.test(watch), 'À surveiller : autres motifs (' + watch + ')');
+  await p.goto(URL + '#/goal');
   await p.screenshot({ path: OUT + '/goal-1-carte.png' });
 
   // ---------- 4 parties propres de plus : 8/10 → maîtrisé, message, objectif suivant

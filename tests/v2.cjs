@@ -29,7 +29,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   const lastGame = () => p.evaluate(() => window.__db.games.toArray().then((a) => a[a.length - 1]));
 
   await p.goto(URL);
-  await p.getByRole('button', { name: /Ouvertures/ }).tap();
+  await p.getByTestId('tab-openings').tap();
   await p.getByRole('heading', { name: 'Anglaise (système fermé)' }).waitFor();
   const all = await p.evaluate(() => window.__db.openings.toArray());
   assert(all.length === 7 && all.filter((o) => o.archived).map((o) => o.id).sort().join() === 'french,g6-old,qgd'
