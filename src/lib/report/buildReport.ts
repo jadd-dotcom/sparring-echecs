@@ -223,6 +223,30 @@ export interface ReportInput {
   lines?: LinesReport[];
   /** « Mon objectif » : objectif actif et sa progression. */
   goal?: GoalReport;
+  /** Pièges d'ouverture : état par piège et pièges où je suis tombé dans mes parties. */
+  traps?: TrapsReport;
+}
+
+export interface TrapsReport {
+  rows: { name: string; chapter: string; status: string; defend: { clean: number; n: number }; punish: { clean: number; n: number } }[];
+  falls: { name: string; gameNo: number; date: number; move: string; source: string }[];
+}
+
+/** Section « Pièges d'ouverture » : maîtrisés / en cours, puis les pièges où je suis tombé dans mes vraies parties. */
+export function trapsSection(t: TrapsReport): string[] {
+  const n = (s: string) => t.rows.filter((r) => r.status === s).length;
+  const L: string[] = ['## 8. Pièges d’ouverture', '',
+    `Maîtrisés : **${n('maîtrisé')}/${t.rows.length}** · en cours : ${n('en cours')} · pas commencés : ${n('nouveau')}. Maîtrisé = « Défends-toi » et « Punis-le » réussis sans indice, deux jours différents.`, '',
+    '| Piège | Chapitre | État | Défends-toi (sans indice / essais) | Punis-le (sans indice / essais) |', '|---|---|---|---|---|'];
+  for (const r of t.rows) L.push(`| ${r.name} | ${r.chapter} | ${r.status} | ${r.defend.clean} / ${r.defend.n} | ${r.punish.clean} / ${r.punish.n} |`);
+  L.push('', `### Pièges où je suis tombé dans mes vraies parties (${t.falls.length})`, '');
+  if (!t.falls.length) L.push('Aucun.', '');
+  else {
+    L.push('| Piège | Partie | Date | Source | Mon coup fautif |', '|---|---|---|---|---|');
+    for (const f of t.falls) L.push(`| ${f.name} | n°${f.gameNo} | ${fmtDate(f.date)} | ${f.source} | ${f.move} |`);
+    L.push('');
+  }
+  return L;
 }
 
 export interface GoalReport {
@@ -357,7 +381,7 @@ export function threatsSection(cards: Card[], from: number | null): string[] {
   return L;
 }
 
-export function buildReport({ now, period, games, allGames, cards, rep = {}, repertoire = [], board, lines, goal }: ReportInput): string {
+export function buildReport({ now, period, games, allGames, cards, rep = {}, repertoire = [], board, lines, goal, traps }: ReportInput): string {
   const order = [...allGames].sort((a, b) => a.date - b.date);
   const numberOf = (g: Game) => order.findIndex((x) => x.id === g.id) + 1;
   const L: string[] = [];
@@ -502,7 +526,7 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
   const okN = attempts.filter((t) => t.ok).length;
   const drill = attempts.filter((t) => t.kind === 'drill');
   const threatTries = attempts.filter((t) => t.kind === 'threat');
-  const mistakeTries = attempts.filter((t) => t.kind !== 'drill' && t.kind !== 'threat');
+  const mistakeTries = attempts.filter((t) => t.kind !== 'drill' && t.kind !== 'threat' && t.kind !== 'trap');
   push('### Révision (paquet de positions)', '',
     `Cartes vues : **${new Set(attempts.map((t) => t.id)).size}** (${attempts.length} tentative${attempts.length > 1 ? 's' : ''}) ; réussite : **${pct(okN, attempts.length)}**.`,
     `- Positions issues de mes erreurs : ${mistakeTries.length} tentatives, réussite ${pct(mistakeTries.filter((t) => t.ok).length, mistakeTries.length)}.`,
@@ -552,6 +576,7 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
 
   // ------------------------------------------------------------ 4. Cartes ratées
   const failed = cards
+    .filter((c) => c.kind !== 'trap')
     .map((c) => ({ c, fails: c.attempts.filter((t) => !t.ok).length }))
     .filter((x) => x.fails >= 2)
     .sort((x, y) => y.fails - x.fails);
@@ -569,5 +594,6 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
   if (board) push(...boardSection(board));
   if (lines) push(...linesSection(lines, period.from));
   push(...threatsSection(cards, period.from));
+  if (traps) push(...trapsSection(traps));
   return L.join('\n');
 }

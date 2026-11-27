@@ -457,3 +457,31 @@ pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur �
   départ, objectifs maîtrisés, À surveiller).
 - Tests : `src/lib/goals.test.ts` (partie propre, mesure, maîtrise, objectif suivant, retour, À surveiller), section
   du rapport ; `tests/goals.cjs` (marque dans la revue, carte, maîtrise → objectif suivant, rapport).
+
+## Mode « Pièges d'ouverture » (27/11)
+- Nouvel onglet à l'accueil (comme Mats élémentaires), 13 pièges en 3 chapitres (`src/data/traps.ts`) :
+  1. **Mats rapides** : mat du berger (dame h5, dame f3, avec le fou c4), mat du fou (pions f et g), mat de Légal,
+     cavalier g5 sur f7.
+  2. **Dame perdue** : fourchette de cavalier en c2, clouage de la dame sur le roi (piège de l'éléphant), échec à la
+     découverte (Petrov : 3…♘xe4 4.♕e2 ♘f6?? 5.♘c6+), pion empoisonné en b2.
+  3. **Pièges de mes ouvertures**, choisis dans les lignes du répertoire actif : gambit Englund (Londres, 6.♗c3??
+     ♗b4), Anglaise (4…♕xd5?? 5.♘xd5), mon système …c5/…g6 contre ♗c4 + ♕f3 (…g6?? ♕xf7#), Londres en défense contre
+     ♘c3/f3/g4/h4 (…♘bd7?? h5 enferme le fou g6).
+- Pour chaque piège : mini-leçon (2 phrases en mots, « Voir la suite » depuis le début, une règle en une phrase),
+  « Défends-toi » (le bot a tendu le piège : je trouve le bon coup au moment critique ; si je tombe dedans, la suite
+  se joue et s'explique) et « Punis-le » (le bot a fait la faute : je trouve le coup gagnant, puis la suite se joue).
+  Coups acceptés : la liste vérifiée, ou tout coup que Stockfish juge à 10 points de win% près ; une perte de 20
+  points ou plus = tombé dans le piège. Indices progressifs (en mots, puis la pièce à jouer), solution après 2 essais
+  ratés ou 2 indices.
+- Maîtrisé : les deux exercices réussis sans indice, deux jours différents → carte de révision espacée (kind `trap`,
+  J+3, puis J+7…) : la révision enchaîne « Défends-toi » et « Punis-le ». Progression dans IndexedDB (clé `traps`).
+- Vérification coup par coup avec Stockfish natif (`sh scripts/verify-traps.sh` → `docs/PIEGES.md`) : éval après
+  chaque coup de la suite, chaque bonne défense tient (≤ 10 points sous le meilleur coup), la faute perd au moins
+  20 points, la punition est un mat ou ≥ 75 % de gain à 10 points près du meilleur coup, chaque coup suivant du
+  punisseur aussi. Les 13 pièges passent (un premier choix pour le Londres en défense, « pion b7 », a été refusé par
+  la vérification et remplacé).
+- Rapport pour Claude : section 8 « Pièges d'ouverture » (maîtrisés / en cours / pas commencés, détail par piège) et
+  les pièges où je suis tombé dans mes vraies parties (même position, mon coup fautif).
+- Tests : `src/lib/traps.test.ts` (données, verdicts, maîtrise sur deux jours, chutes dans mes parties), section du
+  rapport ; `tests/traps.cjs` (leçon, un piège défendu, un piège puni, une chute, indices, maîtrise → révision,
+  rapport).

@@ -11,6 +11,9 @@ import { dayKey } from '../lib/srs';
 import { loadGoals } from '../goalService';
 import { GOALS, goalProgress, toWatch } from '../lib/goals';
 import { MOTIF_LABEL } from '../lib/report/motifs';
+import { TRAP_CHAPTERS, TRAPS } from '../data/traps';
+import { fallsInGames, trapStatus } from '../lib/traps';
+import { getTrapProgress } from '../trapService';
 
 const LAST_KEY = 'lastReportAt';
 
@@ -99,7 +102,23 @@ export default function Report() {
       mastered: GOALS.filter((x) => gd.state.mastered[x.id] !== undefined).map((x) => ({ name: x.name, at: gd.state.mastered[x.id]! })),
       watch: toWatch(gd.goal, gd.games, gd.exits).map((w) => ({ label: w.label === 'repertoire' ? 'sorties du répertoire par moi' : MOTIF_LABEL[w.label], count: w.count })),
     };
-    const report = buildReport({ now, period, games: fresh, allGames: all, cards: await db.cards.toArray(), rep, repertoire, board, lines: linesRep, goal });
+    // Pièges d'ouverture : état par piège, et pièges où je suis tombé dans mes parties (toutes).
+    const tp = await getTrapProgress();
+    const order = [...all].sort((a, b) => a.date - b.date);
+    const count = (id: string, mode: 'defend' | 'punish') => {
+      const at = (tp[id]?.attempts ?? []).filter((a) => a.mode === mode);
+      return { clean: at.filter((a) => a.clean).length, n: at.length };
+    };
+    const traps = {
+      rows: TRAPS.map((t) => ({ name: t.name, chapter: TRAP_CHAPTERS.find((c) => c.id === t.chapter)!.name, status: trapStatus(tp[t.id]),
+        defend: count(t.id, 'defend'), punish: count(t.id, 'punish') })),
+      falls: fallsInGames(all).map((f) => {
+        const g = all.find((x) => x.id === f.gameId)!;
+        return { name: TRAPS.find((t) => t.id === f.trapId)!.name, gameNo: order.findIndex((x) => x.id === g.id) + 1, date: g.date,
+          move: `${Math.floor(f.ply / 2) + 1}${f.ply % 2 ? '…' : '.'} ${g.san[f.ply]}`, source: g.source === 'chesscom' ? 'Chess.com' : 'Maia' };
+      }),
+    };
+    const report = buildReport({ now, period, games: fresh, allGames: all, cards: await db.cards.toArray(), rep, repertoire, board, lines: linesRep, goal, traps });
     setGeneratedAt(now);
     setMd(report);
     if (skipped) setMsg(`${skipped} partie${skipped > 1 ? 's' : ''} non analysée${skipped > 1 ? 's' : ''} : elle${skipped > 1 ? 's' : ''} ne compte${skipped > 1 ? 'nt' : ''} que pour les résultats.`);

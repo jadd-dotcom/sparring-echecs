@@ -18,6 +18,7 @@ export type Route =
   | { name: 'report' }
   | { name: 'lesson'; id: string; part?: string }
   | { name: 'mates'; level?: MateLevelId; mode?: 'lesson' | 'play' }
+  | { name: 'traps'; id?: string; mode?: 'defend' | 'punish' }
   | { name: 'board'; view?: BoardView; chapter?: number; id?: string; mode?: BoardMode };
 
 export function parse(fullHash: string): Route {
@@ -37,6 +38,10 @@ export function parse(fullHash: string): Route {
     const mode = hash.replace(/^#\/?/, '').split('/')[2];
     return arg && (mode === 'lesson' || mode === 'play') ? { name, level: arg as MateLevelId, mode } : { name };
   }
+  if (name === 'traps') {
+    const mode = hash.replace(/^#\/?/, '').split('/')[2];
+    return arg ? { name, id: arg, ...(mode === 'defend' || mode === 'punish' ? { mode } : {}) } : { name };
+  }
   if (name === 'board') {
     const parts = hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
     const view = parts[1] as BoardView | undefined;
@@ -55,6 +60,7 @@ export function go(r: Route) {
     : (r.name === 'play' || r.name === 'revise') ? r.opening : undefined;
   if (r.name === 'lesson' && r.part) { location.hash = `/lesson/${encodeURIComponent(r.id)}/${encodeURIComponent(r.part)}`; return; }
   if (r.name === 'play') { location.hash = `/play${r.opening ? '/' + encodeURIComponent(r.opening) : ''}${r.unrated ? '?nc' : ''}`; return; }
+  if (r.name === 'traps') { location.hash = `/traps${r.id ? '/' + encodeURIComponent(r.id) + (r.mode ? '/' + r.mode : '') : ''}`; return; }
   if (r.name === 'mates') { location.hash = r.level && r.mode ? `/mates/${r.level}/${r.mode}` : '/mates'; return; }
   if (r.name === 'board') {
     location.hash = r.view === 'lesson' ? `/board/lesson/${r.chapter}` : r.view === 'ex' ? `/board/ex/${r.id}/${r.mode ?? 'test'}`

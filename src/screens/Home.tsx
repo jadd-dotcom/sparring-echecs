@@ -5,7 +5,7 @@ import { colorForNewGame, gamesSinceCalibration, inCalibration } from '../lib/pr
 import { go } from '../router';
 import { reviewQueue } from '../openings';
 import { isOfflineReady, waitOfflineReady } from '../offline';
-import { BookOpen, ChartLine, CircleCheck, Crown, FileText, Flame, Grid3x3, Layers, PartyPopper, Play, Settings } from '../icons';
+import { BookOpen, ChartLine, CircleCheck, Crown, FileText, Flame, Grid3x3, Layers, PartyPopper, Play, Settings, Swords } from '../icons';
 import { getBoardProgress } from '../boardService';
 import { dueChapters } from '../lib/board/levels';
 import { dayKey } from '../lib/srs';
@@ -83,10 +83,13 @@ export default function Home() {
       )}
       <div className="row">
         <button className="huge" onClick={() => go({ name: 'openings' })}><BookOpen aria-hidden className="ico" />Ouvertures</button>
-        <button className="huge" onClick={() => go({ name: 'mates' })}><Crown aria-hidden className="ico" />Mats élémentaires</button>
+        <button className="huge" onClick={() => go({ name: 'traps' })}><Swords aria-hidden className="ico" />Pièges d’ouverture</button>
       </div>
       <div className="row">
+        <button className="huge" onClick={() => go({ name: 'mates' })}><Crown aria-hidden className="ico" />Mats élémentaires</button>
         <button className="huge" onClick={() => go({ name: 'board' })}><Grid3x3 aria-hidden className="ico" />Maîtrise de l’échiquier</button>
+      </div>
+      <div className="row">
         <button className="huge" onClick={() => go({ name: 'board', view: 'warmup' })}><Flame aria-hidden className="ico" />Échauffement échiquier (3 min){boardDue ? ` · ${boardDue}` : ''}</button>
       </div>
       <div className="row">

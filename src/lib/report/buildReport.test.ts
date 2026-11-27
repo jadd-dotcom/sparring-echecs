@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Chess } from 'chess.js';
 import type { Card, Game, MoveAnalysis } from '../../db';
-import { annotatedPgn, buildReport, costliestMoves, gamesToShow, goalSection, linesSection, opponentExits, threatsSection, repText, selectGames, worstErrors } from './buildReport';
+import { annotatedPgn, buildReport, costliestMoves, gamesToShow, goalSection, linesSection, opponentExits, threatsSection, trapsSection, repText, selectGames, worstErrors } from './buildReport';
 import { parsePgn } from '../repertoire';
 
 const DAY = 86400000;
@@ -286,5 +286,24 @@ describe('section « Objectif » (en tête)', () => {
     const md = buildReport({ now: NOW, period, games, allGames: [G1], cards: [], goal });
     expect(md.indexOf('## Objectif en cours')).toBeGreaterThan(0);
     expect(md.indexOf('## Objectif en cours')).toBeLessThan(md.indexOf('## Définitions'));
+  });
+});
+
+describe('section « Pièges d’ouverture »', () => {
+  it('maîtrisés / en cours, détail par piège, pièges où je suis tombé dans mes parties', () => {
+    const md = trapsSection({
+      rows: [
+        { name: 'Mat du berger (dame en h5)', chapter: 'Mats rapides', status: 'maîtrisé', defend: { clean: 2, n: 3 }, punish: { clean: 2, n: 2 } },
+        { name: 'Mat de Légal', chapter: 'Mats rapides', status: 'en cours', defend: { clean: 0, n: 1 }, punish: { clean: 1, n: 1 } },
+        { name: 'Échec à la découverte (Petrov)', chapter: 'Dame perdue', status: 'nouveau', defend: { clean: 0, n: 0 }, punish: { clean: 0, n: 0 } },
+      ],
+      falls: [{ name: 'Mat du berger (dame en h5)', gameNo: 4, date: NOW, move: '3… Nf6', source: 'Chess.com' }],
+    }).join('\n');
+    expect(md).toContain('## 8. Pièges d’ouverture');
+    expect(md).toContain('Maîtrisés : **1/3** · en cours : 1 · pas commencés : 1.');
+    expect(md).toContain('| Mat de Légal | Mats rapides | en cours | 0 / 1 | 1 / 1 |');
+    expect(md).toContain('### Pièges où je suis tombé dans mes vraies parties (1)');
+    expect(md).toMatch(/\| Mat du berger \(dame en h5\) \| n°4 \| \d{2}\/\d{2}\/\d{4} \| Chess\.com \| 3… Nf6 \|/);
+    expect(trapsSection({ rows: [], falls: [] }).join('\n')).toContain('Aucun.');
   });
 });
