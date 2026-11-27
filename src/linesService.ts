@@ -37,7 +37,8 @@ export async function continueAsGame(openingId: string, myColor: 'w' | 'b', uci:
 }
 
 /** Entraînement d'une sélection de lignes (onglet « Lignes ») : ordre, départ, boucle, ligne en cours. */
-export interface LineSession { openingId: string; keys: string[]; start: 'carrefour' | 'first'; loop: boolean; i: number }
+/** `both` : « Les deux camps » (je joue aussi les coups de l'adversaire, de mémoire). */
+export interface LineSession { openingId: string; keys: string[]; start: 'carrefour' | 'first'; loop: boolean; i: number; both?: boolean }
 
 export async function getLineSession(openingId: string): Promise<LineSession | null> {
   const s = (await db.meta.get('lineSession'))?.value as LineSession | undefined;

@@ -16,6 +16,7 @@ import PlayMenu from './screens/PlayMenu';
 import Training from './screens/Training';
 import Progress from './screens/Progress';
 import GoalDetail from './screens/GoalDetail';
+import CrossroadTrainer from './screens/CrossroadTrainer';
 import OpeningPage from './screens/OpeningPage';
 import TabBar from './TabBar';
 import { parentOf } from './nav';
@@ -64,7 +65,7 @@ export default function App() {
     return () => removeEventListener('hashchange', f);
   }, []);
   // Écrans avec un échiquier : tout tient dans la hauteur de l'écran (échiquier ajusté, texte qui défile seul).
-  const fit = ['play', 'review', 'revise', 'lesson', 'comment', 'repertoire', 'lines'].includes(route.name)
+  const fit = ['play', 'review', 'revise', 'lesson', 'comment', 'repertoire', 'lines', 'crossroads'].includes(route.name)
     || (route.name === 'mates' && !!route.level)
     || (route.name === 'traps' && !!route.id)
     || (route.name === 'board' && !!route.view && route.view !== 'lesson');
@@ -89,6 +90,7 @@ export default function App() {
         {route.name === 'cards' && <Cards />}
         {route.name === 'lines' && <PlayLines key={`${route.id}-${route.sel ? 's' : ''}`} id={route.id} sel={route.sel} />}
         {route.name === 'opening' && <OpeningPage key={route.id} id={route.id} tab={route.tab} />}
+        {route.name === 'crossroads' && <CrossroadTrainer key={route.id} id={route.id} />}
         {route.name === 'comment' && <Comment key={route.id ?? 'all'} id={route.id} />}
         {route.name === 'openings' && <Openings />}
         {route.name === 'repertoire' && <RepertoireEditor key={route.id} id={route.id} />}

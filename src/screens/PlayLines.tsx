@@ -27,7 +27,8 @@ interface Run {
   ply: number;                 // demi-coups joués dans la ligne en cours
   played: string[];            // coups réellement joués (UCI), depuis le début
   refusals: number;            // refus sur le coup en cours
-  errors: number;              // erreurs pendant cette partie
+  errors: number;              // erreurs pendant cette partie (de mon côté)
+  errorsHim?: number;          // « Les deux camps » : erreurs sur les coups de l'adversaire
   solution: { from: string; to: string; san: string; why: string | null } | null;
   msg: string | null;
   done: boolean;
@@ -111,20 +112,20 @@ export default function PlayLines({ id, sel }: { id: string; sel?: boolean }) {
   useEffect(() => {
     if (!run || run.done || !opening || !progress) return;
     if (run.ply >= run.line.length) {
-      const prog = withLineDone(progress, run.line, run.errors === 0);
+      const prog = withLineDone(progress, run.line, run.errors === 0 && !run.errorsHim);
       setProgress(prog);
       saveLineProgress(opening.id, prog).catch(console.error);
       setRun({ ...run, done: true });
       return;
     }
-    if (chess.turn() === me) return;
+    if (chess.turn() === me || session?.both) return;
     timer.current = setTimeout(() => {
       const m = new Chess(chess.fen()).move(run.line[run.ply]);
       soundForMove(m.san);
       setRun({ ...run, ply: run.ply + 1, played: [...run.played, m.from + m.to + (m.promotion ?? '')] });
     }, OPP_DELAY);
     return () => { if (timer.current) clearTimeout(timer.current); };
-  }, [run, chess, me, opening, progress]);
+  }, [run, chess, me, opening, progress, session?.both]);
 
   if (selDone && opening) {
     return (
@@ -141,10 +142,48 @@ export default function PlayLines({ id, sel }: { id: string; sel?: boolean }) {
   const lineIdx = ordered.findIndex((l) => lineKey(l) === lineKey(run.line));
   const count = myMoveCount(run.line, run.ply, me);
   const status = progress.lines[lineKey(run.line)]?.status;
+  const both = !!session?.both;
   const myTurn = !run.done && chess.turn() === me && run.ply < run.line.length;
+  // « Les deux camps » : je joue aussi son coup.
+  const hisTurn = both && !run.done && chess.turn() !== me && run.ply < run.line.length;
+
+  /** « Les deux camps » : son coup, de mémoire (un autre coup de mon arbre à cet endroit fait changer de ligne). */
+  async function onHisMove(san: string, uci: string) {
+    if (!run || !opening || !progress) return;
+    const playedSan = run.line.slice(0, run.ply);
+    if (san === run.line[run.ply]) {
+      soundForMove(san);
+      setRun({ ...run, ply: run.ply + 1, played: [...run.played, uci], refusals: 0, solution: null, msg: null });
+      return;
+    }
+    const other = ordered.find((l) => l.length > run.ply && l[run.ply] === san && playedSan.every((m, i) => l[i] === m));
+    if (other) {
+      soundForMove(san);
+      const n = ordered.indexOf(other) + 1;
+      setRun({ ...run, line: other, ply: run.ply + 1, played: [...run.played, uci], refusals: 0, solution: null, msg: `Autre coup de l’adversaire dans ton répertoire : on passe à la ligne ${n}/${ordered.length}.` });
+      return;
+    }
+    answerFeedback(false);
+    const prog = withError(progress, run.line, run.ply, san);
+    setProgress(prog);
+    await saveLineProgress(opening.id, prog);
+    const refusals = run.refusals + 1;
+    const m = new Chess(chess.fen()).move(run.line[run.ply]);
+    setRun({
+      ...run, refusals, errorsHim: (run.errorsHim ?? 0) + 1,
+      msg: refusals >= 2 ? null : 'Pas le coup de la ligne pour son camp, réessaie.',
+      solution: refusals >= 2 ? { from: m.from, to: m.to, san: m.san, why: lessonWhy(lesson, chess.fen(), m.san) } : null,
+    });
+  }
 
   async function onMove(uci: string) {
-    if (!run || !myTurn || !opening || !progress) return;
+    if (!run || !opening || !progress) return;
+    if (hisTurn) {
+      const sanH = new Chess(chess.fen()).move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] }).san;
+      await onHisMove(sanH, uci);
+      return;
+    }
+    if (!myTurn) return;
     const san = new Chess(chess.fen()).move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] }).san;
     const r = checkMove(ordered, progress, run.line, run.ply, chess.fen(), san);
     if (r.kind === 'refused') {
@@ -194,7 +233,7 @@ export default function PlayLines({ id, sel }: { id: string; sel?: boolean }) {
 
   const arrows: BoardArrow[] = [];
   const highlight: Record<string, string> = {};
-  if (run.solution && myTurn) {
+  if (run.solution && (myTurn || hisTurn)) {
     arrows.push({ from: run.solution.from, to: run.solution.to, color: 'rgba(30,160,60,.9)' });
     highlight[run.solution.from] = 'rgba(255, 170, 0, .65)';
   }
@@ -203,18 +242,19 @@ export default function PlayLines({ id, sel }: { id: string; sel?: boolean }) {
   const done = validatedCount(ordered, progress);
 
   return (
-    <div className="play play-lines" data-line={lineIdx + 1} data-ply={run.ply} data-expected={myTurn ? run.line[run.ply] : ''} data-fen={chess.fen()} data-key={lineKey(run.line)}>
+    <div className="play play-lines" data-line={lineIdx + 1} data-ply={run.ply} data-expected={myTurn || hisTurn ? run.line[run.ply] : ''} data-fen={chess.fen()} data-key={lineKey(run.line)}>
       <div className="board-col">
         <div className="lines-banner" data-testid="lines-banner">
           <b>{opening.name}</b>
           <span>· Ligne {lineIdx + 1}/{ordered.length}</span>
           <span>· Coup {count.current}/{count.total}</span>
+          {both && <span className="tag">Les deux camps</span>}
           {session && <span>· Sélection {session.i + 1}/{session.keys.length}{session.loop ? ' ' : ''}{session.loop && <Repeat aria-label="en boucle" className="ico sm" />}</span>}
           {status === 'redo' && <span className="tag st-bad">à refaire</span>}
           {status === 'ok' && <span className="tag st-good"><Check aria-hidden className="ico sm" /> validée</span>}
         </div>
         <Board fen={chess.fen()} orientation={me}
-          movable={myTurn ? me : null} onMove={onMove} arrows={arrows} highlight={highlight}
+          movable={myTurn ? me : hisTurn ? chess.turn() : null} onMove={onMove} arrows={arrows} highlight={highlight}
           lastMove={last ? { from: last.slice(0, 2), to: last.slice(2, 4) } : null} />
       </div>
       <aside className="side-col">
@@ -224,20 +264,23 @@ export default function PlayLines({ id, sel }: { id: string; sel?: boolean }) {
           {info && <p className="notice">{info}</p>}
           {!run.done && (myTurn
             ? <p data-testid="lines-prompt">Joue le coup de ton répertoire ({me === 'w' ? 'Blancs' : 'Noirs'}).</p>
-            : <p className="muted pulse">L’adversaire joue le coup de la ligne…</p>)}
+            : hisTurn ? <p data-testid="lines-prompt">Les deux camps : joue aussi <b>son</b> coup de la ligne ({me === 'w' ? 'Noirs' : 'Blancs'}), de mémoire.</p>
+              : <p className="muted pulse">L’adversaire joue le coup de la ligne…</p>)}
           {run.msg && <p className={run.msg.startsWith('Pas le coup') ? 'bad-text' : 'notice'} data-testid="lines-msg">{run.msg}</p>}
         </div>
-        {run.solution && myTurn && (
+        {run.solution && (myTurn || hisTurn) && (
           <div className="card bad" data-testid="lines-solution">
-            <p><CircleX aria-hidden className="ico bad-text" /> Le coup de ton répertoire : <b>{fig(run.solution.san)}</b> (flèche verte). Joue-le.</p>
+            <p><CircleX aria-hidden className="ico bad-text" /> {hisTurn ? 'Son coup dans la ligne' : 'Le coup de ton répertoire'} : <b>{fig(run.solution.san)}</b> (flèche verte). Joue-le.</p>
             {run.solution.why && <p className="why">{fig(plainText(run.solution.why))}</p>}
             <p className="muted small">Cette ligne est marquée « à refaire ».</p>
           </div>
         )}
         {run.done && (
           <div className={`card ${run.errors === 0 ? 'good' : ''}`} data-testid="lines-done">
-            <h3>Ligne terminée{run.errors === 0 && <> <span className="tag st-good" data-testid="line-ok"><Check aria-hidden className="ico sm" /> sans erreur</span></>}</h3>
-            {run.errors > 0 && <p className="muted">{run.errors} erreur{run.errors > 1 ? 's' : ''} : cette ligne est à refaire, elle reviendra en premier.</p>}
+            <h3>Ligne terminée{run.errors === 0 && !run.errorsHim && <> <span className="tag st-good" data-testid="line-ok"><Check aria-hidden className="ico sm" /> sans erreur</span></>}</h3>
+            {(run.errors > 0 || (run.errorsHim ?? 0) > 0) && <p className="muted" data-testid="lines-errors">{both
+              ? `Erreurs : ${run.errors} de ton côté, ${run.errorsHim ?? 0} du sien`
+              : `${run.errors} erreur${run.errors > 1 ? 's' : ''}`} : cette ligne est à refaire, elle reviendra en premier.</p>}
             {plan?.block && <><p><b>{plan.block.title}</b></p><p className="muted small">{fig(plainText(plan.block.intro))}</p></>}
             {plan && <><p><b>Le plan</b></p><ul className="plan">{plan.plan.map((t, i) => <li key={i}>{fig(plainText(t))}</li>)}</ul></>}
             <div className="row">

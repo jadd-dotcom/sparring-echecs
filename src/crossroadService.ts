@@ -4,8 +4,8 @@ import { db, type Opening } from './db';
 import { treeOf } from './openings';
 import { signpostCards } from './lib/crossroads';
 
-export interface CrossCardState { step: number; due: string; attempts: { date: number; ok: boolean }[] }
-export type CrossProgress = Record<string, CrossCardState>;
+import type { CrossProgress } from './lib/crossroadTrainer';
+export type { CrossProgress, CrossCardState } from './lib/crossroadTrainer';
 
 const key = (id: string) => `crossroads:${id}`;
 export async function getCrossProgress(id: string): Promise<CrossProgress> {

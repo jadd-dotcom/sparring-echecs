@@ -549,3 +549,5 @@ button.link-title:active { transform: none; box-shadow: none; }
 .line-row > button.flat-btn { flex: 1 1 auto; min-height: 44px; }
 .cross-node, .line-list, .cross-tree { min-width: 0; }
 .tag.st-new { background: var(--surface-2); color: var(--muted); }
+.cross-cards { list-style: none; padding: 0; display: grid; gap: 8px; margin: 4px 0; } .cross-cards li .tag { margin-left: 6px; } .cross-choices { display: grid; gap: 8px; }
+.train-bar .both-toggle { grid-column: 1 / -1; grid-row: 3; }

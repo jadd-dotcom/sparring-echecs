@@ -20,7 +20,7 @@ export function tabOf(r: Route): TabId {
   switch (r.name) {
     case 'home': case 'settings': return 'today';
     case 'jouer': case 'play': return 'jouer';
-    case 'openings': case 'lesson': case 'lines': case 'repertoire': case 'opening': return 'openings';
+    case 'openings': case 'lesson': case 'lines': case 'repertoire': case 'opening': case 'crossroads': return 'openings';
     case 'revise': return r.opening ? 'openings' : 'training';
     case 'progress': case 'stats': case 'report': case 'goal': case 'review': return 'progress';
     case 'comment': return r.id !== undefined ? 'jouer' : 'training';
@@ -40,6 +40,7 @@ export function parentOf(r: Route): { route: Route; label: string } | null {
     case 'stats': case 'report': case 'goal': return T('progress');
     case 'revise': return r.opening ? { route: { name: 'opening', id: r.opening }, label: openingName(r.opening) } : T('training');
     case 'opening': return T('openings');
+    case 'crossroads': return { route: { name: 'opening', id: r.id, tab: 'carrefours' }, label: openingName(r.id) };
     case 'lesson': return { route: { name: 'opening', id: r.id, tab: 'lecon' }, label: openingName(r.id) };
     case 'lines': return { route: { name: 'opening', id: r.id, tab: 'lignes' }, label: openingName(r.id) };
     case 'cards': return T('training');

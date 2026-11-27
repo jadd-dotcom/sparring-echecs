@@ -22,6 +22,7 @@ export type Route =
   | { name: 'report' }
   | { name: 'lesson'; id: string; part?: string; stage?: 'watch' | 'replay' | 'loop' }
   | { name: 'opening'; id: string; tab?: 'lecon' | 'lignes' | 'carrefours' | 'pieges' }
+  | { name: 'crossroads'; id: string }
   | { name: 'mates'; level?: MateLevelId; mode?: 'lesson' | 'play' }
   | { name: 'traps'; id?: string; mode?: 'defend' | 'punish' }
   | { name: 'board'; view?: BoardView; chapter?: number; id?: string; mode?: BoardMode };
@@ -39,6 +40,7 @@ export function parse(fullHash: string): Route {
     const stage = hash.replace(/^#\/?/, '').split('/')[3];
     return part ? { name: 'lesson', id: arg, part: decodeURIComponent(part), ...(stage === 'watch' || stage === 'replay' || stage === 'loop' ? { stage } : {}) } : { name: 'lesson', id: arg };
   }
+  if (name === 'crossroads' && arg) return { name, id: arg };
   if (name === 'opening' && arg) {
     const tab = hash.replace(/^#\/?/, '').split('/')[2];
     return { name, id: arg, ...(tab === 'lecon' || tab === 'lignes' || tab === 'carrefours' || tab === 'pieges' ? { tab } : {}) };
@@ -68,7 +70,7 @@ export function parse(fullHash: string): Route {
 }
 
 export function go(r: Route) {
-  const arg = r.name === 'review' || r.name === 'comment' ? r.id : r.name === 'repertoire' || r.name === 'lesson' || r.name === 'lines' ? r.id
+  const arg = r.name === 'review' || r.name === 'comment' ? r.id : r.name === 'repertoire' || r.name === 'lesson' || r.name === 'lines' || r.name === 'crossroads' ? r.id
     : (r.name === 'play' || r.name === 'revise') ? r.opening : undefined;
   if (r.name === 'lesson' && r.part) { location.hash = `/lesson/${encodeURIComponent(r.id)}/${encodeURIComponent(r.part)}${r.stage ? '/' + r.stage : ''}`; return; }
   if (r.name === 'opening') { location.hash = `/opening/${encodeURIComponent(r.id)}${r.tab ? '/' + r.tab : ''}`; return; }
