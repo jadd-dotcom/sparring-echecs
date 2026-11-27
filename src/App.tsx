@@ -25,9 +25,13 @@ import { ChevronLeft } from './icons';
 import { loadPrefs } from './prefs';
 import { autoImportMessage, autoImportOnStart } from './autoImport';
 import { resumeAnalysis, setAnalysisPause } from './chesscomImport';
+import { resumeDetailRefresh, setDetailRefreshPause, startDetailRefresh } from './detailRefresh';
 
 // L'analyse des parties importées se met en pause pendant une partie contre Maia et son analyse (reprise ensuite).
-setAnalysisPause(() => location.hash.startsWith('#/play') || location.hash.startsWith('#/comment/'));
+const playing = () => location.hash.startsWith('#/play') || location.hash.startsWith('#/comment/');
+setAnalysisPause(playing);
+// Recalcul des motifs (nouvelle version du détail) : même pause.
+setDetailRefreshPause(playing);
 
 export default function App() {
   const [route, setRoute] = useState<Route>(() => parse(location.hash));
@@ -41,10 +45,12 @@ export default function App() {
     autoImportOnStart().then((r) => {
       const m = autoImportMessage(r);
       if (m) { setToast(m); timer = setTimeout(() => setToast(null), 8000); }
-    }).catch(console.error);
+    }).catch(console.error).finally(() => { if (!playing()) startDetailRefresh().catch(console.error); });
     return () => { if (timer) clearTimeout(timer); };
   }, [ready]);
-  useEffect(() => { if (route.name !== 'play' && !(route.name === 'comment' && route.id !== undefined)) resumeAnalysis(); }, [route]);
+  useEffect(() => {
+    if (route.name !== 'play' && !(route.name === 'comment' && route.id !== undefined)) { resumeAnalysis(); if (ready) resumeDetailRefresh(); }
+  }, [route, ready]);
   useEffect(() => {
     const f = () => setRoute(parse(location.hash));
     addEventListener('hashchange', f);

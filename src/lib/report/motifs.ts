@@ -15,11 +15,15 @@ export const MOTIF_LABEL: Record<Motif, string> = {
   'menace-ignoree': 'Menace ignorée',
   'piece-en-prise': 'Pièce laissée en prise',
   'gain-rate': 'Gain raté',
-  autre: 'Autre',
+  autre: 'Erreur de position (pas de perte de matériel tout de suite)',
 };
 
 /** Plies de la suite (mon coup, sa réponse, mon coup suivant) sur lesquels on mesure un gain de matériel. */
 export const GAIN_PLIES = 3;
+
+/** Demi-coups (lui, moi, lui, moi) sur lesquels on mesure ce qu'il gagne : une fourchette avec échec (il donne
+ *  échec, mon roi bouge, il prend, je reprends si je peux) compte ainsi comme une pièce laissée en prise. */
+export const LOSS_PLIES = 4;
 
 export const MATE_HORIZON = 3;
 export const GAIN_THRESHOLD = 2;
@@ -31,10 +35,10 @@ export interface MotifFacts {
   playedKeepsMate: boolean;
   /** Après mon coup, mat contre moi en N (≤ 3), sinon null. */
   mateAgainstMeAfter: number | null;
-  /** Gain de l'adversaire sur les 2 premiers demi-coups de la réfutation. */
-  refutationGain2: number;
-  /** Menace avant mon coup (trait inversé) ; null si j'étais en échec. */
-  threat: { mate: number | null; gain2: number } | null;
+  /** Gain de l'adversaire sur les 4 premiers demi-coups de la réfutation (lui, moi, lui, moi). */
+  refutationGain: number;
+  /** Menace avant mon coup (trait inversé), gain sur 4 demi-coups ; null si j'étais en échec. */
+  threat: { mate: number | null; gain: number } | null;
   /** La menace marche encore après mon coup. */
   threatStillWorks: boolean;
   /** Gain de matériel pour moi sur les 3 premiers demi-coups de la meilleure suite (mon coup, sa réponse, mon coup). */
@@ -49,9 +53,9 @@ export function detectMotifs(f: MotifFacts): { motifs: Motif[]; motif: Motif } {
   const m: Motif[] = [];
   if (f.mateForMeBefore !== null && !f.playedKeepsMate) m.push('mat-rate');
   if (f.mateAgainstMeAfter !== null) m.push('mat-ouvert');
-  const threatened = !!f.threat && (f.threat.mate !== null || f.threat.gain2 >= GAIN_THRESHOLD);
+  const threatened = !!f.threat && (f.threat.mate !== null || f.threat.gain >= GAIN_THRESHOLD);
   if (threatened && f.threatStillWorks) m.push('menace-ignoree');
-  if (f.refutationGain2 >= GAIN_THRESHOLD) m.push('piece-en-prise');
+  if (f.refutationGain >= GAIN_THRESHOLD) m.push('piece-en-prise');
   // Gain raté : je pouvais mater, ou gagner au moins 2 points de matériel, et mon coup ne le fait pas
   // (il ne mate pas / il gagne au moins 2 points de moins que la meilleure suite).
   const best = f.bestGain3 ?? 0, played = f.playedGain3 ?? 0;
@@ -68,8 +72,9 @@ export interface Engine {
   search(fen: string, depth: number): Promise<EngineResult>;
 }
 
-/** Version du calcul (2 : motif « Gain raté » ajouté) ; un détail plus ancien est recalculé quand on en a besoin. */
-export const DETAIL_VERSION = 2;
+/** Version du calcul (2 : motif « Gain raté » ; 3 : pièce en prise et menace mesurées sur 4 demi-coups) ;
+ *  un détail plus ancien est recalculé (en arrière-plan, et quand on en a besoin). */
+export const DETAIL_VERSION = 3;
 
 export interface ErrorDetail {
   v?: number;
@@ -87,6 +92,22 @@ export const DETAIL_DEPTH = 12;
 export const LINE_PLIES = 5;
 
 const mateIn = (s: Eval) => ('mate' in s && s.mate > 0 && s.mate <= MATE_HORIZON ? s.mate : null);
+
+/**
+ * La variante principale du moteur est parfois écourtée (table de transposition) : on la prolonge par de nouvelles
+ * recherches jusqu'à `n` demi-coups (ou la fin de partie), pour mesurer le gain sur tout l'horizon.
+ */
+async function extendPv(engine: Engine, fen: string, pv: string[], n: number, depth: number): Promise<string[]> {
+  let out = pv;
+  for (let guard = 0; guard < n; guard++) {
+    const played = playPv(fen, out);
+    if (played.san.length >= n || played.chess.isGameOver() || played.san.length < out.length) break;
+    const r = await engine.search(played.fen, depth);
+    if (!r.pv.length) break;
+    out = [...out, ...r.pv];
+  }
+  return out;
+}
 
 /** Détail d'une erreur : suites, bilans matériels, motifs.
  *  `bestUci` (meilleur coup de l'analyse) : la suite affichée part de ce coup, pour rester cohérente. */
@@ -114,6 +135,7 @@ export async function computeErrorDetail(engine: Engine, fenBefore: string, myUc
   else if (!after.isGameOver()) {
     refutation = await engine.search(fenAfter, depth);
     playedKeepsMate = 'mate' in refutation.score && refutation.score.mate < 0;
+    refutation = { ...refutation, pv: await extendPv(engine, fenAfter, refutation.pv, LINE_PLIES, depth) };
   }
   const refPlay = playPv(fenAfter, refutation.pv, LINE_PLIES);
 
@@ -122,21 +144,23 @@ export async function computeErrorDetail(engine: Engine, fenBefore: string, myUc
   let threatLine: string | undefined;
   if (!inCheck) {
     const flipped = flipTurn(fenBefore);
-    const t = await engine.search(flipped, depth);
-    const gain2 = opponentGain(flipped, t.pv, me, 2);
-    threat = { mate: mateIn(t.score), gain2 };
-    if (threat.mate !== null || gain2 >= 2) {
+    const t0 = await engine.search(flipped, depth);
+    const t = { ...t0, pv: await extendPv(engine, flipped, t0.pv, LOSS_PLIES, depth) };
+    const gain = opponentGain(flipped, t.pv, me, LOSS_PLIES);
+    threat = { mate: mateIn(t.score), gain };
+    if (threat.mate !== null || gain >= GAIN_THRESHOLD) {
       threatLine = formatPv(flipped, playPv(flipped, t.pv, LINE_PLIES).san);
       const tm = t.pv[0];
       const legalAfter = !after.isGameOver() && after.moves({ verbose: true }).some((x) => x.from + x.to + (x.promotion ?? '') === tm);
       if (legalAfter) {
         if (threat.mate !== null) threatStillWorks = mateIn(refutation.score) !== null;
-        else if (refutation.pv[0] === tm) threatStillWorks = opponentGain(fenAfter, refutation.pv, me, 2) >= 2;
+        else if (refutation.pv[0] === tm) threatStillWorks = opponentGain(fenAfter, refutation.pv, me, LOSS_PLIES) >= GAIN_THRESHOLD;
         else {
           const afterThreat = new Chess(fenAfter);
           afterThreat.move({ from: tm.slice(0, 2), to: tm.slice(2, 4), promotion: tm[4] });
           const reply = afterThreat.isGameOver() ? { pv: [] as string[] } : await engine.search(afterThreat.fen(), depth);
-          threatStillWorks = opponentGain(fenAfter, [tm, ...reply.pv], me, 2) >= 2;
+          const replyPv = await extendPv(engine, afterThreat.fen(), reply.pv, LOSS_PLIES - 1, depth);
+          threatStillWorks = opponentGain(fenAfter, [tm, ...replyPv], me, LOSS_PLIES) >= GAIN_THRESHOLD;
         }
       }
     }
@@ -150,7 +174,7 @@ export async function computeErrorDetail(engine: Engine, fenBefore: string, myUc
     mateForMeBefore: mateIn(best.score),
     playedKeepsMate,
     mateAgainstMeAfter: after.isGameOver() ? null : mateIn(refutation.score),
-    refutationGain2: opponentGain(fenAfter, refutation.pv, me, 2),
+    refutationGain: opponentGain(fenAfter, refutation.pv, me, LOSS_PLIES),
     threat,
     threatStillWorks,
   };

@@ -2,6 +2,7 @@
 // analyse des parties importées : les plus récentes d'abord, seulement depuis le 16/11/2026 par défaut
 // (bouton pour les anciennes), une à une, interrompable, avec progression et temps restant estimé.
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { detailRefresh } from './detailRefresh';
 import {
   bgAnalysis, describeReport, getChesscomUser, importChesscom, importPgnText, pendingImports, setChesscomUser,
   startAnalysis, stopAnalysis,
@@ -17,6 +18,7 @@ export default function ChesscomImport() {
   const [msg, setMsg] = useState<{ text: string; bad?: boolean } | null>(null);
   const [pending, setPending] = useState({ recent: 0, old: 0 });
   const bg = useSyncExternalStore(bgAnalysis.subscribe, bgAnalysis.get);
+  const refresh = useSyncExternalStore(detailRefresh.subscribe, detailRefresh.get);
   const analysing = bg.running && bg.scope && bg.p ? { scope: bg.scope, p: bg.p } : null;
   const [pgn, setPgn] = useState('');
   const [pgnColor, setPgnColor] = useState<'w' | 'b' | ''>('');
@@ -108,6 +110,7 @@ export default function ChesscomImport() {
           <button onClick={() => analyse('old')}>Analyser aussi les anciennes ({pending.old})</button>
         )}
         {analysing && <button onClick={stopAnalysis}>Arrêter l’analyse</button>}
+        {refresh.running && <p className="muted small" data-testid="detail-refresh">Recalcul des motifs (nouvelle mesure) : {refresh.done}/{refresh.total} erreurs…</p>}
       </div>
       {busy && <p className="pulse muted">{busy}</p>}
       {analysing && (

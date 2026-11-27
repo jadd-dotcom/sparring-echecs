@@ -109,7 +109,7 @@ const GREEN = /30,\s*160,\s*60/, RED = /220,\s*40,\s*40/;
       uci, san: sans, result: '0-1', score: 0, termination: 'Abandon', ratingBefore: 900, ratingAfter: 900, botElo: 0,
       ext: { site: 'chess.com', me: { name: 'moi', rating: 450 }, opp: { name: 'Menaceur', rating: 500 }, timeClass: 'rapid' },
       analysis: [an(0), an(2), an(4), an(6, { bestUci: 'd4e3', bestSan: 'Qe3', wpAfter: 5, drop: 50, severity: 'blunder',
-        detail: { v: 2, depth: 12, bestLine: '4. Qe3 Nf6', bestMaterial: 0, refutation: '4… Nxd4', refutationMaterial: -9, threatLine: '4… Nxd4', motifs: ['menace-ignoree'], motif: 'menace-ignoree' } })],
+        detail: { v: 3, depth: 12, bestLine: '4. Qe3 Nf6', bestMaterial: 0, refutation: '4… Nxd4', refutationMaterial: -9, threatLine: '4… Nxd4', motifs: ['menace-ignoree'], motif: 'menace-ignoree' } })],
     });
   });
   // File vide (positions du répertoire repoussées) : la recherche des cartes « Lis la menace » se lance.

@@ -25,6 +25,13 @@ describe('motifs sur positions connues (Stockfish)', { timeout: 60000 }, () => {
     expect(d.refutation).toMatch(/^2… Bxg4/);
     expect(d.refutationMaterial).toBeLessThanOrEqual(-8);
   });
+  it('fourchette de cavalier avec échec : 1.e4 e5 2.Nf3 Nc6 3.Nc3 Nf6 4.Nb5 Qe7?? (Nxc7+ puis Nxa8) = pièce laissée en prise', async () => {
+    const { fen, uci, me } = setup(['e4', 'e5', 'Nf3', 'Nc6', 'Nc3', 'Nf6', 'Nb5'], 'Qe7');
+    const d = await computeErrorDetail(engine, fen, uci, me);
+    expect(d.refutation).toMatch(/^5\. Nxc7\+ Kd8 6\. Nxa8/);
+    expect(d.motif).toBe('piece-en-prise');
+    expect(d.v).toBe(3);
+  });
   it('menace ignorée : 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.a3?? (Nxd4)', async () => {
     const { fen, uci, me } = setup(['e4', 'e5', 'd4', 'exd4', 'Qxd4', 'Nc6'], 'a3');
     const d = await computeErrorDetail(engine, fen, uci, me);

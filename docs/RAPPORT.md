@@ -485,3 +485,17 @@ pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur �
 - Tests : `src/lib/traps.test.ts` (données, verdicts, maîtrise sur deux jours, chutes dans mes parties), section du
   rapport ; `tests/traps.cjs` (leçon, un piège défendu, un piège puni, une chute, indices, maîtrise → révision,
   rapport).
+
+## Refonte, étape 1 : mesure des motifs (27/11)
+- « Pièce laissée en prise » ne regardait que 2 demi-coups de la réfutation : une fourchette avec échec (il donne
+  échec, mon roi bouge, il prend) finissait en « Autre ». Le gain de l'adversaire est maintenant mesuré sur 4
+  demi-coups (lui, moi, lui, moi), seuil 2 points ; même horizon pour la menace de « Menace ignorée » (et pour savoir
+  si elle marche encore après mon coup). Quand la variante de Stockfish est écourtée, elle est prolongée par de
+  nouvelles recherches jusqu'à l'horizon.
+- « Autre » s'appelle « Erreur de position (pas de perte de matériel tout de suite) ».
+- Version du détail : 3. Toutes les parties analysées sont recalculées en arrière-plan au démarrage, des plus
+  récentes aux plus anciennes, une erreur après l'autre (pause pendant une partie contre Maia, reprise ensuite ;
+  progression dans Réglages → Chess.com). L'objectif, son point de départ, la revue et le rapport se mettent à jour.
+- Tests : `motifs.sf.test.ts` (vrai Stockfish : 4.Nb5 Qe7?? 5.Nxc7+ Kd8 6.Nxa8 = « Pièce laissée en prise »),
+  `facts.test.ts` (1 pion sur 2 demi-coups, la tour sur 4), `detailRefresh.test.ts` ; `tests/motifs.cjs` (un détail
+  ancien recalculé au démarrage, revue, rapport).
