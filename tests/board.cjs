@@ -91,7 +91,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   const sl = await p.evaluate(() => window.__soundLog.filter((x) => x === 'bad').length);
   assert(sl >= 1, 'son d’erreur joué sur la mauvaise réponse');
   await p.screenshot({ path: OUT + '/b-3-epreuve.png' });
-  for (let i = 2; i <= 3; i++) { await p.getByRole('button', { name: 'Recommencer' }).tap(); r = await runTest(); }
+  for (let i = 2; i <= 3; i++) { await p.getByRole('button', { name: 'Refaire' }).tap(); r = await runTest(); }
   assert(/Niveau validé/.test(r), '1a validé après 3 réussites : ' + r.replace(/\s+/g, ' '));
   let prog = await meta('boardProgress');
   assert(prog.levels['1a'].validated && prog.levels['1a'].passes === 3 && /bonnes réponses/.test(prog.levels['1a'].best), 'progression enregistrée (meilleur score : ' + prog.levels['1a'].best + ')');

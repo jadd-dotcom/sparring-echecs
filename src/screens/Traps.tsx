@@ -22,6 +22,7 @@ export default function Traps({ id, mode }: { id?: string; mode?: 'defend' | 'pu
   const trap = TRAPS.find((t) => t.id === id);
   if (!prog) return null;
 
+  const nextTrap = trap ? TRAPS[(TRAPS.indexOf(trap) + 1) % TRAPS.length] : undefined;
   if (trap && mode) {
     return (
       <TrapExercise key={`${trap.id}-${mode}`} trap={trap} mode={mode}
@@ -36,6 +37,7 @@ export default function Traps({ id, mode }: { id?: string; mode?: 'defend' | 'pu
             ? <button className="primary" onClick={() => go({ name: 'traps', id: trap.id, mode: 'punish' })}><Swords aria-hidden className="ico" />Punis-le</button>
             : activeStep() === 'trap' ? <SessionBack step="trap" />
               : <button onClick={() => go({ name: 'traps', id: trap.id, mode: 'defend' })}><Shield aria-hidden className="ico" />Défends-toi</button>}
+          {nextTrap && <button onClick={() => go({ name: 'traps', id: nextTrap.id, mode })} data-testid="trap-next">Suivant</button>}
           <button onClick={() => go({ name: 'traps', id: trap.id })}>La leçon</button>
         </>} />
     );

@@ -16,6 +16,7 @@ import PlayMenu from './screens/PlayMenu';
 import Training from './screens/Training';
 import Progress from './screens/Progress';
 import GoalDetail from './screens/GoalDetail';
+import OpeningPage from './screens/OpeningPage';
 import TabBar from './TabBar';
 import { parentOf } from './nav';
 import OpeningLessonScreen from './screens/OpeningLesson';
@@ -86,14 +87,15 @@ export default function App() {
         {route.name === 'review' && <Review key={route.id} id={route.id} />}
         {route.name === 'revise' && <Revise key={`${route.opening ?? ''}-${route.only ?? ''}`} opening={route.opening} only={route.only} />}
         {route.name === 'cards' && <Cards />}
-        {route.name === 'lines' && <PlayLines key={route.id} id={route.id} />}
+        {route.name === 'lines' && <PlayLines key={`${route.id}-${route.sel ? 's' : ''}`} id={route.id} sel={route.sel} />}
+        {route.name === 'opening' && <OpeningPage key={route.id} id={route.id} tab={route.tab} />}
         {route.name === 'comment' && <Comment key={route.id ?? 'all'} id={route.id} />}
         {route.name === 'openings' && <Openings />}
         {route.name === 'repertoire' && <RepertoireEditor key={route.id} id={route.id} />}
         {route.name === 'stats' && <Stats />}
         {route.name === 'settings' && <Settings />}
         {route.name === 'report' && <Report />}
-        {route.name === 'lesson' && <OpeningLessonScreen key={`${route.id}-${route.part ?? ''}`} id={route.id} part={route.part} />}
+        {route.name === 'lesson' && <OpeningLessonScreen key={`${route.id}-${route.part ?? ''}-${route.stage ?? ''}`} id={route.id} part={route.part} stage={route.stage} />}
         {route.name === 'mates' && <Mates key={`${route.level}-${route.mode}`} level={route.level} mode={route.mode} />}
         {route.name === 'traps' && <Traps key={`${route.id ?? ''}-${route.mode ?? ''}`} id={route.id} mode={route.mode} />}
         {route.name === 'board' && !route.view && <BoardMastery />}

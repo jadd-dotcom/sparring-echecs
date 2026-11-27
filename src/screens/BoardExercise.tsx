@@ -2,7 +2,7 @@
 // épreuve (critères de maîtrise) ou révision d'un chapitre. Niveaux 1a à 6-8 ; 7a/7b ont leurs écrans.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { checkAnswer, expectedLabel, makeQuestion, type Question } from '../lib/board/questions';
-import { levelById, levelUnlocked, median, passesNeeded, testPassed, testRule, type Level } from '../lib/board/levels';
+import { LEVELS, levelById, levelUnlocked, median, passesNeeded, testPassed, testRule, type Level } from '../lib/board/levels';
 import type { SquareStats } from '../lib/board/stats';
 import { getBoardProgress, getBoardStats, saveReview, saveSquareAnswer, saveTest } from '../boardService';
 import { Choices, SquareKeypad, TapBoard, type Flash } from '../boardUi';
@@ -179,10 +179,15 @@ export default function BoardExercise({ id, mode }: { id: string; mode: RunMode 
   const [result, setResult] = useState<RunResult | null>(null);
   const [passes, setPasses] = useState<string>('');
   const [locked, setLocked] = useState<boolean | null>(null);
+  // « Suivant » : le niveau d'après, s'il est débloqué (une fois l'épreuve finie).
+  const [nextLevel, setNextLevel] = useState<Level | null>(null);
   useEffect(() => {
     if (!level) return;
     getBoardProgress().then((p) => {
       setLocked(!levelUnlocked(p, level.id));
+      const i = LEVELS.findIndex((l) => l.id === level.id);
+      const n = i >= 0 ? LEVELS[i + 1] : undefined;
+      setNextLevel(n && levelUnlocked(p, n.id) ? n : null);
       const lp = p.levels[level.id];
       const need = passesNeeded(level.test);
       setPasses(lp?.validated ? 'Niveau validé.' : need > 1 ? `Réussites : ${lp?.passes ?? 0}/${need}.` : '');
@@ -205,7 +210,8 @@ export default function BoardExercise({ id, mode }: { id: string; mode: RunMode 
       )}
       {result && (
         <div className="row">
-          <button className="primary" onClick={() => { setResult(null); setRun((r) => r + 1); }}>Recommencer</button>
+          <button onClick={() => { setResult(null); setRun((r) => r + 1); }} data-testid="redo">Refaire</button>
+          {nextLevel && <button className="primary" onClick={() => go({ name: 'board', view: 'ex', id: nextLevel.id, mode: mode === 'drill' ? 'practice' : mode })} data-testid="next">Suivant</button>}
           <button onClick={() => go({ name: 'board', view: 'lesson', chapter: level.chapter })}>Retour au chapitre</button>
         </div>
       )}

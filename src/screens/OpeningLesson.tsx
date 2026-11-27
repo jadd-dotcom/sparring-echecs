@@ -8,11 +8,15 @@ import {
 import { introduceDrillCards, saveLessonProgress } from '../openings';
 import { fig } from '../lib/notation';
 import { go } from '../router';
-import { ChevronLeft, ChevronRight, CircleCheck } from '../icons';
+import { ChevronLeft, ChevronRight, CircleCheck, Repeat, RotateCcw } from '../icons';
+import { getLessonState, updateLessonState } from '../lessonService';
+import { withBlock } from '../lib/lessonPlan';
 
 type Stage =
   | { kind: 'watch'; block: number; k: number }      // k = demi-coups montrés dans le bloc
-  | { kind: 'replay'; block: number; k: number; tries: number; hint: 'none' | 'square' | 'solution'; done: boolean }
+  | { kind: 'replay'; block: number; k: number; tries: number; hint: 'none' | 'square' | 'solution'; done: boolean;
+      /** Erreurs pendant ce passage ; `loop` : répétition en boucle (tour n, erreurs cumulées). */
+      errs?: number; loop?: { n: number; errors: number } }
   | { kind: 'plan' }
   | { kind: 'model'; k: number }
   | { kind: 'done'; introduced: number; extra?: boolean };
@@ -66,14 +70,54 @@ function lessonBlocksOf(lesson: OpeningLesson): { blocks: Blk[]; mainCount: numb
   return { blocks, mainCount };
 }
 
-export default function OpeningLessonScreen({ id, part }: { id: string; part?: string }) {
+/** Clé d'un bloc dans le sommaire (main:i · extra:<id>:<j>). */
+const keyOfBlock = (b: Blk, i: number) => (b.extra ? `extra:${b.extra.id}:${b.extra.line}` : `main:${i}`);
+
+export default function OpeningLessonScreen({ id, part, stage: stageParam }: { id: string; part?: string; stage?: 'watch' | 'replay' | 'loop' }) {
   const lesson = OPENING_LESSONS.find((l) => l.openingId === id) as OpeningLesson | undefined;
   const [opening, setOpening] = useState<Opening | null>(null);
   const { blocks, mainCount } = useMemo(() => (lesson ? lessonBlocksOf(lesson) : { blocks: [], mainCount: 0 }), [lesson]);
-  const firstExtra = part ? blocks.findIndex((b) => b.extra?.id === part) : -1;
-  const [stage, setStage] = useState<Stage>({ kind: 'watch', block: firstExtra >= 0 ? firstExtra : 0, k: 0 });
+  // Départ : un bloc du sommaire (« Regarder », « Rejouer », « ↻ en boucle »), le plan, la partie type ; ou
+  // l'ancien lien vers un bloc supplémentaire (son identifiant).
+  const startStage = (): Stage => {
+    if (part === 'plan') return { kind: 'plan' };
+    if (part === 'model') return { kind: 'model', k: 0 };
+    let b = part ? blocks.findIndex((x, i) => keyOfBlock(x, i) === part) : -1;
+    if (b < 0 && part) b = blocks.findIndex((x) => x.extra?.id === part);
+    if (b < 0) b = 0;
+    if (stageParam === 'replay' || stageParam === 'loop') {
+      return { kind: 'replay', block: b, k: 0, tries: 0, hint: 'none', done: false, errs: 0, ...(stageParam === 'loop' ? { loop: { n: 1, errors: 0 } } : {}) };
+    }
+    return { kind: 'watch', block: b, k: 0 };
+  };
+  const [stage, setStage] = useState<Stage>(startStage);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => { db.openings.get(id).then((o) => setOpening(o ?? null)); }, [id]);
+  // « Reprendre où je me suis arrêté » : même bloc et même étape → on repart du coup enregistré.
+  useEffect(() => {
+    getLessonState(id).then((st) => {
+      const r = st.resume;
+      if (!r || !part || r.key !== part || r.k <= 0) return;
+      setStage((cur) => (cur.kind === 'watch' && r.stage === 'watch' ? { ...cur, k: r.k } : cur));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+  const curKey = stage.kind === 'watch' || stage.kind === 'replay' ? keyOfBlock(blocks[stage.block], stage.block) : stage.kind === 'plan' ? 'plan' : stage.kind === 'model' ? 'model' : null;
+  // Point de reprise : enregistré à chaque étape (bloc, étape, coup).
+  useEffect(() => {
+    if (!curKey || stage.kind === 'done') return;
+    const st = stage.kind === 'replay' ? (stage.loop ? 'loop' : 'replay') : stage.kind === 'watch' ? 'watch' : stage.kind;
+    const k = 'k' in stage ? stage.k : 0;
+    updateLessonState(id, (s) => ({ ...s, resume: { key: curKey, stage: st, k, at: Date.now() } })).catch(() => {});
+  }, [id, curKey, stage]);
+  // Bloc regardé jusqu'au bout ; plan et partie type vus.
+  useEffect(() => {
+    if (!curKey) return;
+    const seen = (stage.kind === 'watch' && stage.k >= blocks[stage.block].e - blocks[stage.block].s) || stage.kind === 'plan'
+      || (stage.kind === 'model' && !!lesson && stage.k >= lesson.model.moves.length);
+    if (seen) updateLessonState(id, (s) => withBlock(s, curKey, (b) => ({ ...b, watched: (b.watched ?? 0) + 1 }))).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, curKey, stage.kind, 'k' in stage ? stage.k : 0]);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
   const sans = useMemo(() => lesson?.moves.map((m) => m.san) ?? [], [lesson]);
@@ -90,6 +134,20 @@ export default function OpeningLessonScreen({ id, part }: { id: string; part?: s
       timer.current = setTimeout(() => setStage({ ...stage, k: stage.k + 1, tries: 0, hint: 'none' }), OPP_DELAY);
     }
   }, [stage, opening, blocks]);
+
+  // Bloc rejoué : compteurs (rejoué, erreurs, tours de boucle) ; en boucle, on recommence tout seul.
+  useEffect(() => {
+    if (stage.kind !== 'replay' || !stage.done) return;
+    const key = keyOfBlock(blocks[stage.block], stage.block);
+    updateLessonState(id, (st) => withBlock(st, key, (b) => ({
+      ...b, replays: (b.replays ?? 0) + 1, errors: (b.errors ?? 0) + (stage.errs ?? 0), ...(stage.loop ? { loops: (b.loops ?? 0) + 1 } : {}),
+    }))).catch(() => {});
+    if (stage.loop) {
+      const loop = stage.loop;
+      timer.current = setTimeout(() => setStage({ kind: 'replay', block: stage.block, k: 0, tries: 0, hint: 'none', done: false, errs: 0, loop: { n: loop.n + 1, errors: loop.errors + (stage.errs ?? 0) } }), 900);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage.kind, stage.kind === 'replay' && stage.done]);
 
   // Bloc rejoué : ses coups entrent dans le drill.
   useEffect(() => {
@@ -144,7 +202,7 @@ export default function OpeningLessonScreen({ id, part }: { id: string; part?: s
       setStage({ ...stage, k: stage.k + 1, tries: 0, hint: 'none' });
     } else {
       const tries = stage.tries + 1;
-      setStage({ ...stage, tries, hint: tries >= 2 ? 'solution' : 'square' });
+      setStage({ ...stage, tries, hint: tries >= 2 ? 'solution' : 'square', errs: (stage.errs ?? 0) + (stage.tries === 0 ? 1 : 0) });
     }
   }
 
@@ -152,7 +210,8 @@ export default function OpeningLessonScreen({ id, part }: { id: string; part?: s
   const stepIndex = stage.kind === 'watch' ? 0 : stage.kind === 'replay' ? 1 : stage.kind === 'plan' ? 2 : 3;
 
   return (
-    <div className="play">
+    <div className="play lesson-play" data-stage={stage.kind === 'replay' && stage.loop ? 'loop' : stage.kind} data-k={'k' in stage ? stage.k : 0} data-fen={fen}
+      data-expected={movable && cur ? cur.seq[cur.s + (stage as { k: number }).k] : ''} data-key={curKey ?? ''}>
       <div className="board-col">
         <Board fen={fen} orientation={me} movable={movable} onMove={onMove} arrows={arrows} highlight={highlight} />
         {(stage.kind === 'watch' || stage.kind === 'model') && (
@@ -160,6 +219,16 @@ export default function OpeningLessonScreen({ id, part }: { id: string; part?: s
             <button aria-label="Coup précédent" onClick={() => setStage({ ...stage, k: Math.max(0, stage.k - 1) })}><ChevronLeft aria-hidden /></button>
             <button className="primary" disabled={stage.kind === 'watch' ? stage.k >= cur!.e - cur!.s : stage.k >= lesson.model.moves.length}
               onClick={() => setStage({ ...stage, k: stage.k + 1 })}><ChevronRight aria-hidden className="ico" />Coup suivant</button>
+            {stage.kind === 'watch' && <button onClick={() => setStage({ ...stage, k: 0 })} data-testid="block-restart"><RotateCcw aria-hidden className="ico" />Recommencer ce bloc</button>}
+          </div>
+        )}
+        {stage.kind === 'replay' && (
+          <div className="nav row">
+            <button onClick={() => { if (timer.current) clearTimeout(timer.current); setStage({ ...stage, k: 0, tries: 0, hint: 'none', done: false, errs: 0 }); }} data-testid="block-restart">
+              <RotateCcw aria-hidden className="ico" />Recommencer ce bloc</button>
+            {stage.loop
+              ? <button onClick={() => { if (timer.current) clearTimeout(timer.current); setStage({ ...stage, loop: undefined }); }} data-testid="loop-stop">Arrêter la boucle</button>
+              : <button onClick={() => setStage({ ...stage, k: 0, tries: 0, hint: 'none', done: false, errs: 0, loop: { n: 1, errors: 0 } })} data-testid="loop-start"><Repeat aria-hidden className="ico" />En boucle</button>}
           </div>
         )}
       </div>
@@ -206,6 +275,7 @@ export default function OpeningLessonScreen({ id, part }: { id: string; part?: s
             <div className="card">
               {!stage.done ? (
                 <>
+                  {stage.loop && <p className="tag" data-testid="loop-count"><Repeat aria-hidden className="ico sm" /> En boucle : tour {stage.loop.n} · {stage.loop.errors + (stage.errs ?? 0)} erreur{stage.loop.errors + (stage.errs ?? 0) > 1 ? 's' : ''}</p>}
                   <h3>Rejoue tes coups</h3>
                   {positionAfter(seq, ply).turn() === me
                     ? <p>{stage.hint === 'none' ? 'Joue le coup de la leçon.' : stage.hint === 'square'
@@ -215,7 +285,8 @@ export default function OpeningLessonScreen({ id, part }: { id: string; part?: s
                 </>
               ) : (
                 <>
-                  <h3><CircleCheck aria-hidden className="ico good-text" /> {extra ? 'Ligne réussie' : 'Bloc réussi'}</h3>
+                  <h3><CircleCheck aria-hidden className="ico good-text" /> {extra ? 'Ligne réussie' : 'Bloc réussi'}{stage.loop ? ` · tour ${stage.loop.n}` : ''}</h3>
+                  {stage.loop && <p className="muted small" data-testid="loop-count">En boucle : tour {stage.loop.n} terminé, {stage.loop.errors + (stage.errs ?? 0)} erreur{stage.loop.errors + (stage.errs ?? 0) > 1 ? 's' : ''} au total. Le bloc recommence…</p>}
                   <p className="muted small">Ces coups entrent dans ton drill (première révision demain).</p>
                   {extra
                     ? (stage.block + 1 < blocks.length && blocks[stage.block + 1].extra?.id === extra.id

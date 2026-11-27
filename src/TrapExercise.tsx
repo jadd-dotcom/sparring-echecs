@@ -187,7 +187,7 @@ export default function TrapExercise({ trap, mode, onDone, actions, notice, head
             </div>
             <Notation><p>{fig([...trap.line, trap.blunder, ...trap.punish].map((s, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${s}` : s)).join(' '))}</p></Notation>
             <div className="row">
-              <button onClick={restart} data-testid="trap-restart"><RotateCcw aria-hidden className="ico" />Recommencer</button>
+              <button onClick={restart} data-testid="trap-restart"><RotateCcw aria-hidden className="ico" />Refaire</button>
               {actions}
             </div>
           </div>

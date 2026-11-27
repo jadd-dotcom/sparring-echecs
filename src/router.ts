@@ -13,14 +13,15 @@ export type Route =
   | { name: 'review'; id: number }
   | { name: 'revise'; opening?: string; only?: 'threat' }
   | { name: 'cards' }
-  | { name: 'lines'; id: string }
+  | { name: 'lines'; id: string; sel?: boolean }
   | { name: 'comment'; id?: number }
   | { name: 'openings' }
   | { name: 'repertoire'; id: string }
   | { name: 'stats' }
   | { name: 'settings' }
   | { name: 'report' }
-  | { name: 'lesson'; id: string; part?: string }
+  | { name: 'lesson'; id: string; part?: string; stage?: 'watch' | 'replay' | 'loop' }
+  | { name: 'opening'; id: string; tab?: 'lecon' | 'lignes' | 'carrefours' | 'pieges' }
   | { name: 'mates'; level?: MateLevelId; mode?: 'lesson' | 'play' }
   | { name: 'traps'; id?: string; mode?: 'defend' | 'punish' }
   | { name: 'board'; view?: BoardView; chapter?: number; id?: string; mode?: BoardMode };
@@ -32,10 +33,15 @@ export function parse(fullHash: string): Route {
   if (name === 'review' && arg) return { name: 'review', id: Number(arg) };
   if (name === 'comment') return arg ? { name, id: Number(arg) } : { name };
   if (name === 'repertoire' && arg) return { name: 'repertoire', id: arg };
-  if (name === 'lines' && arg) return { name: 'lines', id: arg };
+  if (name === 'lines' && arg) return { name: 'lines', id: arg, ...(query.split('&').includes('sel') ? { sel: true } : {}) };
   if (name === 'lesson' && arg) {
     const part = hash.replace(/^#\/?/, '').split('/')[2];
-    return part ? { name: 'lesson', id: arg, part: decodeURIComponent(part) } : { name: 'lesson', id: arg };
+    const stage = hash.replace(/^#\/?/, '').split('/')[3];
+    return part ? { name: 'lesson', id: arg, part: decodeURIComponent(part), ...(stage === 'watch' || stage === 'replay' || stage === 'loop' ? { stage } : {}) } : { name: 'lesson', id: arg };
+  }
+  if (name === 'opening' && arg) {
+    const tab = hash.replace(/^#\/?/, '').split('/')[2];
+    return { name, id: arg, ...(tab === 'lecon' || tab === 'lignes' || tab === 'carrefours' || tab === 'pieges' ? { tab } : {}) };
   }
   if (name === 'revise') return { name, ...(arg ? { opening: arg } : {}), ...(query.split('&').includes('menace') ? { only: 'threat' as const } : {}) };
   if (name === 'play') return arg ? { name, opening: arg } : { name };
@@ -64,7 +70,9 @@ export function parse(fullHash: string): Route {
 export function go(r: Route) {
   const arg = r.name === 'review' || r.name === 'comment' ? r.id : r.name === 'repertoire' || r.name === 'lesson' || r.name === 'lines' ? r.id
     : (r.name === 'play' || r.name === 'revise') ? r.opening : undefined;
-  if (r.name === 'lesson' && r.part) { location.hash = `/lesson/${encodeURIComponent(r.id)}/${encodeURIComponent(r.part)}`; return; }
+  if (r.name === 'lesson' && r.part) { location.hash = `/lesson/${encodeURIComponent(r.id)}/${encodeURIComponent(r.part)}${r.stage ? '/' + r.stage : ''}`; return; }
+  if (r.name === 'opening') { location.hash = `/opening/${encodeURIComponent(r.id)}${r.tab ? '/' + r.tab : ''}`; return; }
+  if (r.name === 'lines' && r.sel) { location.hash = `/lines/${encodeURIComponent(r.id)}?sel`; return; }
   if (r.name === 'revise' && r.only) { location.hash = `/revise${r.opening ? '/' + encodeURIComponent(r.opening) : ''}?menace`; return; }
   if (r.name === 'play') { location.hash = `/play${r.opening ? '/' + encodeURIComponent(r.opening) : ''}${r.unrated ? '?nc' : ''}`; return; }
   if (r.name === 'traps') { location.hash = `/traps${r.id ? '/' + encodeURIComponent(r.id) + (r.mode ? '/' + r.mode : '') : ''}`; return; }

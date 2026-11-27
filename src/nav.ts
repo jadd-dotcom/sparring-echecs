@@ -2,6 +2,9 @@
 import type { Route } from './router';
 import { TRAPS } from './data/traps';
 import { MATE_LEVELS } from './lib/mates';
+import { BUILTIN_OPENINGS } from './data/openings';
+
+const openingName = (id: string) => BUILTIN_OPENINGS.find((o) => o.id === id)?.name ?? 'L’ouverture';
 
 export type TabId = 'today' | 'jouer' | 'openings' | 'training' | 'progress';
 
@@ -17,7 +20,7 @@ export function tabOf(r: Route): TabId {
   switch (r.name) {
     case 'home': case 'settings': return 'today';
     case 'jouer': case 'play': return 'jouer';
-    case 'openings': case 'lesson': case 'lines': case 'repertoire': return 'openings';
+    case 'openings': case 'lesson': case 'lines': case 'repertoire': case 'opening': return 'openings';
     case 'revise': return r.opening ? 'openings' : 'training';
     case 'progress': case 'stats': case 'report': case 'goal': case 'review': return 'progress';
     case 'comment': return r.id !== undefined ? 'jouer' : 'training';
@@ -35,9 +38,12 @@ export function parentOf(r: Route): { route: Route; label: string } | null {
     case 'comment': return r.id !== undefined ? T('jouer') : T('training');
     case 'review': return { route: { name: 'stats' }, label: 'Statistiques et parties' };
     case 'stats': case 'report': case 'goal': return T('progress');
-    case 'revise': return r.opening ? T('openings') : T('training');
+    case 'revise': return r.opening ? { route: { name: 'opening', id: r.opening }, label: openingName(r.opening) } : T('training');
+    case 'opening': return T('openings');
+    case 'lesson': return { route: { name: 'opening', id: r.id, tab: 'lecon' }, label: openingName(r.id) };
+    case 'lines': return { route: { name: 'opening', id: r.id, tab: 'lignes' }, label: openingName(r.id) };
     case 'cards': return T('training');
-    case 'lines': case 'repertoire': case 'lesson': return T('openings');
+    case 'repertoire': return { route: { name: 'opening', id: r.id }, label: openingName(r.id) };
     case 'mates': return r.level ? { route: { name: 'mates' }, label: 'Mats élémentaires' } : T('training');
     case 'traps': {
       if (!r.id) return T('training');

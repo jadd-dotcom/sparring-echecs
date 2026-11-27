@@ -7,6 +7,7 @@ import { MATE_LESSONS } from '../data/mateLessons';
 import { MATE_LEVELS, STREAK_TO_VALIDATE, MAX_MOVE_LIMIT, EXTRA_MOVES_ALLOWED, stalemateTraps, type MateLevelId } from '../lib/mates';
 import { levelStates, type LevelState } from '../matesService';
 import { go } from '../router';
+import type { MateRun } from '../db';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CircleCheck, Lock, TriangleAlert } from '../icons';
 
 function LevelList() {
@@ -90,18 +91,20 @@ function Lesson({ level }: { level: MateLevelId }) {
 
 export default function Mates({ level, mode }: { level?: MateLevelId; mode?: 'lesson' | 'play' }) {
   const [round, setRound] = useState(0);
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState<MateRun | null>(null);
+  // « Refaire » : la même position ; « Suivant » : une nouvelle position du niveau.
+  const [again, setAgain] = useState<{ fen: string; minMoves: number } | null>(null);
   if (!level || !mode) return <LevelList />;
   if (mode === 'lesson') return <Lesson level={level} />;
   const def = MATE_LEVELS.find((l) => l.id === level)!;
   return (
     <>
-      <MateExercise key={round} level={def} onDone={() => setDone(true)} />
+      <MateExercise key={round} level={def} fen={again?.fen} minMoves={again?.minMoves} onDone={(r) => setDone(r)} />
       {done && (
         <div className="row mate-next">
-          <button className="primary" onClick={() => { setDone(false); setRound(round + 1); }}>Exercice suivant</button>
+          <button onClick={() => { setAgain({ fen: done.fen, minMoves: done.minMoves }); setDone(null); setRound(round + 1); }} data-testid="redo">Refaire</button>
+          <button className="primary" onClick={() => { setAgain(null); setDone(null); setRound(round + 1); }} data-testid="next">Suivant</button>
           <button onClick={() => go({ name: 'mates', level, mode: 'lesson' })}>Revoir la leçon</button>
-          <button onClick={() => go({ name: 'mates' })}>Niveaux</button>
         </div>
       )}
     </>
