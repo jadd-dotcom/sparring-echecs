@@ -48,8 +48,12 @@ export default function App() {
     addEventListener('hashchange', f);
     return () => removeEventListener('hashchange', f);
   }, []);
+  // Écrans avec un échiquier : tout tient dans la hauteur de l'écran (échiquier ajusté, texte qui défile seul).
+  const fit = ['play', 'review', 'revise', 'lesson', 'comment', 'repertoire'].includes(route.name)
+    || (route.name === 'mates' && !!route.level)
+    || (route.name === 'board' && !!route.view && route.view !== 'lesson');
   return (
-    <div className="app">
+    <div className={`app${fit ? ' fit' : ''}`}>
       {route.name !== 'home' && (
         <header className="topbar">
           <button className="ghost back" onClick={() => go({ name: 'home' })}><ChevronLeft aria-hidden className="ico" />Accueil</button>

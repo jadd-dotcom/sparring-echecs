@@ -262,15 +262,16 @@ export function drillPositions(root: RepNode, me: Color): DrillPosition[] {
  * Coup adverse imposé par l'ouverture (ex. GDR : 1.d4 et 2.c4), sinon null.
  * `forced[k]` = k-ième coup de l'adversaire, en SAN. Ignoré s'il est illégal.
  */
-export function forcedMove(fen: string, plyIndex: number, me: Color, forced: string[], startTurn: Color = 'w'): string | null {
+export function forcedMove(fen: string, plyIndex: number, me: Color, forced: string[], startTurn: Color = 'w', rand: () => number = Math.random): string | null {
   if (turnOf(fen) === me) return null;
   const oppFirstPly = startTurn === me ? 1 : 0;
   const k = (plyIndex - oppFirstPly) / 2;
   if (!Number.isInteger(k) || k < 0 || k >= forced.length) return null;
-  try {
-    const m = new Chess(fen).move(forced[k]);
-    return m.from + m.to + (m.promotion ?? '');
-  } catch { return null; }
+  // « d4|c4|Nf3 » : un de ces coups, au hasard (ex. Londres en défense contre 1.d4, 1.c4 ou 1.Nf3).
+  const options = forced[k].split('|').filter((x) => { try { new Chess(fen).move(x); return true; } catch { return false; } });
+  if (!options.length) return null;
+  const m = new Chess(fen).move(options[Math.floor(rand() * options.length)]);
+  return m.from + m.to + (m.promotion ?? '');
 }
 
 export interface BookExit {

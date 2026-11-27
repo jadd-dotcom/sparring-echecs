@@ -52,7 +52,10 @@ async function main() {
     if (only && !only.includes(o.id) && previous[o.id]) {
       // Ouverture non recalculée : on garde sa vérification et sa section du document.
       checks[o.id] = previous[o.id];
-      if (!o.archived) {
+      if (o.archived) {
+        const worst = Math.max(0, ...Object.values(previous[o.id]).map((v) => v.loss));
+        archivedMd.push(`- ${o.name} (${o.color === 'w' ? 'Blancs' : 'Noirs'}) : ${Object.keys(previous[o.id]).length} coups vérifiés, perte max ${worst} cp.`);
+      } else {
         const head = `## ${o.name} (`;
         const i = previousMd.indexOf(head);
         if (i >= 0) { const j = previousMd.indexOf('\n## ', i + 1); md += previousMd.slice(i, j < 0 ? undefined : j + 1).replace(/\*\*(Toutes|Certaines) les lignes[^\n]*\n/, ''); }
@@ -81,7 +84,7 @@ async function main() {
     checks[o.id] = res;
     const ls = lines(root);
     md += `## ${o.name} (${o.color === 'w' ? 'Blancs' : 'Noirs'})\n\n`;
-    md += `Coups adverses imposés : ${o.forced.length ? o.forced.join(', ') : 'aucun'} · ${ls.length} lignes · ${Object.keys(res).length} coups vérifiés · ${((Date.now() - t0) / 1000).toFixed(0)} s\n\n`;
+    md += `Coups adverses imposés : ${o.forced.length ? o.forced.map((f) => f.split('|').join(' ou ')).join(', ') : 'aucun'} · ${ls.length} lignes · ${Object.keys(res).length} coups vérifiés · ${((Date.now() - t0) / 1000).toFixed(0)} s\n\n`;
     md += '```pgn\n' + o.pgn.trim() + '\n```\n\n';
     md += '| # | Ligne | Perte max (cp) | Résultat |\n|---|---|---|---|\n';
     ls.forEach((l, i) => {

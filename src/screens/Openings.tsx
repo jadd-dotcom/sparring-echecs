@@ -77,7 +77,7 @@ export default function Openings() {
           <div className="opening-head">
             <h3>{o.name}</h3>
             <span className="muted">{o.color === 'w' ? 'Blancs' : 'Noirs'} · {n} ligne{n > 1 ? 's' : ''}
-              {o.forced.length > 0 && <> · l’adversaire joue {fig(o.forced.join(', '))}</>}</span>
+              {o.forced.length > 0 && <> · l’adversaire joue {fig(o.forced.map((f) => f.split('|').join(' ou ')).join(', '))}</>}</span>
           </div>
           <div className="row">
             {OPENING_LESSONS.some((l) => l.openingId === o.id) && (

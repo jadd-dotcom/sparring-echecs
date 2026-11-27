@@ -158,7 +158,7 @@ export default function RepertoireEditor({ id }: { id: string }) {
         <div className="card">
           <h2>{opening.name}</h2>
           <p className="muted">{opening.color === 'w' ? 'Blancs' : 'Noirs'} · {allLines.length} lignes
-            {opening.forced.length > 0 && <> · coups adverses imposés : {fig(opening.forced.join(', '))}</>}</p>
+            {opening.forced.length > 0 && <> · coups adverses imposés : {fig(opening.forced.map((f) => f.split('|').join(' ou ')).join(', '))}</>}</p>
           <div className="row wrap">
             <button onClick={() => { setPreview(null); setMode({ kind: 'add', moves: [] }); }}>+ Ligne</button>
             <button onClick={() => setMode({ kind: 'import', text: '' })}>Importer PGN</button>

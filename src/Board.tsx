@@ -116,6 +116,7 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
   }
 
   return (
+    <div className="board-fit">
     <div className="board-wrap">
       <Chessboard
         options={{
@@ -170,6 +171,7 @@ export default function Board({ fen, orientation, movable, onMove, arrows = [], 
           <button className="ghost" onClick={() => setPromo(null)}>Annuler</button>
         </div>
       )}
+    </div>
     </div>
   );
 }

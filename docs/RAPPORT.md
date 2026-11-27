@@ -339,3 +339,29 @@
 - **Accueil** : badge « X erreurs à commenter » (parties importées analysées et « plus tard », jouées depuis le 16/11)
   qui ouvre le même écran, les parties les plus récentes d'abord.
 - Le rapport pour Claude garde le tableau « Ce que je pensais, par motif ».
+
+## Mise en page : tout tient dans l'écran (27/11)
+- Écrans avec un échiquier (partie, revue, révision, drill, leçons, commentaires, Mats, Maîtrise de l'échiquier,
+  répertoire) : l'appli prend exactement la hauteur de l'écran, sans défilement de la page. L'échiquier est un carré
+  = min(largeur disponible, hauteur restante), calculé par une boîte `.board-fit` (requêtes de conteneur CSS), quels
+  que soient les lignes et boutons autour.
+- Portrait : l'échiquier puis une zone de texte d'au moins ~24 % de la hauteur, qui défile seule (les boutons de la
+  partie et l'explication de la revue passent en tête). Paysage : échiquier à gauche, texte et boutons à droite.
+- Test `tests/layout.cjs` : iPhone portrait, iPad portrait, iPad paysage × 12 écrans : page sans dépassement,
+  échiquier entier, les 8 cases de la rangée du haut visibles (rien ne les recouvre), zone de texte visible.
+
+## Système de Londres (27/11)
+- **Blancs** : le Londres sort des Archives, à côté de l'Anglaise (1.d4 → Londres, 1.c4 → Anglaise). Lignes ajoutées
+  contre 1…e6, 1…c5, 1…g6, 1…f5 et 1…e5 (en plus de 1…d5 et 1…Nf6). Stockfish refuse le placement du Londres contre
+  1…c5 (c3 ou e3 : −0,6) : 2.d5. Contre 1…g6 : le cavalier d'abord (2.Nf3), puis Bf4. Contre l'Englund : 4.Bg5 (le
+  piège : 4.Bf4 Qb4+ 5.Bd2 Qxb2 6.Bc3 Bb4 7.Qd2 Bxc3 8.Qxc3 Qc1#) ; contre 4…Qc5, 5.Be3.
+- **Noirs** : nouveau « Londres en défense » contre 1.d4, 1.c4 et 1.Nf3 (…d5, …c6, …Nf6, …Bf5 avant …e6, …e6, …Bd6,
+  …Nbd7, petit roque). Stockfish refuse …Bf5 quand les Blancs ont c4 et Nc3 (cxd5 cxd5 puis Qb3 gagne b7) : …e6
+  d'abord ; contre g3 + Nh4, le fou va en g4. Les anciennes lignes …c5/…g6 contre 1.d4, 1.c4, 1.Nf3 passent dans les
+  Archives ; contre 1.e4, …c5/…g6 reste.
+- **Validation** Stockfish 19, profondeur 20 : aucun de mes coups ne perd plus de 0,5 pion (Londres 13 lignes, Londres
+  en défense 17 lignes) — `docs/REPERTOIRE.md`.
+- **Leçons** au même format : « Londres en défense » (ligne principale, plan, partie type) + bloc « Contre 1.c4, 1.Nf3 et
+  les autres coups blancs » ; Londres : bloc « Contre les autres premiers coups noirs » (dont le piège de l'Englund).
+  `docs/LECONS-OUVERTURES.md`. Drill et parties à thème (l'adversaire commence au hasard par 1.d4, 1.c4 ou 1.Nf3).
+- **Mise à jour** d'un répertoire déjà enregistré : faite une seule fois, sans perdre mes propres lignes.

@@ -12,6 +12,7 @@ export function TapBoard({ side, coords, highlight, flash, onTap, disabled, comp
 }) {
   const cells = SQUARES.map((s) => ({ s, ...screenPos(s, side) })).sort((a, b) => a.row - b.row || a.col - b.col);
   return (
+    <div className={`board-fit tap-fit ${compact ? 'compact' : ''}`}>
     <div className={`tapboard ${compact ? 'compact' : ''}`} data-side={side} role="grid" aria-label="Échiquier">
       {cells.map(({ s, row, col }) => {
         const dark = (row + col) % 2 === 1;
@@ -24,6 +25,7 @@ export function TapBoard({ side, coords, highlight, flash, onTap, disabled, comp
           </button>
         );
       })}
+    </div>
     </div>
   );
 }

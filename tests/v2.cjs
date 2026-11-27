@@ -32,8 +32,9 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByRole('button', { name: /Ouvertures/ }).tap();
   await p.getByRole('heading', { name: 'Anglaise (système fermé)' }).waitFor();
   const all = await p.evaluate(() => window.__db.openings.toArray());
-  assert(all.length === 5 && all.filter((o) => o.archived).map((o) => o.id).sort().join() === 'french,london,qgd',
-    '5 ouvertures pré-chargées : Anglaise et système …c5/…g6 actifs, Londres/GDR/Française archivés');
+  assert(all.length === 7 && all.filter((o) => o.archived).map((o) => o.id).sort().join() === 'french,g6-old,qgd'
+    && all.filter((o) => !o.archived).map((o) => o.id).sort().join() === 'english,g6-system,london,london-def',
+    '7 ouvertures pré-chargées : Anglaise, Londres, …c5/…g6 et Londres en défense actifs ; ancien …c5/…g6 contre 1.d4, GDR, Française archivés');
   await p.screenshot({ path: OUT + '/v2-1-ouvertures.png' });
 
   // --- Anglaise : je joue les Blancs et sors du répertoire dès le 1er coup (1.a3 au lieu de 1.c4)
@@ -159,7 +160,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(cells[1] === '1' && cells[2] === '0 %' && /1 par moi/.test(cells[3]), 'stats Anglaise : 1 partie, 0 % de victoires, 1 sortie par moi');
   const fr = await p.locator('tr', { hasText: 'Dragon accéléré' }).locator('td').allInnerTexts();
   assert(Number(fr[1]) >= 1 && /[1-9] par l’adversaire/.test(fr[3]), `stats système …c5/…g6 : ${fr[1]} partie(s), ${fr[3]}`);
-  assert(await p.locator('tr', { hasText: 'Système de Londres' }).count() === 0, 'stats : les ouvertures archivées sans partie sont masquées');
+  assert(await p.locator('tr', { hasText: 'Gambit Dame refusé' }).count() === 0, 'stats : les ouvertures archivées sans partie sont masquées');
   await p.screenshot({ path: OUT + '/v2-7-stats.png', fullPage: true });
 
   assert(errors.length === 0, 'aucune erreur JS ' + errors.join(' | '));

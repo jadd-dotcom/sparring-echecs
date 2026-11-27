@@ -28,7 +28,7 @@ describe('répertoire Noirs : réponses aux sorties réelles de mes adversaires 
   it('ajouts fusionnés dans le répertoire complet (nouvelle installation) et proposés en mise à jour (rev 1)', () => {
     expect(adds.length).toBe(12);
     for (const l of adds) expect(has(l), l.join(' ')).toBe(true);
-    expect(g6.updates).toEqual([{ rev: 1, pgn: G6_ATTACKS_PGN }]);
+    expect(g6.updates).toEqual([{ rev: 1, pgn: G6_ATTACKS_PGN }, { rev: 2, removeRoot: ['d4', 'c4', 'Nf3'] }]);
   });
 
   it('couvre les sorties vues au moins 2 fois : ♕h5, ♕f3, ♗c4 + ♕f3/♕h5, ♕g3, ♗b5 tôt, 3.c3, 1.e3, 2.d3, 2.c4', () => {
@@ -63,4 +63,73 @@ describe('répertoire Noirs : réponses aux sorties réelles de mes adversaires 
       });
     }
   });
+});
+
+describe('Londres (27/11) : Blancs et « Londres en défense »', async () => {
+  const { LONDON_ADDS_PGN, G6_OLD_PGN } = await import('./openings');
+  const checks = (await import('./repertoire-checks.json')).default as Record<string, Record<string, { loss: number }>>;
+  const { Chess } = await import('chess.js');
+  const { fenKey } = await import('../lib/repertoire');
+  const byId = (id: string) => BUILTIN_OPENINGS.find((o) => o.id === id)!;
+  const firstMoves = (id: string) => parsePgn(byId(id).pgn).root.children.map((c) => c.san);
+
+  it('répertoire actif : Anglaise (1.c4) et Londres (1.d4) avec les Blancs ; …c5/…g6 (1.e4) et Londres en défense (1.d4, 1.c4, 1.Nf3) avec les Noirs', () => {
+    expect(BUILTIN_OPENINGS.filter((o) => !o.archived).map((o) => o.id)).toEqual(['english', 'london', 'g6-system', 'london-def']);
+    expect(firstMoves('english')).toEqual(['c4']);
+    expect(firstMoves('london')).toEqual(['d4']);
+    expect(firstMoves('g6-system').sort()).toEqual(['e3', 'e4']);
+    expect(firstMoves('london-def').sort()).toEqual(['Nf3', 'c4', 'd4']);
+    expect(byId('london').updates).toEqual([{ rev: 1, pgn: LONDON_ADDS_PGN, archived: false }]);
+    expect(byId('london-def').forced).toEqual(['d4|c4|Nf3']);
+  });
+
+  it('anciennes lignes …c5/…g6 contre 1.d4, 1.c4 et 1.Nf3 : dans les Archives', () => {
+    expect(byId('g6-old').archived).toBe(true);
+    expect(parsePgn(G6_OLD_PGN).root.children.map((c) => c.san).sort()).toEqual(['Nf3', 'c4', 'd4']);
+  });
+
+  it('Londres (Blancs) : lignes contre 1…d5, 1…Nf6, 1…e6, 1…c5, 1…g6, 1…f5 et 1…e5, environ 10 de mes coups', () => {
+    const root = parsePgn(byId('london').pgn).root.children[0];
+    expect(root.children.map((c) => c.san).sort()).toEqual(['Nf6', 'c5', 'd5', 'e5', 'e6', 'f5', 'g6']);
+    for (const l of lines(parsePgn(LONDON_ADDS_PGN).root)) expect(l.filter((_, i) => i % 2 === 0).length, l.join(' ')).toBeGreaterThanOrEqual(10);
+    // Gambit Englund : jamais 4.Bf4 (le piège).
+    const englund = lines(parsePgn(byId('london').pgn).root).filter((l) => l[1] === 'e5');
+    expect(englund.length).toBeGreaterThan(0);
+    for (const l of englund) expect(l[6]).toBe('Bg5');
+  });
+
+  it('Londres en défense : même placement (…d5, …c6, …Nf6, …Bf5, …e6, …Bd6, …Nbd7) ; …Bf5 jamais trop tôt contre c4 + Nc3', () => {
+    const ls = lines(parsePgn(byId('london-def').pgn).root);
+    const mine = new Set(ls.flatMap((l) => l.filter((_, i) => i % 2 === 1)));
+    for (const m of ['d5', 'c6', 'Nf6', 'Bf5', 'e6', 'Bd6', 'Nbd7']) expect(mine.has(m), m).toBe(true);
+    for (const l of ls) {
+      const c = new Chess();
+      l.forEach((s, i) => {
+        if (i % 2 === 1 && s === 'Bf5') {
+          // Au moment de …Bf5 : pas à la fois un pion c4 et un cavalier c3 blancs avec le pion e3 qui laisse Qb3 (sauf la ligne principale où e3 précède Nc3).
+          const both = c.get('c4')?.type === 'p' && c.get('c3')?.type === 'n';
+          expect(both, `${l.slice(0, i + 1).join(' ')}`).toBe(false);
+        }
+        c.move(s);
+      });
+    }
+  });
+
+  for (const id of ['london', 'london-def']) {
+    it(`${id} : vérifié par Stockfish, aucun de mes coups ne perd plus de 0,5 pion`, () => {
+      const o = byId(id);
+      for (const l of lines(parsePgn(o.pgn).root)) {
+        const c = new Chess();
+        l.forEach((s, i) => {
+          const fen = c.fen();
+          const m = c.move(s);
+          if ((i % 2 === 0) === (o.color === 'w')) {
+            const k = fenKey(fen) + ' ' + m.from + m.to + (m.promotion ?? '');
+            expect(checks[id]?.[k], `${s} (${l.slice(0, i + 1).join(' ')})`).toBeDefined();
+            expect(checks[id][k].loss, `${s} (${l.slice(0, i + 1).join(' ')})`).toBeLessThanOrEqual(50);
+          }
+        });
+      }
+    });
+  }
 });
