@@ -1,10 +1,10 @@
 // Réglages → Chess.com : pseudo, import de mes parties (API publique), plan B par PGN collé,
 // analyse des parties importées : les plus récentes d'abord, seulement depuis le 16/11/2026 par défaut
 // (bouton pour les anciennes), une à une, interrompable, avec progression et temps restant estimé.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import {
-  analysePending, describeReport, getChesscomUser, importChesscom, importPgnText, pendingImports, setChesscomUser,
-  type AnalysisProgress,
+  bgAnalysis, describeReport, getChesscomUser, importChesscom, importPgnText, pendingImports, setChesscomUser,
+  startAnalysis, stopAnalysis,
 } from './chesscomImport';
 import { ANALYSIS_SINCE, formatEta, type AnalysisScope } from './lib/analysisQueue';
 
@@ -16,11 +16,12 @@ export default function ChesscomImport() {
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ text: string; bad?: boolean } | null>(null);
   const [pending, setPending] = useState({ recent: 0, old: 0 });
-  const [analysing, setAnalysing] = useState<{ scope: AnalysisScope; p: AnalysisProgress } | null>(null);
+  const bg = useSyncExternalStore(bgAnalysis.subscribe, bgAnalysis.get);
+  const analysing = bg.running && bg.scope && bg.p ? { scope: bg.scope, p: bg.p } : null;
   const [pgn, setPgn] = useState('');
   const [pgnColor, setPgnColor] = useState<'w' | 'b' | ''>('');
-  const stopRef = useRef(false);
   const alive = useRef(true);
+  const lastSeen = useRef(bgAnalysis.get().last?.at ?? 0);
 
   useEffect(() => {
     alive.current = true;
@@ -29,8 +30,22 @@ export default function ChesscomImport() {
       setUser(u); setSaved(u);
       await refreshPending();
     })();
-    return () => { alive.current = false; stopRef.current = true; };
+    return () => { alive.current = false; };   // l'analyse continue en arrière-plan
   }, []);
+
+  // Fin d'une série d'analyse (lancée ici ou par l'import automatique) : bilan.
+  useEffect(() => {
+    const last = bg.last;
+    if (bg.running || !last || last.at <= lastSeen.current) return;
+    lastSeen.current = last.at;
+    (async () => {
+      const left = await pendingImports();
+      if (!alive.current) return;
+      setPending({ recent: left.recent.length, old: left.old.length });
+      const rest = left[last.scope].length;
+      setMsg({ text: `${last.n} partie${last.n > 1 ? 's' : ''} analysée${last.n > 1 ? 's' : ''}${rest ? ` · ${rest} restante${rest > 1 ? 's' : ''}` : ''}. Tes erreurs sont dans le paquet de révision.` });
+    })();
+  }, [bg]);
 
   async function refreshPending() {
     const p = await pendingImports();
@@ -43,17 +58,9 @@ export default function ChesscomImport() {
     setMsg({ text: user.trim() ? `Pseudo enregistré : ${user.trim()}.` : 'Pseudo effacé.' });
   }
 
-  async function analyse(scope: AnalysisScope = 'recent') {
-    stopRef.current = false;
+  function analyse(scope: AnalysisScope = 'recent') {
     if (scope === 'old') setMsg(null);   // après un import, on garde le bilan de l'import affiché
-    setAnalysing({ scope, p: { done: 0, total: 0, pct: 0, etaSec: null } });
-    const n = await analysePending(scope, (p) => alive.current && setAnalysing({ scope, p }), () => stopRef.current);
-    if (!alive.current) return;
-    setAnalysing(null);
-    const left = await pendingImports();
-    setPending({ recent: left.recent.length, old: left.old.length });
-    const rest = left[scope].length;
-    setMsg({ text: `${n} partie${n > 1 ? 's' : ''} analysée${n > 1 ? 's' : ''}${rest ? ` · ${rest} restante${rest > 1 ? 's' : ''}` : ''}. Tes erreurs sont dans le paquet de révision.` });
+    startAnalysis(scope).catch((e) => setMsg({ text: (e as Error).message, bad: true }));
   }
 
   async function doImport() {
@@ -100,7 +107,7 @@ export default function ChesscomImport() {
         {pending.old > 0 && !analysing && (
           <button onClick={() => analyse('old')}>Analyser aussi les anciennes ({pending.old})</button>
         )}
-        {analysing && <button onClick={() => { stopRef.current = true; }}>Arrêter l’analyse</button>}
+        {analysing && <button onClick={stopAnalysis}>Arrêter l’analyse</button>}
       </div>
       {busy && <p className="pulse muted">{busy}</p>}
       {analysing && (
@@ -112,7 +119,8 @@ export default function ChesscomImport() {
         </div>
       )}
       {msg && <p className={msg.bad ? 'bad-text' : 'notice'} data-testid="cc-msg">{msg.text}</p>}
-      <p className="muted small">Seulement les parties pas encore importées. Chaque partie est analysée comme une partie contre Maia
+      <p className="muted small">Import automatique à chaque ouverture de l’appli (avec Internet), si ton pseudo est enregistré.
+        {' '}Seulement les parties pas encore importées. Chaque partie est analysée comme une partie contre Maia
         {' '}(classement des coups, cartes de révision pour tes erreurs), marquée « Chess.com », sans effet sur ton niveau Maia.
         {' '}Analyse automatique des parties jouées depuis le {SINCE_LABEL}, les plus récentes d’abord ; les plus anciennes restent
         {' '}importées sans analyse (bouton « Analyser aussi les anciennes »). Tu peux arrêter l’analyse et la reprendre plus tard.</p>

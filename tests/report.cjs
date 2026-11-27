@@ -1,5 +1,6 @@
 // V1.5 — 3 parties de test (moi = Maia 600 joué au toucher), analyse, « ce que je pensais »,
 // révisions ratées, 2 parties Chess.com (PGN enregistrés), puis génération du rapport → docs/exemple-rapport.md
+const { gameEnded, reviewAfterGame } = require('./lib.cjs');
 const { chromium, devices } = require('playwright');
 const { Chess } = require('chess.js');
 const fs = require('fs');
@@ -16,6 +17,8 @@ const THOUGHTS = [
 (async () => {
   const b = await chromium.launch();
   const ctx = await b.newContext({ ...devices['iPad (gen 7) landscape'], deviceScaleFactor: 1, acceptDownloads: true });
+  // Pseudo Chess.com enregistré plus bas (PGN collé) : l'import automatique ne doit rien demander au vrai site.
+  await ctx.route('https://api.chess.com/**', (r) => r.abort());
   const p = await ctx.newPage();
   const errors = [];
   p.on('pageerror', (e) => errors.push(e.message));
@@ -58,11 +61,11 @@ const THOUGHTS = [
       const end2 = Date.now() + 30000;
       for (;;) { const g2 = await cur(); if (!g2 || g2.uci.length > n0) break; if (Date.now() > end2) throw new Error('coup non joué ' + u); await p.waitForTimeout(80); }
     }
-    await p.getByRole('button', { name: 'Analyser mes coups' }).waitFor();
+    await gameEnded(p);
     const last = await p.evaluate(() => window.__db.games.toArray().then((a) => a[a.length - 1]));
     console.log(`   partie ${n + 1} : ${last.myColor === 'w' ? 'Blancs' : 'Noirs'}, ${last.result} (${last.termination}), ${last.uci.length} demi-coups`);
     const t0 = Date.now();
-    await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
+    await reviewAfterGame(p);
     await p.locator('table.classes').waitFor({ timeout: 600000 });
     const ga = await p.evaluate((id) => window.__db.games.get(id), last.id);
     const errs = ga.analysis.filter((a) => a.severity === 'mistake' || a.severity === 'blunder');

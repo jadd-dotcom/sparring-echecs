@@ -1,5 +1,6 @@
 // Mesures du 1er chargement + test hors ligne complet (Playwright, iPad émulé).
 // Usage : PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1 node tests/offline.cjs <url>
+const { gameEnded, reviewAfterGame } = require('./lib.cjs');
 const { chromium, devices } = require('playwright');
 const URL = process.argv[2] || 'http://localhost:4173/sparring-echecs/';
 const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log('ok -', m); };
@@ -54,7 +55,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(imgs.length >= 30 && imgs.every(Boolean) && font, `pièces (${imgs.length} images) et police Inter affichées hors ligne`);
   await p.getByRole('button', { name: /Abandonner/ }).tap();
   await p.locator('.modal-box').getByRole('button', { name: 'Abandonner' }).tap();
-  await p.getByRole('button', { name: 'Analyser mes coups' }).tap();
+  await reviewAfterGame(p);
   await p.locator('table.classes').waitFor({ timeout: 60000 });
   assert(true, 'analyse Stockfish hors ligne');
   assert(errors.length === 0, 'aucune erreur JS ' + errors.join(' | '));

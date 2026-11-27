@@ -4,6 +4,7 @@ import Play from './screens/Play';
 import Review from './screens/Review';
 import Revise from './screens/Revise';
 import Cards from './screens/Cards';
+import Comment from './screens/Comment';
 import Stats from './screens/Stats';
 import Settings from './screens/Settings';
 import Openings from './screens/Openings';
@@ -20,11 +21,28 @@ import './selftest';
 import { go, parse, type Route } from './router';
 import { ChevronLeft } from './icons';
 import { loadPrefs } from './prefs';
+import { autoImportMessage, autoImportOnStart } from './autoImport';
+import { resumeAnalysis, setAnalysisPause } from './chesscomImport';
+
+// L'analyse des parties importées se met en pause pendant une partie contre Maia et son analyse (reprise ensuite).
+setAnalysisPause(() => location.hash.startsWith('#/play') || location.hash.startsWith('#/comment/'));
 
 export default function App() {
   const [route, setRoute] = useState<Route>(() => parse(location.hash));
   const [ready, setReady] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   useEffect(() => { Promise.all([ensureOpenings(), loadPrefs()]).catch(console.error).finally(() => setReady(true)); }, []);
+  // Import Chess.com automatique (une fois par ouverture, avec Internet et un pseudo enregistré).
+  useEffect(() => {
+    if (!ready) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    autoImportOnStart().then((r) => {
+      const m = autoImportMessage(r);
+      if (m) { setToast(m); timer = setTimeout(() => setToast(null), 8000); }
+    }).catch(console.error);
+    return () => { if (timer) clearTimeout(timer); };
+  }, [ready]);
+  useEffect(() => { if (route.name !== 'play' && !(route.name === 'comment' && route.id !== undefined)) resumeAnalysis(); }, [route]);
   useEffect(() => {
     const f = () => setRoute(parse(location.hash));
     addEventListener('hashchange', f);
@@ -37,12 +55,14 @@ export default function App() {
           <button className="ghost back" onClick={() => go({ name: 'home' })}><ChevronLeft aria-hidden className="ico" />Accueil</button>
         </header>
       )}
+      {toast && <div className="toast" role="status" data-testid="auto-import" onClick={() => setToast(null)}>{toast}</div>}
       <main>{ready && <>
         {route.name === 'home' && <Home />}
         {route.name === 'play' && <Play key={`${route.opening ?? ''}-${route.unrated ? 'nc' : ''}`} opening={route.opening} unrated={route.unrated} />}
         {route.name === 'review' && <Review key={route.id} id={route.id} />}
         {route.name === 'revise' && <Revise key={route.opening ?? ''} opening={route.opening} />}
         {route.name === 'cards' && <Cards />}
+        {route.name === 'comment' && <Comment key={route.id ?? 'all'} id={route.id} />}
         {route.name === 'openings' && <Openings />}
         {route.name === 'repertoire' && <RepertoireEditor key={route.id} id={route.id} />}
         {route.name === 'stats' && <Stats />}

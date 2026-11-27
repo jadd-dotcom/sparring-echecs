@@ -163,6 +163,62 @@ export async function analysePending(scope: AnalysisScope, onProgress: (p: Analy
   return done;
 }
 
+// ---------------------------------------------------------------- analyse en arrière-plan (une seule à la fois)
+
+export interface BgAnalysis {
+  running: boolean;
+  scope?: AnalysisScope;
+  p?: AnalysisProgress;
+  /** Dernière série terminée : nombre de parties analysées. */
+  last?: { scope: AnalysisScope; n: number; at: number };
+  /** Série interrompue par une partie contre Maia : reprise ensuite. */
+  paused?: AnalysisScope;
+}
+
+let bg: BgAnalysis = { running: false };
+const bgSubs = new Set<() => void>();
+const setBg = (b: BgAnalysis) => { bg = b; bgSubs.forEach((f) => f()); };
+let bgStop = false;
+/** Pause demandée par l'appli (ex. une partie contre Maia est en cours). */
+let pauseWhen: () => boolean = () => false;
+
+export const bgAnalysis = {
+  get: () => bg,
+  subscribe: (f: () => void) => { bgSubs.add(f); return () => { bgSubs.delete(f); }; },
+};
+
+export function setAnalysisPause(fn: () => boolean) { pauseWhen = fn; }
+
+/**
+ * Lance l'analyse des parties importées en attente (récentes ou anciennes), une seule série à la fois pour toute
+ * l'appli (Réglages, import automatique). Continue quand on change d'écran ; s'interrompt entre deux parties si on
+ * l'arrête ou si une partie contre Maia commence (elle reprend ensuite avec `resumeAnalysis`).
+ */
+export async function startAnalysis(scope: AnalysisScope = 'recent'): Promise<number> {
+  if (bg.running) return 0;
+  bgStop = false;
+  setBg({ running: true, scope, p: { done: 0, total: 0, pct: 0, etaSec: null } });
+  let paused = false;
+  let n = 0;
+  try {
+    n = await analysePending(scope, (p) => setBg({ ...bg, p }), () => {
+      if (bgStop) return true;
+      if (pauseWhen()) { paused = true; return true; }
+      return false;
+    });
+  } finally {
+    setBg({ running: false, last: { scope, n, at: Date.now() }, ...(paused ? { paused: scope } : {}) });
+  }
+  return n;
+}
+
+export function stopAnalysis() { bgStop = true; }
+
+/** Reprend une série interrompue par une partie (sans effet sinon). */
+export function resumeAnalysis() {
+  if (!bg.running && bg.paused && !pauseWhen()) startAnalysis(bg.paused).catch(console.error);
+}
+
 export function describeReport(r: ImportReport): string {
   const parts = [`${r.added} partie${r.added > 1 ? 's' : ''} importée${r.added > 1 ? 's' : ''}`];
   if (r.already) parts.push(`${r.already} déjà présente${r.already > 1 ? 's' : ''}`);
