@@ -53,7 +53,7 @@ export default function PlayMenu() {
             <li key={o.id} className="nav-row">
               <span className="nav-row-title">{o.name} <span className="muted small">({o.color === 'w' ? 'Blancs' : 'Noirs'})</span></span>
               <span className="row">
-                <button className="flat-btn" onClick={() => go({ name: 'lines', id: o.id })}><Repeat aria-hidden className="ico" />Jouer les lignes</button>
+                <button className="flat-btn" onClick={() => go({ name: 'lines', id: o.id })}><Repeat aria-hidden className="ico" />Lignes</button>
                 <button className="flat-btn" disabled={inProgress} onClick={() => go({ name: 'play', opening: o.id })}><BookOpen aria-hidden className="ico" />Partie à thème</button>
               </span>
             </li>

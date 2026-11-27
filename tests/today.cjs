@@ -99,7 +99,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(await p.getByRole('radio', { name: 'Partie comptée' }).getAttribute('aria-checked') === 'true', 'partie comptée par défaut');
   await p.getByRole('radio', { name: 'Partie non comptée' }).tap();
   assert(await p.getByRole('radio', { name: 'Partie non comptée' }).getAttribute('aria-checked') === 'true', 'interrupteur « Partie non comptée »');
-  assert(await p.getByRole('button', { name: 'Jouer les lignes' }).count() >= 4 && await p.getByRole('button', { name: 'Partie à thème' }).count() >= 4, 'raccourcis lignes et partie à thème');
+  assert(await p.getByRole('button', { name: 'Lignes' }).count() >= 4 && await p.getByRole('button', { name: 'Partie à thème' }).count() >= 4, 'raccourcis lignes et partie à thème');
   assert(await p.locator('button.primary').count() === 1, 'une seule action principale');
 
   // ---------- Progrès
