@@ -15,6 +15,8 @@ import type { ErrorDetail } from '../lib/report/motifs';
 import { answerFeedback } from '../sound';
 import { CircleCheck, CircleX, Compass, Lightbulb } from '../icons';
 import Explorer from '../Explorer';
+import { ErrorSuites, Notation, useSuite } from '../Suite';
+import { whyWords } from '../lib/whyWords';
 
 type Try = { uci: string; san: string; ok: boolean; drop: number };
 type End = { solved: boolean; byUser?: Try; skipped?: boolean };
@@ -32,6 +34,7 @@ export default function ReviseMistake({ card, remaining, onNext, onResult }: {
   const [checking, setChecking] = useState(false);
   const [end, setEnd] = useState<End | null>(null);
   const [exploring, setExploring] = useState(false);
+  const suite = useSuite();
   const attempts = useRef(card.attempts);
 
   useEffect(() => {
@@ -106,10 +109,11 @@ export default function ReviseMistake({ card, remaining, onNext, onResult }: {
   return (
     <div className="play" data-best={card.bestUci} data-played={card.playedUci}>
       <div className="board-col">
-        <Board key={card.id} fen={card.fen} orientation={card.myColor} movable={end || checking ? null : card.myColor}
-          onMove={onMove} arrows={arrows} highlight={highlight} />
+        <Board key={card.id} fen={suite.view?.fen ?? card.fen} orientation={card.myColor} movable={end || checking || suite.active ? null : card.myColor}
+          onMove={onMove} arrows={suite.view?.arrows ?? arrows} highlight={suite.view ? {} : highlight} lastMove={suite.view?.lastMove ?? null} />
       </div>
       <aside className="side-col">
+        {suite.panel}
         <div className="card revise-head">
           <p className="muted small" data-testid="origin">
             {origin ? <>{origin.source}{origin.opponent ? <> · contre <b>{origin.opponent}</b></> : null}{origin.date ? <> · {fmtDate(origin.date)}</> : null}
@@ -146,16 +150,24 @@ export default function ReviseMistake({ card, remaining, onNext, onResult }: {
               ? <p><CircleCheck aria-hidden className="ico good-text" /> {end.byUser!.uci === card.bestUci ? <>Bien joué : <b>{fig(end.byUser!.san)}</b>, le meilleur coup.</>
                 : <>Bien joué : <b>{fig(end.byUser!.san)}</b> est presque aussi bon que {fig(card.bestSan)} (−{end.byUser!.drop.toFixed(1)} pts).</>}</p>
               : <p><CircleX aria-hidden className="ico bad-text" /> Solution : <b>{fig(card.bestSan)}</b> (flèche verte).</p>}
-            {detail ? (
-              <div data-testid="why">
-                <p><b>Pourquoi :</b> {whyBest(detail, card.fen, card.playedUci, card.bestSan)}</p>
-                <p>{whyPlayed(detail, card.fen, card.playedUci, card.playedSan, card.severity === 'blunder' ? 'blunder' : 'mistake')}</p>
-              </div>
-            ) : <p className="pulse muted">Explication en cours de calcul…</p>}
+            {detail ? (() => {
+              const [a, b] = whyWords(detail, card.fen, card.playedUci, card.bestUci, card.myColor);
+              return (
+                <div data-testid="why">
+                  <p><b>Pourquoi :</b> {a}</p>
+                  <p>{b}</p>
+                  <ErrorSuites d={detail} fenBefore={card.fen} myUci={card.playedUci} me={card.myColor} open={suite.open} />
+                  <Notation>
+                    <p>{whyBest(detail, card.fen, card.playedUci, card.bestSan)}</p>
+                    <p>{whyPlayed(detail, card.fen, card.playedUci, card.playedSan, card.severity === 'blunder' ? 'blunder' : 'mistake')}</p>
+                  </Notation>
+                </div>
+              );
+            })() : <p className="pulse muted">Explication en cours de calcul…</p>}
             <p className="muted small">{end.solved && failed === 0 && hints <= 1 ? 'Réussie du premier coup : la position reviendra plus tard.' : 'La position reviendra demain.'}</p>
             <div className="row">
-              <button className="primary" onClick={onNext}>Suivante</button>
-              <button onClick={() => setExploring(true)} data-testid="explore-btn"><Compass aria-hidden className="ico" />Explorer</button>
+              <button className="primary" onClick={() => { suite.close(); onNext(); }}>Suivante</button>
+              <button onClick={() => { suite.close(); setExploring(true); }} data-testid="explore-btn"><Compass aria-hidden className="ico" />Explorer</button>
             </div>
           </div>
         )}

@@ -359,6 +359,7 @@ details > summary { cursor: pointer; min-height: 48px; display: flex; align-item
 .app.fit .play > .side-col > * { flex: none; }
 .app.fit .play > .side-col > .actions { order: -2; margin-bottom: 10px; }
 .app.fit .play > .side-col > .explain { order: -1; }
+.app.fit .play > .side-col > .suite { order: -3; }
 .app.fit .play .player-line { padding: 3px 2px; }
 .app.fit .play .player-line .avatar { width: 30px; height: 30px; }
 /* Maîtrise de l'échiquier : consigne, échiquier ajusté, puis clavier ou réponses */
@@ -393,3 +394,11 @@ details > summary { cursor: pointer; min-height: 48px; display: flex; align-item
 .lines-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 4px 2px 8px; font-weight: 600; }
 .lines-banner .tag { font-size: .8rem; }
 ul.plan { padding-left: 1.2em; margin: 4px 0 10px; }
+
+/* « Voir la suite » : la suite se joue sur l'échiquier, une légende en mots par coup */
+.card.suite { border-left: 4px solid var(--blue); }
+.card.suite .suite-caption { font-weight: 700; font-size: 1.05rem; min-height: 2.6em; margin: 4px 0 8px; }
+.suite-btns { flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+details.notation { margin-top: 6px; }
+details.notation > summary { min-height: 40px; font-weight: 400; font-size: .92rem; color: var(--muted); }
+details.notation p { margin: 4px 0; }

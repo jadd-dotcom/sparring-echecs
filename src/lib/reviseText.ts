@@ -4,17 +4,19 @@ import { Chess, type Square } from 'chess.js';
 import { fig } from './notation';
 import { errorReason, firstSan } from './reason';
 import { MOTIF_LABEL, type ErrorDetail } from './report/motifs';
+import { reasonWords } from './whyWords';
 
 /** Premier indice : le motif en mots, sans donner le coup. */
 export function motifHint(d: ErrorDetail, fen: string, playedUci: string): string {
-  const reason = errorReason(d, fen, playedUci);
+  // En mots (« son fou prend ta dame g4 »), sans notation.
+  const reason = reasonWords(d, fen, playedUci, new Chess(fen).turn());
   switch (d.motif) {
     case 'mat-rate':
       return 'Tu as un mat en quelques coups : cherche les échecs.';
     case 'mat-ouvert':
       return 'Ton coup permettait un mat : cherche un coup qui met ton roi à l’abri.';
     case 'menace-ignoree':
-      return `L’adversaire avait une menace${reason ? ` : ${reason}` : ''}. Cherche un coup qui la pare.`;
+      return `L’adversaire avait une menace${reason?.startsWith('il menaçait ceci : ') ? ` : ${reason.slice('il menaçait ceci : '.length)}` : ''}. Cherche un coup qui la pare.`;
     case 'piece-en-prise':
       return `Ton coup laissait une pièce sans défense${reason ? ` (${reason})` : ''}. Cherche un coup qui garde tes pièces protégées.`;
     case 'gain-rate': {

@@ -50,6 +50,27 @@ const GREEN = /30,\s*160,\s*60/, RED = /220,\s*40,\s*40/;
   await p.locator('table.classes').waitFor();
   assert((await p.evaluate((id) => window.__db.games.get(id), id)).uci.length === 4, '« Quitter » : retour à la revue, rien n’est enregistré');
 
+  // ---------------- « Voir la suite » (revue de 2.Qg4??) : la suite se joue sur l'échiquier, légende en mots
+  await p.locator('.moves .mv').nth(2).tap();
+  await p.getByRole('button', { name: 'Je ne sais pas' }).tap();
+  await p.getByText('Motif :').waitFor();
+  assert(await p.getByText('Réfutation :').isVisible() === false, 'la suite en notation est repliée (« Afficher la notation »)');
+  await p.getByTestId('suite-mine').tap();
+  await p.getByTestId('suite').waitFor();
+  const cap1 = await p.getByTestId('suite-caption').innerText();
+  assert(/^Son fou prend ta dame g4/.test(cap1), '1er coup de la suite en mots : ' + cap1);
+  assert(await strokes(p, RED) === 1 && await strokes(p, GREEN) === 0, 'coup adverse : une flèche rouge');
+  assert(/coup 1\/\d/.test(await p.getByTestId('suite').innerText()), 'compteur de coups');
+  await p.getByRole('button', { name: 'Coup suivant de la suite' }).tap();
+  const cap2 = await p.getByTestId('suite-caption').innerText();
+  assert(cap2 !== cap1 && /^(Ton|Ta|Tu) /.test(cap2), '▶ : coup suivant, le mien, en mots : ' + cap2);
+  assert(await strokes(p, GREEN) === 1 && await strokes(p, RED) === 0, 'mon coup : une flèche verte');
+  await p.screenshot({ path: OUT + '/ex-2-suite.png' });
+  await p.getByRole('button', { name: 'Coup précédent de la suite' }).tap();
+  assert(await p.getByTestId('suite-caption').innerText() === cap1, '◀ : retour au coup précédent');
+  await p.getByTestId('suite').getByRole('button', { name: 'Fermer' }).tap();
+  assert(await p.getByTestId('suite').count() === 0, '« Fermer » referme la suite');
+
   assert(errors.length === 0, 'aucune erreur JS ' + errors.join(' | '));
   await b.close();
 })().catch((e) => { console.error(e); process.exit(1); });

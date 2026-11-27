@@ -34,7 +34,7 @@ const RED = 'rgba(220,40,40,.85)';
   await p.getByRole('button', { name: 'Je voulais attaquer autre chose' }).tap();
   await p.getByText('Motif :').waitFor();
   const sentence = (await p.locator('.move-sentence').innerText()).replace(/\s+/g, ' ');
-  assert(/♔e2 est une (erreur|gaffe) : tu pouvais prendre le ♗f2 avec ♔xf2 .*\(gain raté\)/.test(sentence), 'revue : ' + sentence);
+  assert(/♔e2 est une (erreur|gaffe) : tu pouvais gagner du matériel : ton roi prend son fou f2 \(gain raté\)/.test(sentence), 'revue (raison en mots) : ' + sentence);
   await p.screenshot({ path: OUT + '/rv-0-revue.png' });
 
   // Carte créée pour 4.Ke2 ; on la rend due aujourd'hui.
@@ -88,8 +88,12 @@ const RED = 'rgba(220,40,40,.85)';
   await p.getByTestId('why').waitFor({ timeout: 60000 });
   const res = (await p.getByTestId('revise-result').innerText()).replace(/\s+/g, ' ');
   assert(/Solution : ♔xf2/.test(res), 'solution : ♔xf2');
-  assert(/Pourquoi : ♔xf2 prend le ♗f2, qui n’était pas assez défendu \(suite : 4\. ♔xf2 .*bilan matériel pour toi : \+\d\)/.test(res), 'pourquoi le bon coup est bon : ' + res);
-  assert(/♔e2 était une (erreur|gaffe) \(gain raté\) : il laisse filer le ♗f2\. Après ♔e2 : 4… .*bilan matériel pour toi : /.test(res), 'pourquoi mon coup était moins bon (suite qui le réfute) : ' + res);
+  assert(/Pourquoi : Le bon coup gagne du matériel : ton roi prend son fou f2\. Ton coup laisse passer ce gain\./.test(res), 'pourquoi, en 2 phrases en mots : ' + res);
+  const why = (await p.getByTestId('why').innerText()).replace(/\s+/g, ' ');
+  assert(!/\b\d+\.\s|\d+…|[♔♕♖♗♘]/.test(why.replace('Afficher la notation', '')), 'pas de suite en notation dans le « Pourquoi » : ' + why);
+  await p.getByText('Afficher la notation').tap();
+  const nota = (await p.locator('details.notation').innerText()).replace(/\s+/g, ' ');
+  assert(/♔xf2 prend le ♗f2.*suite : 4\. ♔xf2/.test(nota) && /Après ♔e2 : 4… /.test(nota), 'notation disponible derrière « Afficher la notation » : ' + nota);
   assert(/reviendra demain/.test(res), 'ratée : la carte revient demain');
   await p.screenshot({ path: OUT + '/rv-3-explication.png' });
   const after = await p.evaluate((cid) => window.__db.cards.get(cid), card.id);
