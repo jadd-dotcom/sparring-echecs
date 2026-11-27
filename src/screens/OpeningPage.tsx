@@ -22,7 +22,10 @@ import { trapStatus, type TrapProgress } from '../lib/traps';
 import { fig } from '../lib/notation';
 import { Check, Eye, Play, Repeat, Shield, Swords } from '../icons';
 import { saveLineSession } from '../linesService';
-import { crossroadCounts } from '../crossroadService';
+import { crossroadCounts, CROSS_MASTERED_STEP, getCrossProgress } from '../crossroadService';
+import { crossQueue, type CrossProgress } from '../lib/crossroadTrainer';
+import { signpostSentence } from '../lib/signposts';
+import { dayKey } from '../lib/srs';
 
 type Tab = 'lecon' | 'lignes' | 'carrefours' | 'pieges';
 const TAB_LABEL: Record<Tab, string> = { lecon: 'Leçon', lignes: 'Lignes', carrefours: 'Carrefours', pieges: 'Pièges' };
@@ -128,6 +131,7 @@ function LinesTab({ o, ordered, lp, cs }: { o: Opening; ordered: string[][]; lp:
   const [sel, setSel] = useState<Set<string>>(new Set());
   const [start, setStart] = useState<'carrefour' | 'first'>('carrefour');
   const [loop, setLoop] = useState(false);
+  const [both, setBoth] = useState(false);
   const lesson = OPENING_LESSONS.find((l) => l.openingId === o.id);
   const statusOf = (l: string[]) => lp.lines[lineKey(l)]?.status;
   const keep = (l: string[]) => {
@@ -138,7 +142,7 @@ function LinesTab({ o, ordered, lp, cs }: { o: Opening; ordered: string[][]; lp:
   const shown = ordered.filter(keep);
   const toggle = (k: string) => setSel((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; });
   async function train(keys: string[], opts: { start: 'carrefour' | 'first'; loop: boolean }) {
-    await saveLineSession({ openingId: o.id, keys, start: opts.start, loop: opts.loop, i: 0 });
+    await saveLineSession({ openingId: o.id, keys, start: opts.start, loop: opts.loop, i: 0, both });
     go({ name: 'lines', id: o.id, sel: true });
   }
   const row = (l: string[]) => {
@@ -181,6 +185,7 @@ function LinesTab({ o, ordered, lp, cs }: { o: Opening; ordered: string[][]; lp:
           <button role="radio" aria-checked={start === 'first'} className={start === 'first' ? 'on' : ''} onClick={() => setStart('first')}>Au 1er coup</button>
         </div>
         <label className="unrated-toggle"><input type="checkbox" checked={loop} onChange={(e) => setLoop(e.target.checked)} /> En boucle</label>
+        <label className="unrated-toggle both-toggle"><input type="checkbox" checked={both} onChange={(e) => setBoth(e.target.checked)} data-testid="both-toggle" /> Les deux camps</label>
         <button className="primary main-action" disabled={!sel.size} onClick={() => train(ordered.map(lineKey).filter((k) => sel.has(k)), { start, loop })} data-testid="train-sel">
           Entraîner la sélection ({sel.size})</button>
       </div>
@@ -191,17 +196,33 @@ function LinesTab({ o, ordered, lp, cs }: { o: Opening; ordered: string[][]; lp:
 // ---------------------------------------------------------------- Carrefours (liste ; exercice : mode Carrefours)
 
 function CrossroadsTab({ o }: { o: Opening }) {
+  const [p, setP] = useState<CrossProgress | null>(null);
+  useEffect(() => { getCrossProgress(o.id).then(setP); }, [o.id]);
   const root = treeOf(o);
   const cards = signpostCards(root, o.color);
   const cs = crossroads(root, o.color);
+  if (!p) return null;
+  const today = dayKey();
+  const q = crossQueue(cards, p, today);
+  const due = q.filter((c) => p[c.id]).length;
+  const state = (id: string) => (!p[id] ? 'nouvelle' : p[id].step >= CROSS_MASTERED_STEP ? 'maîtrisée' : p[id].due <= today ? 'à revoir' : 'en cours');
   return (
     <>
-      <p className="muted">Un carrefour : une position où son coup change ta réponse. Une carte par coup-panneau ({cards.length}).</p>
+      <p className="muted">Un carrefour : une position où son coup change ta réponse. Une carte par coup-panneau ({cards.length}) :
+        {' '}« Sur quelle ligne es-tu ? », puis ton coup.</p>
+      <button className="primary main-action" disabled={!q.length} onClick={() => go({ name: 'crossroads', id: o.id })} data-testid="cross-train">
+        Entraîner les carrefours ({due} à revoir · {q.length - due} nouvelle{q.length - due > 1 ? 's' : ''})</button>
       <ul className="cross-list">
         {cs.map((c) => (
           <li key={c.path.join(' ')} className="card flat">
             <p className="muted small">Après {c.path.length ? fig(c.path.map((m, i) => (i % 2 ? '' : `${i / 2 + 1}.`) + m).join(' ')) : 'la position de départ'} :</p>
-            <ul>{c.branches.map((b) => <li key={b.his}><b>{fig(moveLabel(b.ply, b.his))}</b>{b.mine && <> → {fig(moveLabel(b.ply + 1, b.mine))}</>}</li>)}</ul>
+            <ul className="cross-cards">{cards.filter((x) => x.crossroad.path.join(' ') === c.path.join(' ')).map((card) => (
+              <li key={card.id} data-testid="cross-card" data-state={state(card.id)}>
+                <b>{fig(moveLabel(card.ply, card.his))}</b>{card.mine && <> → {fig(moveLabel(card.ply + 1, card.mine))}</>}
+                <span className={`tag ${state(card.id) === 'maîtrisée' ? 'st-good' : state(card.id) === 'à revoir' ? 'st-bad' : 'st-new'}`}>{state(card.id)}</span>
+                <div className="muted small">{fig(signpostSentence(card, o.color))}</div>
+              </li>
+            ))}</ul>
           </li>
         ))}
       </ul>

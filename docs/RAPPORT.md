@@ -548,3 +548,26 @@ pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur �
 - Tests : `src/lib/crossroads.test.ts` (carrefours, arbre, noms), `src/lib/lessonPlan.test.ts` (sommaire, statuts) ;
   `tests/opening.cjs` (en-tête, sommaire, Rejouer, boucle, Recommencer, reprise, sélection au carrefour, Rejouer cette
   ligne, erreur → à refaire, pièges, Refaire / Suivant).
+
+## Refonte, étape 4 : mode Carrefours et « Les deux camps » (27/11)
+- **Carrefour** : position où l'adversaire a au moins 2 coups dans mon arbre ; une carte par **coup-panneau** (109
+  cartes sur le répertoire actif : Anglaise 25, Londres 17, …c5/…g6 43, Londres en défense 24).
+- Exercice (Ouvertures › une ouverture › Carrefours › « Entraîner les carrefours ») : la position juste après son
+  coup (dernier coup surligné, flèche orange, son coup en mots). Q1 « Sur quelle ligne es-tu ? » (choix parmi les lignes
+  de ce carrefour : nom de la leçon, sinon le coup-panneau) ; Q2 : je joue mon coup (tout coup de mon répertoire à cette
+  position est accepté). Indices : 1) la pièce qui a bougé surlignée + « Que vise-t-elle ? » ; 2) la phrase-panneau.
+  Fin : la phrase-panneau, « Refaire » et « Suivant ».
+- **Phrase-panneau** (une par coup-panneau, `src/lib/signposts.ts`) : ce que son coup change → ma réponse, ex. « Il
+  attaque ton pion d5 → tu le soutiens : …c6 ». Règles simples sur la position (prise, échec, attaque nouvelle d'une
+  pièce ou d'un pion du centre, développement, fianchetto, centre ; de mon côté : je prends, je mets à l'abri, je
+  soutiens / défends, je bloque son attaque, je pare l'échec, j'attaque…). Toutes dans **docs/CARREFOURS.md** pour
+  relecture (`scripts/crossroads-doc.ts`).
+- Répétition espacée par carte (réussie = bonne ligne, bon coup du premier coup, sans indice : J+3, J+7… ; sinon
+  demain) ; file du jour : cartes échues puis 8 nouvelles ; progression sur la page de l'ouverture (états nouvelle / en
+  cours / à revoir / maîtrisée, « Carrefours x/y » dans l'en-tête).
+- **« Les deux camps »** (onglet Lignes, case à cocher) : je rejoue la ligne en jouant AUSSI les coups adverses de
+  mémoire (départ au carrefour ou au 1er coup) ; un autre coup adverse de mon arbre fait changer de ligne ; erreurs
+  comptées des deux côtés (« Erreurs : 0 de ton côté, 1 du sien »), et la ligne repasse « à refaire ».
+- Tests : `src/lib/crossroadTrainer.test.ts` (file, choix de ligne, coups acceptés, répétition espacée),
+  `src/lib/signposts.test.ts` ; `tests/crossroads.cjs` (cartes, Q1 / Q2, indices, répétition espacée, progression, les
+  deux camps).
