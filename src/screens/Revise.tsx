@@ -3,7 +3,7 @@ import { fig } from '../lib/notation';
 import Board, { type BoardArrow } from '../Board';
 import { db, DUE_NEW, type Card } from '../db';
 import { addDays, dayKey, INTERVALS, schedule } from '../lib/srs';
-import { markIntroduced, reviewQueue } from '../openings';
+import { markIntroduced, reviewCounts, reviewQueue } from '../openings';
 import { formatLine } from '../lib/repertoire';
 import { uciToSan } from '../analysis';
 import { go } from '../router';
@@ -39,11 +39,13 @@ export default function Revise({ opening, only }: { opening?: string; only?: 'th
   useEffect(() => {
     if (!empty || scan !== 'todo' || opening) return;
     setScan('running');
-    fillThreatCards()
+    // Révision vide mais des « Lis la menace » attendent dans leur étape : pas de nouvelles positions ici.
+    (only ? Promise.resolve(0) : reviewCounts().then((rc) => rc.threat))
+      .then((pending) => (pending ? [] : fillThreatCards()))
       .then((made) => { if (mounted.current && made.length) setQueue(made); })
       .catch(() => {})
       .finally(() => { if (mounted.current) setScan('done'); });
-  }, [empty, scan, opening]);
+  }, [empty, scan, opening, only]);
   const scanning = scan === 'running';
   useEffect(() => {
     db.openings.toArray().then((os) => setOpeningName(Object.fromEntries(os.map((o) => [o.id, o.name]))));

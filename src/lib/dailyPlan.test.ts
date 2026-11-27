@@ -1,6 +1,6 @@
 // Plan du jour : plafond et priorités de la révision, étapes de la séance, piège du jour.
 import { describe, expect, it } from 'vitest';
-import { allowance, nextStep, pickTrap, prioritize, reviewedToday, sessionSteps, type SessionInput } from './dailyPlan';
+import { allowance, nextStep, pickTrap, prioritize, reviewedToday, sessionSteps, splitToday, THREAT_STEP_MAX, type SessionInput } from './dailyPlan';
 
 const card = (id: number, kind: string, due: string, motif?: string) => ({ id, kind, due, createdAt: id, motif, attempts: [] as { date: number; uci: string; ok: boolean }[] });
 
@@ -44,5 +44,25 @@ describe('séance du jour', () => {
     expect(pickTrap(traps, () => false)!.id).toBe('englund');
     expect(pickTrap(traps, (id) => id === 'englund' || id === 'g6')!.id).toBe('berger');
     expect(pickTrap(traps, () => true)).toBeNull();
+  });
+});
+
+describe('séance du jour : « Lis la menace » (5 au plus) et Révision sans doublon', () => {
+  const mk = (kind: 'threat' | 'mistake', i: number) => ({ kind, id: i });
+  const all = [mk('mistake', 1), ...Array.from({ length: 7 }, (_, i) => mk('threat', 10 + i)), mk('mistake', 2), mk('mistake', 3)];
+  it('au plus 5 positions « Lis la menace », retirées de la Révision', () => {
+    const s = splitToday(all, Infinity, 0);
+    expect(s.threat.map((c) => c.id)).toEqual([10, 11, 12, 13, 14]);
+    expect(s.revise.map((c) => c.id)).toEqual([1, 15, 16, 2, 3]);
+    expect(s.threat.length + s.revise.length).toBe(all.length);   // chaque carte comptée une fois
+    expect(s.waiting).toBe(0);
+  });
+  it('plafond : les cartes au-delà attendent ; déjà 3 menaces revues aujourd’hui → 2 de plus', () => {
+    const s = splitToday(all, 6, 3);
+    expect(s.threat.map((c) => c.id)).toEqual([10, 11]);
+    expect(s.revise.map((c) => c.id)).toEqual([1, 12, 13, 14]);
+    expect(s.waiting).toBe(4);
+    expect(splitToday(all, Infinity, 5).threat).toEqual([]);
+    expect(THREAT_STEP_MAX).toBe(5);
   });
 });

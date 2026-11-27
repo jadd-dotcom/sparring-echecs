@@ -30,6 +30,21 @@ export function prioritize<T extends Pick<Card, 'kind' | 'due' | 'createdAt'>>(c
 /** Cartes permises aujourd'hui : plafond moins celles déjà revues (0 = sans limite). */
 export const allowance = (cap: number, done: number) => (cap === 0 ? Infinity : Math.max(0, cap - done));
 
+/** Étape « Lis la menace » de la séance : au plus 5 positions par jour. */
+export const THREAT_STEP_MAX = 5;
+
+/**
+ * Cartes du jour (déjà triées par priorité) : les `left` premières (plafond). L'étape « Lis la menace » en prend au
+ * plus 5 (moins celles déjà revues aujourd'hui) ; la Révision a les autres, sans recompter ces positions. Le reste
+ * attend les jours suivants.
+ */
+export function splitToday<T extends Pick<Card, 'kind'>>(all: T[], left: number, threatDoneToday: number): { threat: T[]; revise: T[]; waiting: number } {
+  const today = left === Infinity ? all : all.slice(0, left);
+  const threat = today.filter((c) => c.kind === 'threat').slice(0, Math.max(0, THREAT_STEP_MAX - threatDoneToday));
+  const inThreat = new Set(threat);
+  return { threat, revise: today.filter((c) => !inThreat.has(c)), waiting: all.length - today.length };
+}
+
 // ---------------------------------------------------------------- séance du jour
 
 export type StepId = 'warmup' | 'trap' | 'threat' | 'revise' | 'game';
@@ -63,7 +78,7 @@ export function sessionSteps(s: SessionInput): StepState[] {
       detail: s.dueChapter ? `chapitre ${s.dueChapter} à revoir` : 'mes cases les plus faibles' },
     { id: 'trap', label: 'Un piège d’ouverture', minutes: 4, done: !s.trap || s.trapDone,
       detail: s.trap ? s.trap.name : 'tous les pièges sont maîtrisés' },
-    { id: 'threat', label: 'Lis la menace', minutes: 5, done: s.threatLeft === 0,
+    { id: 'threat', label: 'Lis la menace', minutes: 5, done: s.threatLeft === 0,   // au plus 5 positions (THREAT_STEP_MAX)
       detail: s.threatLeft ? pl(s.threatLeft, 'position') : s.threatDoneToday ? 'fait' : 'rien aujourd’hui' },
     { id: 'revise', label: 'Révision', minutes: 10, done: s.reviseLeft === 0,
       detail: s.reviseLeft ? pl(s.reviseLeft, 'carte') : s.reviseDoneToday ? 'faite' : 'rien aujourd’hui' },

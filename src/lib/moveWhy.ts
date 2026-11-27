@@ -47,6 +47,35 @@ function pinOf(c: Chess, sq: Square, piece: PieceSymbol, by: Color): { pinned: S
   return null;
 }
 
+const FEM_T: Record<PieceSymbol, boolean> = { p: false, n: false, b: false, r: true, q: true, k: false };
+
+/** Cases strictement entre a et b (même ligne, colonne ou diagonale), sinon []. */
+function between(a: string, b: string): string[] {
+  const fa = a.charCodeAt(0), ra = Number(a[1]), fb = b.charCodeAt(0), rb = Number(b[1]);
+  const df = Math.sign(fb - fa), dr = Math.sign(rb - ra);
+  if (!(fa === fb || ra === rb || Math.abs(fb - fa) === Math.abs(rb - ra))) return [];
+  const out: string[] = [];
+  for (let f = fa + df, r = ra + dr; f !== fb || r !== rb; f += df, r += dr) out.push(String.fromCharCode(f) + r);
+  return out;
+}
+
+/** Ma pièce (cavalier ou plus, vraiment menacée) qu'une de ses pièces à longue portée attaquait à travers `to`, et n'attaque plus. */
+function blockedTarget(before: Chess, after: Chess, to: Square, by: Color): { sq: Square; type: PieceSymbol; by: PieceSymbol; line: string } | null {
+  const opp: Color = by === 'w' ? 'b' : 'w';
+  for (const row of after.board()) for (const p of row) {
+    if (!p || p.color !== by || p.type === 'p' || p.type === 'k' || p.square === to) continue;
+    for (const a of before.attackers(p.square, opp)) {
+      const t = before.get(a)!.type;
+      if (!'bqr'.includes(t) || !between(a, p.square).includes(to) || after.attackers(p.square, opp).includes(a)) continue;
+      // Vraie menace seulement : attaquant moins cher que ma pièce, ou ma pièce sans défense.
+      if (!(VALUE[t] < VALUE[p.type] || before.attackers(p.square, by).length === 0)) continue;
+      const diag = a[0] !== p.square[0] && a[1] !== p.square[1];
+      return { sq: p.square, type: p.type, by: t, line: diag ? 'la diagonale de' : a[0] === p.square[0] ? 'la colonne de' : 'la rangée de' };
+    }
+  }
+  return null;
+}
+
 /** Une phrase : pourquoi ce coup (du point de vue de `me` : « ton » / « son »). */
 export function moveWhy(fenBefore: string, san: string, me: Color, prevMove?: { to: string; captured?: string }): string {
   const c = new Chess(fenBefore);
@@ -87,6 +116,9 @@ export function moveWhy(fenBefore: string, san: string, me: Color, prevMove?: { 
     .map((p) => pinOf(pos, p!.square, p!.type, opp)).filter((x) => x).map((x) => x!.pinned);
   const wasPinned = pinsOn(new Chess(fenBefore)).filter((sq) => sq !== m.from);
   const freed = wasPinned.find((sq) => !pinsOn(c).includes(sq));
+  // Interposition : sa dame / tour / fou attaquait une de mes pièces (cavalier ou plus) à travers la case d'arrivée.
+  const blocked = blockedTarget(new Chess(fenBefore), c, m.to as Square, by);
+  if (blocked) return `${m.piece === 'p' ? `Le pion ${m.to}` : subj} bouche ${blocked.line} ${P(blocked.by, opp)} : ${P(blocked.type, by)} ${blocked.sq} n’est plus attaqué${FEM_T[blocked.type] ? 'e' : ''}.`;
   if (freed && c.get(freed as Square)) return `${subj} va en ${m.to} : ${P(c.get(freed as Square)!.type, by)} ${freed} n’est plus cloué${c.get(freed as Square)!.type === 'q' || c.get(freed as Square)!.type === 'r' ? 'e' : ''}.`;
   const attacked = attackedBy(c, m.to as Square, by);
   // Cibles : une pièce plus précieuse ou non défendue, ou le pion f7 / f2 (roque pas encore fait).
@@ -108,6 +140,12 @@ export function moveWhy(fenBefore: string, san: string, me: Color, prevMove?: { 
     const centerHits = attacked.filter((s) => CENTER.includes(s));
     if (WIDE_CENTER.has(m.to) && Math.abs(Number(m.to[1]) - Number(m.from[1])) === 2) {
       return `Le pion ${m.to} prend de l’espace au centre${centerHits.length ? ` et surveille ${list(centerHits)}` : ''}.`;
+    }
+    // Une pièce attaquée qu'il protège d'abord (la plus chère), sinon le premier soutien.
+    const hit = supports.filter((x) => x.type !== 'p' && c.attackers(x.square, opp).length > 0).sort((a, b) => VALUE[b.type] - VALUE[a.type])[0];
+    if (hit) {
+      const a = c.attackers(hit.square, opp).map((s) => ({ s, p: c.get(s)! })).sort((x, y) => VALUE[x.p.type] - VALUE[y.p.type])[0];
+      return `Le pion ${m.to} protège ${P(hit.type, by)} ${hit.square}, attaqué${FEM_T[hit.type] ? 'e' : ''} par ${P(a.p.type, opp)} ${a.s}.`;
     }
     if (supports.length) return `Le pion ${m.to} soutient ${P(supports[0].type, by)} ${supports[0].square}.`;
     // c3 / c6 avant d4 / …d5 : prépare la poussée centrale.

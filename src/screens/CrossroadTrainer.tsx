@@ -65,7 +65,7 @@ export default function CrossroadTrainer({ id }: { id: string }) {
   const fen = pos.fen();
   const choices = lineChoices(card, lesson);
   const accepted = acceptedReplies(root, card);
-  const sentence = signpostSentence(card, me);
+  const sentence = signpostSentence(card, me, { lesson });
 
   function next() {
     setI(i + 1); setQ1(null); setTries(0); setHints(0); setMsg(null); setEnd(null);
