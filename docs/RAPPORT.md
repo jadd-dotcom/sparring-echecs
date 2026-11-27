@@ -432,3 +432,28 @@ pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur �
   `src/lib/threatCards.test.ts` (choix des positions, ordre, quota), section du rapport ; `tests/explore.cjs`
   (Explorer, « Voir la suite », « Qu'est-ce qu'il menace ? » dans la revue et Explorer, une carte « Lis la menace »
   de bout en bout, section du rapport).
+
+## « Mon objectif » : une règle à la fois (27/11)
+- Carte en haut de l'accueil. Trois objectifs dans l'ordre, un seul actif (`src/lib/goals.ts`) :
+  1. **Ne rien donner** (gaffes « Menace ignorée » + « Pièce laissée en prise ») — « Avant de lâcher la pièce : après
+     mon coup, quels sont SES échecs, SES prises, SES attaques ? »
+  2. **Ne rien laisser passer** (« Gain raté » + « Mat raté ») — « Avant de jouer : quels sont MES échecs, MES prises,
+     MES attaques ? »
+  3. **Tenir mon répertoire** (sortie du répertoire par moi avant la fin de la ligne) — « Dans l'ouverture, je joue
+     mes coups appris, pas des coups au feeling. »
+- Mesure : mes parties analysées (Sparring et Chess.com, 10 coups à moi au moins) jouées depuis le début de
+  l'objectif. Partie « propre » = aucune gaffe (≥ 30 points, motif principal) des motifs de l'objectif ; objectif 3 :
+  aucune sortie du répertoire par moi (même calcul que le rapport : partie à thème → son ouverture ; importée →
+  sortie enregistrée ; sinon mes ouvertures actives de la couleur).
+- Carte : nom et règle en gros, « X parties propres sur les 10 dernières », une pastille par partie (verte / rouge,
+  touchée → la revue), le point de départ (les 10 parties d'avant le début). « À surveiller » sous la carte : sur les
+  10 dernières parties, les gaffes des autres motifs (et les sorties du répertoire).
+- Maîtrisé : 7 propres sur les 10 dernières, 10 parties au moins depuis le début → message, l'objectif suivant
+  devient actif (mesure depuis ce moment). Un objectif maîtrisé qui retombe à 5/10 ou moins (10 dernières parties)
+  redevient actif, avec un message. État dans IndexedDB (clé `goals`), mis à jour à l'accueil et au rapport.
+- Revue : chaque gaffe qui relève de l'objectif actif est marquée « Règle de l'objectif » (carte du coup + icône dans
+  la liste des coups).
+- Rapport pour Claude : section « Objectif en cours » en tête (objectif actif, début, X/10 avec ✓/✗, point de
+  départ, objectifs maîtrisés, À surveiller).
+- Tests : `src/lib/goals.test.ts` (partie propre, mesure, maîtrise, objectif suivant, retour, À surveiller), section
+  du rapport ; `tests/goals.cjs` (marque dans la revue, carte, maîtrise → objectif suivant, rapport).

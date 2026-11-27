@@ -8,6 +8,9 @@ import { buildReport, inaccuraciesToDetail, selectGames, type PeriodKind, type R
 import { repertoireInfoWith, treeOf } from '../openings';
 import { getBoardProgress, getBoardStats } from '../boardService';
 import { dayKey } from '../lib/srs';
+import { loadGoals } from '../goalService';
+import { GOALS, goalProgress, toWatch } from '../lib/goals';
+import { MOTIF_LABEL } from '../lib/report/motifs';
 
 const LAST_KEY = 'lastReportAt';
 
@@ -88,7 +91,15 @@ export default function Report() {
         errors: prog.errors.map((e) => ({ line: e.line.split(' '), ply: e.ply, expected: e.expected, played: e.played, date: e.date })),
       };
     });
-    const report = buildReport({ now, period, games: fresh, allGames: all, cards: await db.cards.toArray(), rep, repertoire, board, lines: linesRep });
+    // « Mon objectif » : objectif actif, progression, point de départ, À surveiller.
+    const gd = await loadGoals(now);
+    const gp = gd.goal ? goalProgress(gd.goal, gd.games, gd.state.since, gd.exits) : null;
+    const goal = {
+      active: gd.goal && gp ? { name: gd.goal.name, rule: gd.goal.rule, since: gd.state.since, last: gp.last, clean: gp.clean, total: gp.total, baseline: gp.baseline } : null,
+      mastered: GOALS.filter((x) => gd.state.mastered[x.id] !== undefined).map((x) => ({ name: x.name, at: gd.state.mastered[x.id]! })),
+      watch: toWatch(gd.goal, gd.games, gd.exits).map((w) => ({ label: w.label === 'repertoire' ? 'sorties du répertoire par moi' : MOTIF_LABEL[w.label], count: w.count })),
+    };
+    const report = buildReport({ now, period, games: fresh, allGames: all, cards: await db.cards.toArray(), rep, repertoire, board, lines: linesRep, goal });
     setGeneratedAt(now);
     setMd(report);
     if (skipped) setMsg(`${skipped} partie${skipped > 1 ? 's' : ''} non analysée${skipped > 1 ? 's' : ''} : elle${skipped > 1 ? 's' : ''} ne compte${skipped > 1 ? 'nt' : ''} que pour les résultats.`);

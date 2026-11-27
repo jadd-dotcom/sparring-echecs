@@ -221,6 +221,33 @@ export interface ReportInput {
   board?: { progress: BoardProgress; stats: SquareStats; today: string };
   /** « Jouer les lignes » : par ouverture, lignes validées dans le tour et erreurs. */
   lines?: LinesReport[];
+  /** « Mon objectif » : objectif actif et sa progression. */
+  goal?: GoalReport;
+}
+
+export interface GoalReport {
+  /** null : tous les objectifs sont maîtrisés. */
+  active: { name: string; rule: string; since: number; last: { date: number; clean: boolean }[]; clean: number; total: number; baseline: { clean: number; n: number } } | null;
+  mastered: { name: string; at: number }[];
+  watch: { label: string; count: number }[];
+}
+
+/** Section « Objectif » (en tête du rapport) : objectif actif, début, X/10, ✓/✗, point de départ, À surveiller. */
+export function goalSection(g: GoalReport): string[] {
+  const L: string[] = ['## Objectif en cours (« Mon objectif » : une règle à la fois)', ''];
+  const a = g.active;
+  if (!a) L.push('Tous les objectifs sont maîtrisés.', '');
+  else {
+    L.push(
+      `**${a.name}** — règle : « ${a.rule} »`, '',
+      `- Début : ${fmtDate(a.since)} ; ${a.total} partie${a.total > 1 ? 's' : ''} mesurée${a.total > 1 ? 's' : ''} depuis (analysées, 10 coups au moins).`,
+      `- **${a.clean}/10** parties propres sur les ${a.last.length} dernières${a.last.length ? ` : ${a.last.map((x) => (x.clean ? '✓' : '✗')).join(' ')}` : ''} (maîtrisé à 7/10, 10 parties au moins).`,
+      `- Point de départ : ${a.baseline.clean}/${a.baseline.n} parties propres sur les ${a.baseline.n} d’avant le début.`,
+    );
+  }
+  if (g.mastered.length) L.push(`- Objectifs maîtrisés : ${g.mastered.map((m) => `${m.name} (${fmtDate(m.at)})`).join(' ; ')}.`);
+  L.push(`- À surveiller (gaffes des autres motifs sur les 10 dernières parties) : ${g.watch.length ? g.watch.map((w) => `${w.label} ×${w.count}`).join(', ') : 'rien'}.`, '');
+  return L;
 }
 
 export interface LinesReport {
@@ -330,7 +357,7 @@ export function threatsSection(cards: Card[], from: number | null): string[] {
   return L;
 }
 
-export function buildReport({ now, period, games, allGames, cards, rep = {}, repertoire = [], board, lines }: ReportInput): string {
+export function buildReport({ now, period, games, allGames, cards, rep = {}, repertoire = [], board, lines, goal }: ReportInput): string {
   const order = [...allGames].sort((a, b) => a.date - b.date);
   const numberOf = (g: Game) => order.findIndex((x) => x.id === g.id) + 1;
   const L: string[] = [];
@@ -343,6 +370,7 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
     '',
     '**Demande :** je suis débutant. À partir de ces données (calculées automatiquement, pas devinées), diagnostique mes lacunes principales, explique-les simplement et propose-moi 3 axes de travail concrets.',
     '',
+    ...(goal ? goalSection(goal) : []),
     '## Définitions',
     '',
     '- **Sources** : *Maia* = partie dans l’appli contre Maia-3, une IA qui imite le jeu humain (compte pour mon niveau) ; *Chess.com* = partie importée de mon compte Chess.com, contre un humain, analysée de la même façon (ne compte pas pour mon niveau).',

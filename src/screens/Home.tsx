@@ -12,6 +12,7 @@ import { dayKey } from '../lib/srs';
 import { errorsToComment } from '../lib/commentQueue';
 import { bgAnalysis } from '../chesscomImport';
 import { fillThreatCards } from '../threatService';
+import GoalCard from '../GoalCard';
 import { MessageCircleQuestion } from '../icons';
 
 export default function Home() {
@@ -51,6 +52,7 @@ export default function Home() {
   return (
     <div className="home">
       <h1>Sparring Échecs</h1>
+      <GoalCard />
       <section className="card rating-card">
         <div className="big rating-num">{Math.round(p.rating)}</div>
         <div className="muted">

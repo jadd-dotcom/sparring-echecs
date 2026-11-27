@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Chess } from 'chess.js';
 import type { Card, Game, MoveAnalysis } from '../../db';
-import { annotatedPgn, buildReport, costliestMoves, gamesToShow, linesSection, opponentExits, threatsSection, repText, selectGames, worstErrors } from './buildReport';
+import { annotatedPgn, buildReport, costliestMoves, gamesToShow, goalSection, linesSection, opponentExits, threatsSection, repText, selectGames, worstErrors } from './buildReport';
 import { parsePgn } from '../repertoire';
 
 const DAY = 86400000;
@@ -263,5 +263,28 @@ describe('section « Lecture des menaces »', () => {
     const md = buildReport({ now: NOW, period, games, allGames: [G1], cards: [card([{ date: NOW - DAY, uci: 'a7a6', ok: false, q: 1 }])] });
     expect(md).toContain('## 7. Lecture des menaces');
     expect(md).toContain('- Lis la menace : 1 tentatives, réussite 0 %');
+  });
+});
+
+describe('section « Objectif » (en tête)', () => {
+  const goal = {
+    active: { name: 'Ne rien donner', rule: 'Avant de lâcher la pièce : après mon coup, quels sont SES échecs, SES prises, SES attaques ?', since: NOW - 5 * DAY,
+      last: [{ date: NOW - 4 * DAY, clean: true }, { date: NOW - 3 * DAY, clean: false }, { date: NOW - DAY, clean: true }], clean: 2, total: 3, baseline: { clean: 4, n: 10 } },
+    mastered: [],
+    watch: [{ label: 'Gain raté', count: 3 }, { label: 'Mat ouvert', count: 1 }],
+  };
+  it('objectif actif, début, X/10, ✓/✗, point de départ, À surveiller', () => {
+    const md = goalSection(goal).join('\n');
+    expect(md).toContain('**Ne rien donner** — règle : « Avant de lâcher la pièce');
+    expect(md).toContain('- **2/10** parties propres sur les 3 dernières : ✓ ✗ ✓');
+    expect(md).toContain('- Point de départ : 4/10 parties propres sur les 10 d’avant le début.');
+    expect(md).toContain('À surveiller (gaffes des autres motifs sur les 10 dernières parties) : Gain raté ×3, Mat ouvert ×1.');
+    expect(goalSection({ active: null, mastered: [{ name: 'Ne rien donner', at: NOW }], watch: [] }).join('\n')).toContain('Tous les objectifs sont maîtrisés.');
+  });
+  it('en tête du rapport, avant les définitions', () => {
+    const { games, period } = selectGames([G1], 'since-last', null, NOW);
+    const md = buildReport({ now: NOW, period, games, allGames: [G1], cards: [], goal });
+    expect(md.indexOf('## Objectif en cours')).toBeGreaterThan(0);
+    expect(md.indexOf('## Objectif en cours')).toBeLessThan(md.indexOf('## Définitions'));
   });
 });
