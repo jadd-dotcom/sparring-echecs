@@ -389,3 +389,46 @@
 - Tests : `src/lib/lineTrainer.test.ts` (ordre et choix des lignes, coups acceptés, bascule y compris par
   transposition, refus 1 et 2, compteur, commentaire de la leçon, plan) ; section du rapport ; `tests/lines.cjs` sur le
   Londres (refus, ligne à refaire reprise en premier, ✓, progression, « Continuer la partie »).
+
+## Explorer, explications en mots, lire les menaces (27/11)
+**Étape 1 — Explorer.** Bouton « Explorer » dans la revue et dans la révision (après la réponse). Je bouge librement
+les pièces des deux camps ; Stockfish (~0,7 s) montre le meilleur coup du camp au trait : flèche verte pour moi, rouge
+pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur « Tu gagnes / Égal / Tu perds » (win%
+≥ 60 / ≤ 40) et bilan matériel en mots. ◀ annule un coup, « Revenir à la position », « Quitter ». Rien n'est enregistré.
+
+**Étape 2 — Explications sans notation.**
+- « Voir la suite » remplace les suites écrites en notation (révision, revue, écran de commentaire) : la suite se
+  joue sur l'échiquier coup par coup (◀ / ▶), une flèche par coup (verte pour moi, rouge pour lui) et une légende
+  en mots, une phrase au plus (`src/lib/words.ts`, règles simples sans moteur) : « Son cavalier prend ton pion f7 »,
+  « … : échec. », « … : il attaque ta dame et ta tour en même temps (fourchette). », « … : ta dame n'est plus
+  défendue. », « … : échec et mat. ». Boutons : « Voir la bonne suite », « Voir la suite après ton coup », « Voir sa
+  menace » (menace ignorée).
+- « Pourquoi » : 2 phrases au plus, en mots (pièce + case), sans suite en notation (`src/lib/whyWords.ts`) ; la
+  raison de la revue et les indices de la révision aussi. La notation reste derrière « Afficher la notation » (replié).
+- Le rapport pour Claude garde la notation.
+
+**Étape 3 — Lire les menaces de l'adversaire.**
+- « Qu'est-ce qu'il menace ? » (revue, Explorer, et à la place de « Afficher les menaces » en partie avec
+  assistance) : on donne le trait à l'adversaire (coup nul, sauf si je suis en échec) et Stockfish cherche son
+  meilleur coup. Vraie menace s'il gagne au moins 20 points de win% par rapport à la position actuelle, ou un mat :
+  flèche rouge + phrase en mots + « Voir la suite ». Sinon : « Pas de menace sérieuse. » (`src/lib/threat.ts`).
+- Cartes « Lis la menace » : positions de mes parties (Sparring et Chess.com) juste après un coup adverse qui a
+  créé une vraie menace (même critère), parée ou non ; les menaces ignorées (motif « Menace ignorée ») d'abord, puis
+  les parties récentes. Tri rapide sans moteur (prise gagnante nouvelle, ou mat en 1 s'il rejouait), puis Stockfish
+  confirme. Au plus 5 nouvelles cartes par jour, puis répétition espacée habituelle. La recherche se fait quand la
+  file de révision est vide (pour ne pas faire attendre Stockfish pendant les autres cartes) et, discrètement, à
+  l'accueil quand rien n'est à revoir.
+  - Q1 : « Il vient de jouer [en mots + flèche orange]. Joue son prochain coup à sa place. » Je bouge une pièce
+    adverse ; accepté : sa menace, un mat, ou un coup qui lui rapporte presque autant (10 points de moins au plus).
+    Indices : 1) la pièce qui vient de bouger, 2) la case visée. « Voir sa menace » après 2 essais ratés ou 2 indices.
+  - Q2 : « Maintenant pare-la » (même position, mon camp), validé comme les autres cartes (meilleur coup, ou à
+    5 points près). Puis l'explication en mots avec « Voir sa menace » / « Voir la bonne suite ».
+  - Réussie (la carte avance) : Q1 du premier coup avec au plus 1 indice, et Q2 du premier coup ; sinon demain.
+  - Liste « Toutes mes cartes » : section « Lis la menace ».
+- Rapport pour Claude : section 7 « Lecture des menaces » — Q1 (lire) et Q2 (parer) réussies / ratées, puis les
+  5 dernières Q1 ratées (FEN, sa menace, coup joué à sa place) ; la révision les compte à part.
+- Tests : `src/lib/words.test.ts` (légendes), `src/lib/whyWords.test.ts`, `src/lib/threat.test.ts` (coup nul,
+  verdict, phrase, réponse acceptée), `src/lib/threat.sf.test.ts` (vrai Stockfish : …Nxd4, Qxf7#, rien, échec),
+  `src/lib/threatCards.test.ts` (choix des positions, ordre, quota), section du rapport ; `tests/explore.cjs`
+  (Explorer, « Voir la suite », « Qu'est-ce qu'il menace ? » dans la revue et Explorer, une carte « Lis la menace »
+  de bout en bout, section du rapport).

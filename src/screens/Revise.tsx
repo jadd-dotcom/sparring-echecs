@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { fig } from '../lib/notation';
 import Board, { type BoardArrow } from '../Board';
 import { db, DUE_NEW, type Card } from '../db';
@@ -8,6 +8,8 @@ import { formatLine } from '../lib/repertoire';
 import { uciToSan } from '../analysis';
 import { go } from '../router';
 import ReviseMistake from './ReviseMistake';
+import ReviseThreat from './ReviseThreat';
+import { fillThreatCards } from '../threatService';
 import MateExercise from '../MateExercise';
 import { MATE_LEVELS } from '../lib/mates';
 import { BookOpen, CircleCheck, CircleX, Crown, Layers } from '../icons';
@@ -23,13 +25,36 @@ export default function Revise({ opening }: { opening?: string }) {
   const [stats, setStats] = useState({ ok: 0, ko: 0 });
 
   const [openingName, setOpeningName] = useState<Record<string, string>>({});
+  useEffect(() => { reviewQueue(opening).then(setQueue); }, [opening]);
+  // Nouvelles cartes « Lis la menace » (au plus 5 par jour) : cherchées quand la file est vide, pour ne pas faire
+  // attendre Stockfish pendant les autres cartes ; elles s'ajoutent alors à la révision.
+  const [scan, setScan] = useState<'todo' | 'running' | 'done'>('todo');
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  const empty = queue !== null && queue.length === 0;
   useEffect(() => {
-    reviewQueue(opening).then(setQueue);
+    if (!empty || scan !== 'todo' || opening) return;
+    setScan('running');
+    fillThreatCards()
+      .then((made) => { if (mounted.current && made.length) setQueue(made); })
+      .catch(() => {})
+      .finally(() => { if (mounted.current) setScan('done'); });
+  }, [empty, scan, opening]);
+  const scanning = scan === 'running';
+  useEffect(() => {
     db.openings.toArray().then((os) => setOpeningName(Object.fromEntries(os.map((o) => [o.id, o.name]))));
-  }, [opening]);
+  }, []);
 
   if (!queue) return null;
   const card = queue[0];
+  if (!card && scanning) {
+    return (
+      <div className="card center" data-testid="threat-scan">
+        <p className="pulse">Je cherche dans tes parties des positions « Lis la menace »…</p>
+        <p className="muted small">Stockfish vérifie les coups adverses qui ont créé une menace (au plus 5 nouvelles positions par jour).</p>
+      </div>
+    );
+  }
   if (!card) {
     return (
       <div className="card center">
@@ -62,6 +87,15 @@ export default function Revise({ opening }: { opening?: string }) {
   }
 
   const nextCard = () => { setOutcome(null); setQueue(queue.slice(1)); };
+  if (card.kind === 'threat') {
+    return (
+      <>
+        <ReviseThreat key={card.id} card={card} remaining={queue.length} onNext={nextCard}
+          onResult={(ok) => setStats((st) => ({ ok: st.ok + (ok ? 1 : 0), ko: st.ko + (ok ? 0 : 1) }))} />
+        {allCards}
+      </>
+    );
+  }
   if (card.kind !== 'drill') {
     return (
       <>

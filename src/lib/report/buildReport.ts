@@ -12,6 +12,7 @@ import { CHAPTERS, chapterValidated, LEVELS, passesNeeded, type BoardProgress } 
 import { weakestSquares, type SquareStats } from '../board/stats';
 import { colorName as squareColor } from '../board/geometry';
 import { THOUGHT_LABEL, THOUGHT_ORDER, THOUGHT_SHORT, type ThoughtTag } from '../thoughts';
+import { THREAT_MIN_GAIN, THREAT_TOLERANCE } from '../threat';
 
 export type PeriodKind = 'since-last' | '7-days' | '20-games';
 
@@ -290,6 +291,45 @@ export function boardSection(b: NonNullable<ReportInput['board']>): string[] {
   return L;
 }
 
+/**
+ * Section « Lecture des menaces » (cartes « Lis la menace ») : réussies / ratées pour Q1 (lire sa menace en jouant
+ * son coup à sa place) et Q2 (la parer), puis les 5 dernières Q1 ratées (FEN, menace, coup joué).
+ */
+export function threatsSection(cards: Card[], from: number | null): string[] {
+  const L: string[] = ['## 7. Lecture des menaces (« Lis la menace »)', ''];
+  const tc = cards.filter((c) => c.kind === 'threat');
+  if (!tc.length) return [...L, 'Aucune carte « Lis la menace » pour l’instant.', ''];
+  const tries = tc.flatMap((c) => c.attempts.filter((t) => t.date >= (from ?? 0)).map((t) => ({ ...t, c })));
+  const q1 = tries.filter((t) => t.q === 1);
+  const q2 = tries.filter((t) => t.q === 2);
+  L.push(
+    `Positions de mes parties juste après un coup adverse qui a créé une vraie menace (s’il pouvait rejouer — coup nul —, il gagnait au moins ${THREAT_MIN_GAIN} points de win% ou matait). Q1 : je joue son prochain coup à sa place (sa menace, ou un coup qui rapporte au plus ${THREAT_TOLERANCE} points de moins, est accepté). Q2 : je la pare.`,
+    '',
+    `Cartes : **${tc.length}** (dont ${tc.filter((c) => c.ignored).length} menaces que j’avais ignorées dans la partie).`,
+    '',
+    '| Question | Réussies | Ratées |', '|---|---|---|',
+    `| Q1 — lire sa menace | ${q1.filter((t) => t.ok).length} | ${q1.filter((t) => !t.ok).length} |`,
+    `| Q2 — la parer | ${q2.filter((t) => t.ok).length} | ${q2.filter((t) => !t.ok).length} |`,
+    '',
+  );
+  const failed = q1.filter((t) => !t.ok).sort((a, b) => b.date - a.date).slice(0, 5);
+  L.push(`### Les ${failed.length} dernières menaces mal lues (Q1 ratée)`, '');
+  if (!failed.length) return [...L, 'Aucune.', ''];
+  L.push('| Date | FEN (après son coup, à moi de jouer) | Sa menace | Coup joué à sa place |', '|---|---|---|---|');
+  for (const t of failed) {
+    let played = '(solution demandée)';
+    if (t.uci) {
+      const f = t.c.fen.split(' ');
+      f[1] = f[1] === 'w' ? 'b' : 'w';
+      f[3] = '-';
+      try { played = new Chess(f.join(' ')).move({ from: t.uci.slice(0, 2), to: t.uci.slice(2, 4), promotion: t.uci[4] }).san; } catch { played = t.uci; }
+    }
+    L.push(`| ${fmtDateTime(t.date)} | \`${t.c.fen}\` | ${t.c.threatSan ?? '?'}${t.c.threatMate ? ' (mat)' : ''} | ${played} |`);
+  }
+  L.push('');
+  return L;
+}
+
 export function buildReport({ now, period, games, allGames, cards, rep = {}, repertoire = [], board, lines }: ReportInput): string {
   const order = [...allGames].sort((a, b) => a.date - b.date);
   const numberOf = (g: Game) => order.findIndex((x) => x.id === g.id) + 1;
@@ -433,9 +473,12 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
   const attempts = cards.flatMap((c) => c.attempts.filter((t) => t.date >= from).map((t) => ({ ...t, kind: c.kind ?? 'mistake', id: c.id })));
   const okN = attempts.filter((t) => t.ok).length;
   const drill = attempts.filter((t) => t.kind === 'drill');
+  const threatTries = attempts.filter((t) => t.kind === 'threat');
+  const mistakeTries = attempts.filter((t) => t.kind !== 'drill' && t.kind !== 'threat');
   push('### Révision (paquet de positions)', '',
     `Cartes vues : **${new Set(attempts.map((t) => t.id)).size}** (${attempts.length} tentative${attempts.length > 1 ? 's' : ''}) ; réussite : **${pct(okN, attempts.length)}**.`,
-    `- Positions issues de mes erreurs : ${attempts.length - drill.length} tentatives, réussite ${pct(attempts.filter((t) => t.kind !== 'drill' && t.ok).length, attempts.length - drill.length)}.`,
+    `- Positions issues de mes erreurs : ${mistakeTries.length} tentatives, réussite ${pct(mistakeTries.filter((t) => t.ok).length, mistakeTries.length)}.`,
+    `- Lis la menace : ${threatTries.length} tentatives, réussite ${pct(threatTries.filter((t) => t.ok).length, threatTries.length)} (détail en section 7).`,
     `- Drill d’ouvertures : ${drill.length} tentatives, réussite ${pct(drill.filter((t) => t.ok).length, drill.length)}.`,
     '');
 
@@ -490,11 +533,13 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
     push('| FEN | Trait | Bon coup | Échecs / tentatives | Origine |', '|---|---|---|---|---|');
     for (const { c, fails } of failed) {
       const good = c.kind === 'drill' ? (c.acceptSan ?? [c.bestSan]).join(' ou ') : c.kind === 'mate' ? `mater (mat en ${c.minMoves})` : c.bestSan;
-      push(`| \`${c.fen}\` | ${colorName(c.myColor)} | ${good} | ${fails} / ${c.attempts.length} | ${c.kind === 'drill' ? 'drill d’ouverture' : c.kind === 'mate' ? 'mat élémentaire raté' : `erreur (j’avais joué ${c.playedSan})`} |`);
+      const origin = c.kind === 'drill' ? 'drill d’ouverture' : c.kind === 'mate' ? 'mat élémentaire raté' : c.kind === 'threat' ? `Lis la menace (sa menace : ${c.threatSan})` : `erreur (j’avais joué ${c.playedSan})`;
+      push(`| \`${c.fen}\` | ${colorName(c.myColor)} | ${good} | ${fails} / ${c.attempts.length} | ${origin} |`);
     }
     push('');
   }
   if (board) push(...boardSection(board));
   if (lines) push(...linesSection(lines, period.from));
+  push(...threatsSection(cards, period.from));
   return L.join('\n');
 }

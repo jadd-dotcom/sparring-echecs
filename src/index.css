@@ -402,3 +402,8 @@ ul.plan { padding-left: 1.2em; margin: 4px 0 10px; }
 details.notation { margin-top: 6px; }
 details.notation > summary { min-height: 40px; font-weight: 400; font-size: .92rem; color: var(--muted); }
 details.notation p { margin: 4px 0; }
+/* « Qu'est-ce qu'il menace ? » */
+.threat-card > button { width: 100%; }
+.threat-result { flex-basis: 100%; margin-top: 8px; }
+.threat-result .threat-suite { display: block; margin-top: 6px; }
+.row > .threat-result { flex: 1 1 100%; }

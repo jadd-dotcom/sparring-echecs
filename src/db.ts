@@ -79,7 +79,7 @@ export interface Game {
   thoughtTags?: Record<number, ThoughtTag>;
 }
 
-export type CardKind = 'mistake' | 'drill' | 'mate';
+export type CardKind = 'mistake' | 'drill' | 'mate' | 'threat';
 
 export interface Card {
   id?: number;
@@ -99,7 +99,8 @@ export interface Card {
   step: number;
   due: string;
   createdAt: number;
-  attempts: { date: number; uci: string; ok: boolean }[];
+  /** Tentatives ; `q` (cartes « Lis la menace ») : 1 = lire sa menace, 2 = la parer. */
+  attempts: { date: number; uci: string; ok: boolean; q?: 1 | 2 }[];
   // --- cartes de drill ---
   openingId?: string;
   key?: string;          // clé de position (fenKey)
@@ -110,6 +111,16 @@ export interface Card {
   // --- cartes de mat élémentaire (position ratée à rejouer jusqu'au mat) ---
   mateLevel?: MateLevelId;
   minMoves?: number;
+  // --- cartes « Lis la menace » (fen = position juste après son coup, à moi de jouer) ---
+  prevFen?: string;        // position avant son coup
+  lastMoveUci?: string;    // son coup, qui vient de créer la menace
+  threatUci?: string;      // sa menace (trouvée en lui donnant le trait : coup nul)
+  threatSan?: string;
+  threatLine?: string[];   // suite de la menace (SAN, depuis la position coup nul)
+  threatWp?: number;       // ses chances (win%) après sa menace
+  threatMate?: boolean;
+  parryLine?: string[];    // ma meilleure suite pour la parer (SAN, depuis fen)
+  ignored?: boolean;       // menace ignorée dans la partie (motif « Menace ignorée »)
 }
 
 /** Un exercice de mat élémentaire. */

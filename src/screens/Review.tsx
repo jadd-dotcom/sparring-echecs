@@ -18,6 +18,7 @@ import {
 import { Chess } from 'chess.js';
 import { ThoughtBox, ThoughtButtons } from '../ThoughtUi';
 import Explorer from '../Explorer';
+import { ThreatCheck } from '../ThreatUi';
 
 const TIME_CLASS: Record<string, string> = { bullet: 'bullet', blitz: 'blitz', rapid: 'rapide', daily: 'par jour' };
 
@@ -31,6 +32,7 @@ export default function Review({ id }: { id: number }) {
   const [err, setErr] = useState<string | null>(null);
   const [exploring, setExploring] = useState(false);
   const suite = useSuite();
+  const [threatArrows, setThreatArrows] = useState<{ fen: string; a: BoardArrow[] }>({ fen: '', a: [] });
   // Changer de coup referme la suite affichée.
   const setPly = (p: number) => { suite.close(); setPlyRaw(p); };
   const [openingNames, setOpeningNames] = useState<Record<string, string>>({});
@@ -116,6 +118,7 @@ export default function Review({ id }: { id: number }) {
     for (const k of Object.keys(badges)) delete badges[k];
     if (retry!.solution && pe?.bestUci) arrows.push({ from: pe.bestUci.slice(0, 2), to: pe.bestUci.slice(2, 4), color: 'rgba(30,160,60,.9)' });
   }
+  if (!retryOn && threatArrows.fen === fen) arrows.push(...threatArrows.a);
   const bar = bars[ply + 1] ?? bars[0];
   const acc = accuracyOfGame(game);
   const fmtAcc = (v: number | null | undefined) => (v == null ? '–' : `${v.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`);
@@ -211,6 +214,12 @@ export default function Review({ id }: { id: number }) {
       <aside className="side-col">
         {suite.panel}
         {askThought && explain}
+        {!askThought && !retryOn && (
+          <div className="card threat-card">
+            <ThreatCheck fen={fen} me={game.myColor} onArrows={(f, a) => setThreatArrows({ fen: f, a })}
+              onSuite={(f, line, title) => suite.open(f, line, game.myColor, title)} />
+          </div>
+        )}
         <div className="card">
           {imported && (
             <p className="source-line"><span className="tag chesscom-tag">{game.ext?.site === 'pgn' ? 'PGN importé' : 'Chess.com'}</span>{' '}

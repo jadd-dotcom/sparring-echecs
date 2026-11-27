@@ -11,6 +11,7 @@ import { dueChapters } from '../lib/board/levels';
 import { dayKey } from '../lib/srs';
 import { errorsToComment } from '../lib/commentQueue';
 import { bgAnalysis } from '../chesscomImport';
+import { fillThreatCards } from '../threatService';
 import { MessageCircleQuestion } from '../icons';
 
 export default function Home() {
@@ -34,6 +35,12 @@ export default function Home() {
       setTotal(nCards);
       setInProgress(!!current);
       setP(prof);
+      // Rien à revoir et pas de partie en cours : on cherche discrètement de nouvelles cartes « Lis la menace ».
+      if (queue.length === 0 && !current) {
+        fillThreatCards({ maxChecks: 8 }).then((made) => {
+          if (made.length) { setDue((d) => d + made.length); setTotal((t) => t + made.length); }
+        }).catch(() => {});
+      }
       if (!isOfflineReady()) {
         const ok = await waitOfflineReady((b, t) => setOffline(`${Math.round((100 * b) / t)} %`));
         setOffline(ok ? 'ready' : '');
