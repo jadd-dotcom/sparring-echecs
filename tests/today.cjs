@@ -108,8 +108,8 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   assert(/5 positions aujourd’hui/.test(thr) && /5 cartes aujourd’hui/.test(rev), `7 menaces dues : « Lis la menace » 5 positions, Révision 5 cartes (10 en tout, sans doublon) : ${thr} | ${rev}`);
   await p.getByTestId('tab-today').tap();
   await p.getByTestId('step-threat').waitFor();
-  const st = (await p.getByTestId('step-threat').innerText()) + ' | ' + (await p.getByTestId('step-revise').innerText());
-  assert(/5 positions/.test(st) && /5 cartes/.test(st), 'séance du jour : 5 positions à lire, 5 cartes à réviser (' + st.replace(/\s+/g, ' ') + ')');
+  const stx = (await p.getByTestId('step-threat').innerText()) + ' | ' + (await p.getByTestId('step-revise').innerText());
+  assert(/5 positions/.test(stx) && /5 cartes/.test(stx), 'séance du jour : 5 positions à lire, 5 cartes à réviser (' + stx.replace(/\s+/g, ' ') + ')');
   await p.evaluate((ids) => window.__db.cards.bulkDelete(ids), ids);
 
   // ---------- Jouer : couleur, comptée / non comptée, raccourcis
