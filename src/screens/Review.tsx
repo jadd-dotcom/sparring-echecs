@@ -7,7 +7,7 @@ import { errorReason } from '../lib/reason';
 import { accuracyOfGame } from '../lib/accuracy';
 import { winPercent } from '../lib/winpct';
 import EvalCurve from '../EvalCurve';
-import { BookOpen, CircleCheck, CircleX, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ClassBadge, RotateCcw } from '../icons';
+import { BookOpen, CircleCheck, CircleX, Compass, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ClassBadge, RotateCcw } from '../icons';
 import { recordBookExit, treeOf } from '../openings';
 import { MOTIF_LABEL } from '../lib/report/motifs';
 import { buildIndex } from '../lib/repertoire';
@@ -16,6 +16,7 @@ import {
 } from '../lib/moveClass';
 import { Chess } from 'chess.js';
 import { ThoughtBox, ThoughtButtons } from '../ThoughtUi';
+import Explorer from '../Explorer';
 
 const TIME_CLASS: Record<string, string> = { bullet: 'bullet', blitz: 'blitz', rapid: 'rapide', daily: 'par jour' };
 
@@ -27,6 +28,7 @@ export default function Review({ id }: { id: number }) {
   // « Réessayer » : je cherche un meilleur coup dans la position d'une de mes erreurs.
   const [retry, setRetry] = useState<{ ply: number; tries: number; checking: boolean; result: null | { ok: boolean; text: string }; solution: boolean } | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [exploring, setExploring] = useState(false);
   const [openingNames, setOpeningNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -170,6 +172,8 @@ export default function Review({ id }: { id: number }) {
             </>}
           </div>
         );
+  if (exploring) return <Explorer fen={fen} me={game.myColor} onQuit={() => setExploring(false)} />;
+
   return (
     <div className="play">
       <div className="board-col">
@@ -194,6 +198,7 @@ export default function Review({ id }: { id: number }) {
           <button aria-label="Coup suivant" onClick={() => { setRetry(null); setPly(Math.min(game.uci.length - 1, ply + 1)); }}><ChevronRight aria-hidden /></button>
           <button aria-label="Fin" onClick={() => { setRetry(null); setPly(game.uci.length - 1); }}><ChevronsRight aria-hidden /></button>
           <button onClick={() => { const n = errorsPlies.find((p) => p > ply); if (n !== undefined) { setRetry(null); setPly(n); } }}>Erreur suivante</button>
+          <button onClick={() => { setRetry(null); setExploring(true); }} data-testid="explore-btn"><Compass aria-hidden className="ico" />Explorer</button>
         </div>
       </div>
       <aside className="side-col">

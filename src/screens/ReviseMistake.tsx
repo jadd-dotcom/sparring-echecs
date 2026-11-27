@@ -13,7 +13,8 @@ import { cardDetail, cardOrigin, type CardOrigin } from '../reviseService';
 import { motifHint, moveNo, whyBest, whyPlayed } from '../lib/reviseText';
 import type { ErrorDetail } from '../lib/report/motifs';
 import { answerFeedback } from '../sound';
-import { CircleCheck, CircleX, Lightbulb } from '../icons';
+import { CircleCheck, CircleX, Compass, Lightbulb } from '../icons';
+import Explorer from '../Explorer';
 
 type Try = { uci: string; san: string; ok: boolean; drop: number };
 type End = { solved: boolean; byUser?: Try; skipped?: boolean };
@@ -30,6 +31,7 @@ export default function ReviseMistake({ card, remaining, onNext, onResult }: {
   const [tries, setTries] = useState<Try[]>([]);
   const [checking, setChecking] = useState(false);
   const [end, setEnd] = useState<End | null>(null);
+  const [exploring, setExploring] = useState(false);
   const attempts = useRef(card.attempts);
 
   useEffect(() => {
@@ -99,6 +101,8 @@ export default function ReviseMistake({ card, remaining, onNext, onResult }: {
   if (hints >= 2 && !end) highlight[card.bestUci.slice(0, 2)] = 'rgba(255, 170, 0, .7)';
   const lastTry = tries[tries.length - 1];
 
+  if (end && exploring) return <Explorer fen={card.fen} me={card.myColor} onQuit={() => setExploring(false)} />;
+
   return (
     <div className="play" data-best={card.bestUci} data-played={card.playedUci}>
       <div className="board-col">
@@ -149,7 +153,10 @@ export default function ReviseMistake({ card, remaining, onNext, onResult }: {
               </div>
             ) : <p className="pulse muted">Explication en cours de calcul…</p>}
             <p className="muted small">{end.solved && failed === 0 && hints <= 1 ? 'Réussie du premier coup : la position reviendra plus tard.' : 'La position reviendra demain.'}</p>
-            <button className="primary" onClick={onNext}>Suivante</button>
+            <div className="row">
+              <button className="primary" onClick={onNext}>Suivante</button>
+              <button onClick={() => setExploring(true)} data-testid="explore-btn"><Compass aria-hidden className="ico" />Explorer</button>
+            </div>
           </div>
         )}
       </aside>
