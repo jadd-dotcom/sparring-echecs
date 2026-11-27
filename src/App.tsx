@@ -11,6 +11,7 @@ import Settings from './screens/Settings';
 import Openings from './screens/Openings';
 import Report from './screens/Report';
 import Mates from './screens/Mates';
+import Traps from './screens/Traps';
 import OpeningLessonScreen from './screens/OpeningLesson';
 import RepertoireEditor from './screens/RepertoireEditor';
 import BoardMastery, { BoardLessonScreen } from './screens/BoardMastery';
@@ -52,6 +53,7 @@ export default function App() {
   // Écrans avec un échiquier : tout tient dans la hauteur de l'écran (échiquier ajusté, texte qui défile seul).
   const fit = ['play', 'review', 'revise', 'lesson', 'comment', 'repertoire', 'lines'].includes(route.name)
     || (route.name === 'mates' && !!route.level)
+    || (route.name === 'traps' && !!route.id)
     || (route.name === 'board' && !!route.view && route.view !== 'lesson');
   return (
     <div className={`app${fit ? ' fit' : ''}`}>
@@ -76,6 +78,7 @@ export default function App() {
         {route.name === 'report' && <Report />}
         {route.name === 'lesson' && <OpeningLessonScreen key={`${route.id}-${route.part ?? ''}`} id={route.id} part={route.part} />}
         {route.name === 'mates' && <Mates key={`${route.level}-${route.mode}`} level={route.level} mode={route.mode} />}
+        {route.name === 'traps' && <Traps key={`${route.id ?? ''}-${route.mode ?? ''}`} id={route.id} mode={route.mode} />}
         {route.name === 'board' && !route.view && <BoardMastery />}
         {route.name === 'board' && route.view === 'lesson' && <BoardLessonScreen key={route.chapter} chapter={route.chapter!} />}
         {route.name === 'board' && route.view === 'ex' && <BoardExercise key={`${route.id}-${route.mode}`} id={route.id!} mode={route.mode ?? 'test'} />}

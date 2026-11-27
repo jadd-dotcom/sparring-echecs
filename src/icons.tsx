@@ -5,7 +5,7 @@ import { CLASS_COLOR, CLASS_LABEL, type MoveClass } from './lib/moveClass';
 export {
   Archive, ArchiveRestore, BookOpen, Bot, ChartLine, Check, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
   CircleCheck, CircleDashed, CircleX, Compass, Copy, Crown, Download, Eye, FileText, Flag, Flame, Grid3x3, House, Layers, Lightbulb, Lock, MessageCircleQuestion, Moon,
-  PartyPopper, Play, Plus, RotateCcw, Settings, Share2, Sun, SunMoon, Trash2, TriangleAlert, Undo2, Upload, User, Volume2, X,
+  PartyPopper, Play, Plus, RotateCcw, Settings, Share2, Shield, Sun, SunMoon, Swords, Target, Trash2, TriangleAlert, Undo2, Upload, User, Volume2, X,
 } from 'lucide-react';
 
 /** Symbole blanc d'une pastille, dans un carré 24×24 centré sur (12, 12). */

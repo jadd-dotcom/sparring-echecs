@@ -11,7 +11,8 @@ import { cardOrigin, type CardOrigin } from '../reviseService';
 import { moveNo } from '../lib/reviseText';
 import { MATE_LEVELS } from '../lib/mates';
 import { go } from '../router';
-import { BookOpen, Crown, Layers, Trash2, TriangleAlert } from '../icons';
+import { BookOpen, Crown, Layers, Swords, Trash2, TriangleAlert } from '../icons';
+import { TRAPS } from '../data/traps';
 
 const FILES = 'abcdefgh';
 
@@ -69,20 +70,21 @@ export default function Cards() {
       const list = all.sort((a, b) => a.due.localeCompare(b.due) || b.createdAt - a.createdAt);
       setCards(list);
       const res: Record<number, CardOrigin> = {};
-      for (const c of list.filter((x) => x.kind !== 'drill' && x.kind !== 'mate')) res[c.id!] = await cardOrigin(c);
+      for (const c of list.filter((x) => x.kind !== 'drill' && x.kind !== 'mate' && x.kind !== 'trap')) res[c.id!] = await cardOrigin(c);
       setOrigins(res);
     });
   }, []);
 
   async function remove(c: Card) {
-    const what = c.kind === 'mate' ? 'cette position de mat' : c.kind === 'threat' ? 'cette position « Lis la menace »' : `cette position (${fig(c.playedSan)} au lieu de ${fig(c.bestSan)})`;
+    const what = c.kind === 'mate' ? 'cette position de mat' : c.kind === 'trap' ? 'ce piège de la révision' : c.kind === 'threat' ? 'cette position « Lis la menace »' : `cette position (${fig(c.playedSan)} au lieu de ${fig(c.bestSan)})`;
     if (!confirm(`Supprimer ${what} de tes révisions ?`)) return;
     await db.cards.delete(c.id!);
     setCards((cs) => cs!.filter((x) => x.id !== c.id));
   }
 
   if (!cards) return null;
-  const mistakes = cards.filter((c) => c.kind !== 'drill' && c.kind !== 'mate' && c.kind !== 'threat');
+  const mistakes = cards.filter((c) => c.kind !== 'drill' && c.kind !== 'mate' && c.kind !== 'threat' && c.kind !== 'trap');
+  const traps = cards.filter((c) => c.kind === 'trap');
   const threats = cards.filter((c) => c.kind === 'threat');
   const mates = cards.filter((c) => c.kind === 'mate');
   const drills = cards.filter((c) => c.kind === 'drill');
@@ -155,6 +157,26 @@ export default function Cards() {
                   <p className="small"><b>Mats élémentaires</b> · {MATE_LEVELS.find((l) => l.id === c.mateLevel)?.name ?? ''} · {new Date(c.createdAt).toLocaleDateString('fr-FR')}</p>
                   <p className="muted small">{dueLabel(c, today)} · {c.attempts.length} essai{c.attempts.length > 1 ? 's' : ''}</p>
                   <div className="row"><button className="small danger" onClick={() => remove(c)} aria-label="Supprimer la carte"><Trash2 aria-hidden className="ico" />Supprimer</button></div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {traps.length > 0 && (
+        <section className="card" data-testid="trap-cards">
+          <h3><Swords aria-hidden className="ico sm" /> Pièges d’ouverture maîtrisés <span className="muted">({traps.length})</span></h3>
+          <ul className="card-items">
+            {traps.map((c) => (
+              <li key={c.id} className="card-item" data-testid="card-item" data-card={c.id}>
+                <div className="card-info">
+                  <p><b>{TRAPS.find((t) => t.id === c.trapId)?.name ?? c.trapId}</b></p>
+                  <p className="muted small">{dueLabel(c, today)} · {c.attempts.length} révision{c.attempts.length > 1 ? 's' : ''}</p>
+                  <div className="row">
+                    <button className="small" onClick={() => go({ name: 'traps', id: c.trapId })}>La leçon</button>
+                    <button className="small danger" onClick={() => remove(c)} aria-label="Supprimer la carte"><Trash2 aria-hidden className="ico" />Supprimer</button>
+                  </div>
                 </div>
               </li>
             ))}

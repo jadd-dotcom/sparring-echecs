@@ -432,3 +432,56 @@ pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur �
   `src/lib/threatCards.test.ts` (choix des positions, ordre, quota), section du rapport ; `tests/explore.cjs`
   (Explorer, « Voir la suite », « Qu'est-ce qu'il menace ? » dans la revue et Explorer, une carte « Lis la menace »
   de bout en bout, section du rapport).
+
+## « Mon objectif » : une règle à la fois (27/11)
+- Carte en haut de l'accueil. Trois objectifs dans l'ordre, un seul actif (`src/lib/goals.ts`) :
+  1. **Ne rien donner** (gaffes « Menace ignorée » + « Pièce laissée en prise ») — « Avant de lâcher la pièce : après
+     mon coup, quels sont SES échecs, SES prises, SES attaques ? »
+  2. **Ne rien laisser passer** (« Gain raté » + « Mat raté ») — « Avant de jouer : quels sont MES échecs, MES prises,
+     MES attaques ? »
+  3. **Tenir mon répertoire** (sortie du répertoire par moi avant la fin de la ligne) — « Dans l'ouverture, je joue
+     mes coups appris, pas des coups au feeling. »
+- Mesure : mes parties analysées (Sparring et Chess.com, 10 coups à moi au moins) jouées depuis le début de
+  l'objectif. Partie « propre » = aucune gaffe (≥ 30 points, motif principal) des motifs de l'objectif ; objectif 3 :
+  aucune sortie du répertoire par moi (même calcul que le rapport : partie à thème → son ouverture ; importée →
+  sortie enregistrée ; sinon mes ouvertures actives de la couleur).
+- Carte : nom et règle en gros, « X parties propres sur les 10 dernières », une pastille par partie (verte / rouge,
+  touchée → la revue), le point de départ (les 10 parties d'avant le début). « À surveiller » sous la carte : sur les
+  10 dernières parties, les gaffes des autres motifs (et les sorties du répertoire).
+- Maîtrisé : 7 propres sur les 10 dernières, 10 parties au moins depuis le début → message, l'objectif suivant
+  devient actif (mesure depuis ce moment). Un objectif maîtrisé qui retombe à 5/10 ou moins (10 dernières parties)
+  redevient actif, avec un message. État dans IndexedDB (clé `goals`), mis à jour à l'accueil et au rapport.
+- Revue : chaque gaffe qui relève de l'objectif actif est marquée « Règle de l'objectif » (carte du coup + icône dans
+  la liste des coups).
+- Rapport pour Claude : section « Objectif en cours » en tête (objectif actif, début, X/10 avec ✓/✗, point de
+  départ, objectifs maîtrisés, À surveiller).
+- Tests : `src/lib/goals.test.ts` (partie propre, mesure, maîtrise, objectif suivant, retour, À surveiller), section
+  du rapport ; `tests/goals.cjs` (marque dans la revue, carte, maîtrise → objectif suivant, rapport).
+
+## Mode « Pièges d'ouverture » (27/11)
+- Nouvel onglet à l'accueil (comme Mats élémentaires), 13 pièges en 3 chapitres (`src/data/traps.ts`) :
+  1. **Mats rapides** : mat du berger (dame h5, dame f3, avec le fou c4), mat du fou (pions f et g), mat de Légal,
+     cavalier g5 sur f7.
+  2. **Dame perdue** : fourchette de cavalier en c2, clouage de la dame sur le roi (piège de l'éléphant), échec à la
+     découverte (Petrov : 3…♘xe4 4.♕e2 ♘f6?? 5.♘c6+), pion empoisonné en b2.
+  3. **Pièges de mes ouvertures**, choisis dans les lignes du répertoire actif : gambit Englund (Londres, 6.♗c3??
+     ♗b4), Anglaise (4…♕xd5?? 5.♘xd5), mon système …c5/…g6 contre ♗c4 + ♕f3 (…g6?? ♕xf7#), Londres en défense contre
+     ♘c3/f3/g4/h4 (…♘bd7?? h5 enferme le fou g6).
+- Pour chaque piège : mini-leçon (2 phrases en mots, « Voir la suite » depuis le début, une règle en une phrase),
+  « Défends-toi » (le bot a tendu le piège : je trouve le bon coup au moment critique ; si je tombe dedans, la suite
+  se joue et s'explique) et « Punis-le » (le bot a fait la faute : je trouve le coup gagnant, puis la suite se joue).
+  Coups acceptés : la liste vérifiée, ou tout coup que Stockfish juge à 10 points de win% près ; une perte de 20
+  points ou plus = tombé dans le piège. Indices progressifs (en mots, puis la pièce à jouer), solution après 2 essais
+  ratés ou 2 indices.
+- Maîtrisé : les deux exercices réussis sans indice, deux jours différents → carte de révision espacée (kind `trap`,
+  J+3, puis J+7…) : la révision enchaîne « Défends-toi » et « Punis-le ». Progression dans IndexedDB (clé `traps`).
+- Vérification coup par coup avec Stockfish natif (`sh scripts/verify-traps.sh` → `docs/PIEGES.md`) : éval après
+  chaque coup de la suite, chaque bonne défense tient (≤ 10 points sous le meilleur coup), la faute perd au moins
+  20 points, la punition est un mat ou ≥ 75 % de gain à 10 points près du meilleur coup, chaque coup suivant du
+  punisseur aussi. Les 13 pièges passent (un premier choix pour le Londres en défense, « pion b7 », a été refusé par
+  la vérification et remplacé).
+- Rapport pour Claude : section 8 « Pièges d'ouverture » (maîtrisés / en cours / pas commencés, détail par piège) et
+  les pièges où je suis tombé dans mes vraies parties (même position, mon coup fautif).
+- Tests : `src/lib/traps.test.ts` (données, verdicts, maîtrise sur deux jours, chutes dans mes parties), section du
+  rapport ; `tests/traps.cjs` (leçon, un piège défendu, un piège puni, une chute, indices, maîtrise → révision,
+  rapport).

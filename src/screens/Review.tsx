@@ -8,7 +8,7 @@ import { ErrorSuites, Notation, useSuite } from '../Suite';
 import { accuracyOfGame } from '../lib/accuracy';
 import { winPercent } from '../lib/winpct';
 import EvalCurve from '../EvalCurve';
-import { BookOpen, CircleCheck, CircleX, Compass, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ClassBadge, RotateCcw } from '../icons';
+import { BookOpen, CircleCheck, CircleX, Compass, Target, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ClassBadge, RotateCcw } from '../icons';
 import { recordBookExit, treeOf } from '../openings';
 import { MOTIF_LABEL } from '../lib/report/motifs';
 import { buildIndex } from '../lib/repertoire';
@@ -19,6 +19,8 @@ import { Chess } from 'chess.js';
 import { ThoughtBox, ThoughtButtons } from '../ThoughtUi';
 import Explorer from '../Explorer';
 import { ThreatCheck } from '../ThreatUi';
+import { activeGoal, exitsOf } from '../goalService';
+import { goalBlunderPlies, type GoalDef } from '../lib/goals';
 
 const TIME_CLASS: Record<string, string> = { bullet: 'bullet', blitz: 'blitz', rapid: 'rapide', daily: 'par jour' };
 
@@ -33,6 +35,21 @@ export default function Review({ id }: { id: number }) {
   const [exploring, setExploring] = useState(false);
   const suite = useSuite();
   const [threatArrows, setThreatArrows] = useState<{ fen: string; a: BoardArrow[] }>({ fen: '', a: [] });
+  // « Mon objectif » : les gaffes de la partie qui relèvent de la règle de l'objectif actif.
+  const [goalMark, setGoalMark] = useState<{ goal: GoalDef; plies: number[] } | null>(null);
+  const analysed = !!game?.analysis;
+  useEffect(() => {
+    if (!game?.analysis) return;
+    let alive = true;
+    (async () => {
+      const goal = await activeGoal();
+      if (!goal) return;
+      const exit = goal.repertoire ? exitsOf([game], await db.openings.toArray())[game.id!] : undefined;
+      if (alive) setGoalMark({ goal, plies: goalBlunderPlies(goal, game, exit) });
+    })();
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game?.id, analysed, game?.bookExit]);
   // Changer de coup referme la suite affichée.
   const setPly = (p: number) => { suite.close(); setPlyRaw(p); };
   const [openingNames, setOpeningNames] = useState<Record<string, string>>({});
@@ -158,6 +175,9 @@ export default function Review({ id }: { id: number }) {
             {pe && <span className="muted small">Chances de gain {mine(ply) ? 'pour toi' : `pour ${opp}`} : {Math.round(pe.wpBefore)} % → {Math.round(pe.wpAfter)} %{pe.drop >= 1 ? ` (−${Math.round(pe.drop)} pts)` : ''}</span>}
             {isMyExit && <><br /><span><BookOpen aria-hidden className="ico sm book-ico" /> Répertoire : <b>{fig(exit!.expectedSan.join(' ou '))}</b> (flèche bleue) au lieu de {fig(exit!.playedSan)}.</span></>}
             {askThought && <ThoughtButtons game={game} ply={ply} onSaved={(thoughtTags) => setGame((g) => (g ? { ...g, thoughtTags } : g))} />}
+            {goalMark?.plies.includes(ply) && !askThought && (
+              <p className="goal-mark" data-testid="goal-mark"><Target aria-hidden className="ico sm" /> Règle de l’objectif « {goalMark.goal.name} » : {goalMark.goal.rule}</p>
+            )}
             {a?.detail && !askThought && <>
               <br />Motif : <b>{MOTIF_LABEL[a.detail.motif]}</b>
               {pe && <ErrorSuites d={a.detail} fenBefore={fens[ply]} myUci={pe.uci} me={game.myColor} open={suite.open} />}
@@ -284,6 +304,7 @@ export default function Review({ id }: { id: number }) {
               <button key={i} className={`mv ${i === ply ? 'active' : ''} ${mine(i) ? '' : 'theirs'} ${exit && exit.by !== 'end' && exit.ply === i ? 'book-exit' : ''}`}
                 onClick={() => { setRetry(null); setPly(i); }} aria-label={`${s} : ${CLASS_LABEL[c]}`}>
                 {i % 2 === 0 ? `${i / 2 + 1}.` : ''}{fig(s)}<ClassBadge cls={c} size={18} className="class-badge ic" />
+                {goalMark?.plies.includes(i) && <Target aria-label="Règle de l’objectif" className="ico sm goal-move" data-testid="goal-move" />}
               </button>
             );
           })}

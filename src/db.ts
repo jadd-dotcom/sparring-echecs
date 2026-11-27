@@ -79,7 +79,7 @@ export interface Game {
   thoughtTags?: Record<number, ThoughtTag>;
 }
 
-export type CardKind = 'mistake' | 'drill' | 'mate' | 'threat';
+export type CardKind = 'mistake' | 'drill' | 'mate' | 'threat' | 'trap';
 
 export interface Card {
   id?: number;
@@ -121,6 +121,8 @@ export interface Card {
   threatMate?: boolean;
   parryLine?: string[];    // ma meilleure suite pour la parer (SAN, depuis fen)
   ignored?: boolean;       // menace ignorée dans la partie (motif « Menace ignorée »)
+  // --- cartes de piège d'ouverture maîtrisé (révision espacée : « Défends-toi » puis « Punis-le ») ---
+  trapId?: string;
 }
 
 /** Un exercice de mat élémentaire. */

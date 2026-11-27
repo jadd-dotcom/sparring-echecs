@@ -9,6 +9,9 @@ import { uciToSan } from '../analysis';
 import { go } from '../router';
 import ReviseMistake from './ReviseMistake';
 import ReviseThreat from './ReviseThreat';
+import TrapExercise from '../TrapExercise';
+import { TRAPS } from '../data/traps';
+import { recordTrapAttempt } from '../trapService';
 import { fillThreatCards } from '../threatService';
 import MateExercise from '../MateExercise';
 import { MATE_LEVELS } from '../lib/mates';
@@ -87,6 +90,17 @@ export default function Revise({ opening }: { opening?: string }) {
   }
 
   const nextCard = () => { setOutcome(null); setQueue(queue.slice(1)); };
+  if (card.kind === 'trap') {
+    const trap = TRAPS.find((t) => t.id === card.trapId);
+    if (!trap) return <div className="card">Piège introuvable. <button onClick={nextCard}>Suivante</button></div>;
+    return (
+      <>
+        <TrapReview key={card.id} card={card} trap={trap} remaining={queue.length} onNext={nextCard}
+          onResult={(ok) => setStats((st) => ({ ok: st.ok + (ok ? 1 : 0), ko: st.ko + (ok ? 0 : 1) }))} />
+        {allCards}
+      </>
+    );
+  }
   if (card.kind === 'threat') {
     return (
       <>
@@ -155,5 +169,29 @@ export default function Revise({ opening }: { opening?: string }) {
         )}
       </aside>
     </div>
+  );
+}
+
+/** Révision d'un piège maîtrisé : « Défends-toi » puis « Punis-le » ; réussie si les deux le sont sans indice. */
+function TrapReview({ card, trap, remaining, onNext, onResult }: {
+  card: Card; trap: (typeof TRAPS)[number]; remaining: number; onNext: () => void; onResult: (ok: boolean) => void;
+}) {
+  const [step, setStep] = useState<'defend' | 'punish'>('defend');
+  const [first, setFirst] = useState<boolean | null>(null);
+  const [done, setDone] = useState(false);
+  const head = `Révision : piège d’ouverture (${remaining} position${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''})`;
+  return (
+    <TrapExercise key={`${card.id}-${step}`} trap={trap} mode={step} head={head}
+      onDone={async (r) => {
+        await recordTrapAttempt(trap.id, step, r.ok, r.clean);
+        if (step === 'defend') { setFirst(r.clean); return; }
+        const ok = !!first && r.clean;
+        await db.cards.update(card.id!, { ...schedule(card, ok, dayKey()), attempts: [...card.attempts, { date: Date.now(), uci: trap.id, ok }] });
+        onResult(ok);
+        setDone(true);
+      }}
+      actions={step === 'defend'
+        ? <button className="primary" disabled={first === null} onClick={() => setStep('punish')}>Maintenant : Punis-le</button>
+        : <button className="primary" disabled={!done} onClick={onNext}>Suivante</button>} />
   );
 }

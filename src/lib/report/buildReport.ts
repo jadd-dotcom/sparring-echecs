@@ -221,6 +221,57 @@ export interface ReportInput {
   board?: { progress: BoardProgress; stats: SquareStats; today: string };
   /** « Jouer les lignes » : par ouverture, lignes validées dans le tour et erreurs. */
   lines?: LinesReport[];
+  /** « Mon objectif » : objectif actif et sa progression. */
+  goal?: GoalReport;
+  /** Pièges d'ouverture : état par piège et pièges où je suis tombé dans mes parties. */
+  traps?: TrapsReport;
+}
+
+export interface TrapsReport {
+  rows: { name: string; chapter: string; status: string; defend: { clean: number; n: number }; punish: { clean: number; n: number } }[];
+  falls: { name: string; gameNo: number; date: number; move: string; source: string }[];
+}
+
+/** Section « Pièges d'ouverture » : maîtrisés / en cours, puis les pièges où je suis tombé dans mes vraies parties. */
+export function trapsSection(t: TrapsReport): string[] {
+  const n = (s: string) => t.rows.filter((r) => r.status === s).length;
+  const L: string[] = ['## 8. Pièges d’ouverture', '',
+    `Maîtrisés : **${n('maîtrisé')}/${t.rows.length}** · en cours : ${n('en cours')} · pas commencés : ${n('nouveau')}. Maîtrisé = « Défends-toi » et « Punis-le » réussis sans indice, deux jours différents.`, '',
+    '| Piège | Chapitre | État | Défends-toi (sans indice / essais) | Punis-le (sans indice / essais) |', '|---|---|---|---|---|'];
+  for (const r of t.rows) L.push(`| ${r.name} | ${r.chapter} | ${r.status} | ${r.defend.clean} / ${r.defend.n} | ${r.punish.clean} / ${r.punish.n} |`);
+  L.push('', `### Pièges où je suis tombé dans mes vraies parties (${t.falls.length})`, '');
+  if (!t.falls.length) L.push('Aucun.', '');
+  else {
+    L.push('| Piège | Partie | Date | Source | Mon coup fautif |', '|---|---|---|---|---|');
+    for (const f of t.falls) L.push(`| ${f.name} | n°${f.gameNo} | ${fmtDate(f.date)} | ${f.source} | ${f.move} |`);
+    L.push('');
+  }
+  return L;
+}
+
+export interface GoalReport {
+  /** null : tous les objectifs sont maîtrisés. */
+  active: { name: string; rule: string; since: number; last: { date: number; clean: boolean }[]; clean: number; total: number; baseline: { clean: number; n: number } } | null;
+  mastered: { name: string; at: number }[];
+  watch: { label: string; count: number }[];
+}
+
+/** Section « Objectif » (en tête du rapport) : objectif actif, début, X/10, ✓/✗, point de départ, À surveiller. */
+export function goalSection(g: GoalReport): string[] {
+  const L: string[] = ['## Objectif en cours (« Mon objectif » : une règle à la fois)', ''];
+  const a = g.active;
+  if (!a) L.push('Tous les objectifs sont maîtrisés.', '');
+  else {
+    L.push(
+      `**${a.name}** — règle : « ${a.rule} »`, '',
+      `- Début : ${fmtDate(a.since)} ; ${a.total} partie${a.total > 1 ? 's' : ''} mesurée${a.total > 1 ? 's' : ''} depuis (analysées, 10 coups au moins).`,
+      `- **${a.clean}/10** parties propres sur les ${a.last.length} dernières${a.last.length ? ` : ${a.last.map((x) => (x.clean ? '✓' : '✗')).join(' ')}` : ''} (maîtrisé à 7/10, 10 parties au moins).`,
+      `- Point de départ : ${a.baseline.clean}/${a.baseline.n} parties propres sur les ${a.baseline.n} d’avant le début.`,
+    );
+  }
+  if (g.mastered.length) L.push(`- Objectifs maîtrisés : ${g.mastered.map((m) => `${m.name} (${fmtDate(m.at)})`).join(' ; ')}.`);
+  L.push(`- À surveiller (gaffes des autres motifs sur les 10 dernières parties) : ${g.watch.length ? g.watch.map((w) => `${w.label} ×${w.count}`).join(', ') : 'rien'}.`, '');
+  return L;
 }
 
 export interface LinesReport {
@@ -330,7 +381,7 @@ export function threatsSection(cards: Card[], from: number | null): string[] {
   return L;
 }
 
-export function buildReport({ now, period, games, allGames, cards, rep = {}, repertoire = [], board, lines }: ReportInput): string {
+export function buildReport({ now, period, games, allGames, cards, rep = {}, repertoire = [], board, lines, goal, traps }: ReportInput): string {
   const order = [...allGames].sort((a, b) => a.date - b.date);
   const numberOf = (g: Game) => order.findIndex((x) => x.id === g.id) + 1;
   const L: string[] = [];
@@ -343,6 +394,7 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
     '',
     '**Demande :** je suis débutant. À partir de ces données (calculées automatiquement, pas devinées), diagnostique mes lacunes principales, explique-les simplement et propose-moi 3 axes de travail concrets.',
     '',
+    ...(goal ? goalSection(goal) : []),
     '## Définitions',
     '',
     '- **Sources** : *Maia* = partie dans l’appli contre Maia-3, une IA qui imite le jeu humain (compte pour mon niveau) ; *Chess.com* = partie importée de mon compte Chess.com, contre un humain, analysée de la même façon (ne compte pas pour mon niveau).',
@@ -474,7 +526,7 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
   const okN = attempts.filter((t) => t.ok).length;
   const drill = attempts.filter((t) => t.kind === 'drill');
   const threatTries = attempts.filter((t) => t.kind === 'threat');
-  const mistakeTries = attempts.filter((t) => t.kind !== 'drill' && t.kind !== 'threat');
+  const mistakeTries = attempts.filter((t) => t.kind !== 'drill' && t.kind !== 'threat' && t.kind !== 'trap');
   push('### Révision (paquet de positions)', '',
     `Cartes vues : **${new Set(attempts.map((t) => t.id)).size}** (${attempts.length} tentative${attempts.length > 1 ? 's' : ''}) ; réussite : **${pct(okN, attempts.length)}**.`,
     `- Positions issues de mes erreurs : ${mistakeTries.length} tentatives, réussite ${pct(mistakeTries.filter((t) => t.ok).length, mistakeTries.length)}.`,
@@ -524,6 +576,7 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
 
   // ------------------------------------------------------------ 4. Cartes ratées
   const failed = cards
+    .filter((c) => c.kind !== 'trap')
     .map((c) => ({ c, fails: c.attempts.filter((t) => !t.ok).length }))
     .filter((x) => x.fails >= 2)
     .sort((x, y) => y.fails - x.fails);
@@ -541,5 +594,6 @@ export function buildReport({ now, period, games, allGames, cards, rep = {}, rep
   if (board) push(...boardSection(board));
   if (lines) push(...linesSection(lines, period.from));
   push(...threatsSection(cards, period.from));
+  if (traps) push(...trapsSection(traps));
   return L.join('\n');
 }
