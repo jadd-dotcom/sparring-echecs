@@ -572,3 +572,9 @@ button.link-title:active { transform: none; box-shadow: none; }
 
 /* Enveloppe sans boîte (écouteur de clic autour d’un composant). */
 .contents { display: contents; }
+
+/* Progrès : courbes ; Ouverture : bouton Examen. */
+.progress-curves { display: grid; gap: 12px; margin: 12px 0; }
+.progress-curves h3 { margin: 0 0 4px; }
+.exam-btn { margin: 4px 0 10px; }
+.exam-missed { text-align: left; display: inline-block; }

@@ -30,8 +30,8 @@ function keysInCode(): { fixed: Set<string>; patterns: Set<string> } {
 
 describe('registre des clés meta', () => {
   const { fixed, patterns } = keysInCode();
-  it('26 clés fixes (les 25 de l’audit + lastBackupAt) et 2 motifs', () => {
-    expect(META_KEYS).toHaveLength(26);
+  it('27 clés fixes (les 25 de l’audit + lastBackupAt + examResults) et 2 motifs', () => {
+    expect(META_KEYS).toHaveLength(27);
     expect(META_PATTERNS).toEqual(['lessonState:', 'crossroads:']);
   });
   it('aucune clé du code hors registre', () => {

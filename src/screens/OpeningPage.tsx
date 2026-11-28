@@ -9,6 +9,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { db, type Opening } from '../db';
 import { go } from '../router';
+import { shuffled } from '../lib/shuffle';
 import { treeOf } from '../openings';
 import { OPENING_LESSONS } from '../data/openingLessons';
 import { TRAPS } from '../data/traps';
@@ -20,7 +21,7 @@ import { getLessonState } from '../lessonService';
 import { getTrapProgress } from '../trapService';
 import { trapStatus, type TrapProgress } from '../lib/traps';
 import { fig } from '../lib/notation';
-import { Check, Eye, Play, Repeat, Shield, Swords } from '../icons';
+import { Check, Eye, Play, Repeat, Shield, Swords, GraduationCap } from '../icons';
 import { saveLineSession } from '../linesService';
 import { crossroadCounts, CROSS_MASTERED_STEP, getCrossProgress } from '../crossroadService';
 import { crossQueue, type CrossProgress } from '../lib/crossroadTrainer';
@@ -63,6 +64,8 @@ export default function OpeningPage({ id, tab = 'lecon' }: { id: string; tab?: T
       <p className="opening-head" data-testid="opening-head">
         {lesson ? `Leçon ${lc.done}/${lc.total}` : 'Pas de leçon'} · Lignes {linesOk}/{ordered.length} · Carrefours {cx.done}/{cardsTotal}
       </p>
+      <button className="flat-btn exam-btn" onClick={() => go({ name: 'exam', id })} data-testid="exam-start">
+        <GraduationCap aria-hidden className="ico" />Examen : 10 positions au hasard, sans indice</button>
       <div className="segmented opening-tabs" role="tablist">
         {(Object.keys(TAB_LABEL) as Tab[]).map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'on' : ''} onClick={() => go({ name: 'opening', id, tab: t })} data-testid={`otab-${t}`}>{TAB_LABEL[t]}</button>
@@ -132,6 +135,7 @@ function LinesTab({ o, ordered, lp, cs }: { o: Opening; ordered: string[][]; lp:
   const [start, setStart] = useState<'carrefour' | 'first'>('carrefour');
   const [loop, setLoop] = useState(false);
   const [both, setBoth] = useState(false);
+  const [shuffle, setShuffle] = useState(false);
   const lesson = OPENING_LESSONS.find((l) => l.openingId === o.id);
   const statusOf = (l: string[]) => lp.lines[lineKey(l)]?.status;
   const keep = (l: string[]) => {
@@ -142,7 +146,9 @@ function LinesTab({ o, ordered, lp, cs }: { o: Opening; ordered: string[][]; lp:
   const shown = ordered.filter(keep);
   const toggle = (k: string) => setSel((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; });
   async function train(keys: string[], opts: { start: 'carrefour' | 'first'; loop: boolean }) {
-    await saveLineSession({ openingId: o.id, keys, start: opts.start, loop: opts.loop, i: 0, both });
+    // « Mélanger » : la sélection dans un ordre aléatoire (rappel actif, pas de récitation dans l'ordre de l'arbre).
+    const order = keys.length > 1 && shuffle ? shuffled(keys) : keys;
+    await saveLineSession({ openingId: o.id, keys: order, start: opts.start, loop: opts.loop, i: 0, both });
     go({ name: 'lines', id: o.id, sel: true });
   }
   const row = (l: string[]) => {
@@ -186,6 +192,7 @@ function LinesTab({ o, ordered, lp, cs }: { o: Opening; ordered: string[][]; lp:
         </div>
         <label className="unrated-toggle"><input type="checkbox" checked={loop} onChange={(e) => setLoop(e.target.checked)} /> En boucle</label>
         <label className="unrated-toggle both-toggle"><input type="checkbox" checked={both} onChange={(e) => setBoth(e.target.checked)} data-testid="both-toggle" /> Les deux camps</label>
+        <label className="unrated-toggle"><input type="checkbox" checked={shuffle} onChange={(e) => setShuffle(e.target.checked)} data-testid="shuffle-toggle" /> Mélanger</label>
         <button className="primary main-action" disabled={!sel.size} onClick={() => train(ordered.map(lineKey).filter((k) => sel.has(k)), { start, loop })} data-testid="train-sel">
           Entraîner la sélection ({sel.size})</button>
       </div>
