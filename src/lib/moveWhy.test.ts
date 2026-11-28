@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { Chess } from 'chess.js';
 import { moveWhy } from './moveWhy';
 import type { SignpostThreat } from './signposts';
@@ -63,6 +64,32 @@ describe('moveWhy : une phrase par coup, les deux camps', () => {
     expect(why('e4 c5 Bc4 Nc6 Qh5 e6', 'b', { san: 'Qxf7#', line: ['Qxf7#'], mate: 1, gain: 0 })).toMatch(/^Le pion e6 bouche la diagonale de son fou : plus de menace de mat en f7/);
     // Rien d'attaqué par le coup d'avant : description habituelle.
     expect(why('c4 e5 Nc3 Nf6 g3')).toBe('Le pion g3 prépare le fianchetto de ton fou en g2.');
+  });
+  // Comme scripts/lesson-lines.ts : le coup d'avant, sa menace, et la menace que ce coup crée (cache Stockfish).
+  const THREATS: Record<string, SignpostThreat | null> = JSON.parse(readFileSync('scripts/why-threats.json', 'utf8'));
+  const fk = (f: string) => f.split(' ').slice(0, 4).join(' ');
+  const full = (sans: string, me: 'w' | 'b') => {
+    const seq = sans.split(' ');
+    const c = new Chess();
+    seq.slice(0, -1).forEach((m) => c.move(m));
+    const prev = c.history({ verbose: true }).slice(-1)[0];
+    const after = new Chess(c.fen()); after.move(seq[seq.length - 1]);
+    return moveWhy(c.fen(), seq[seq.length - 1], me, {
+      prev: { fen: prev.before, san: prev.san }, threat: THREATS[fk(c.fen())] ?? null,
+      myThreatBefore: THREATS[fk(prev.before)] ?? null, myThreat: THREATS[fk(after.fen())] ?? null,
+    });
+  };
+  it('étape 8 : le coup qui crée une menace la nomme ; toutes les pièces qui attaquent ; les deux idées ; reformulations', () => {
+    expect(full('d4 c5 d5 Nf6 Nf3 e6 Nc3 exd5 Nxd5 Nxd5 Qxd5 Nc6 e4 d6 Ng5', 'w')).toBe('Ton cavalier va en g5 : avec ta dame d5, il menace Qxf7 mat.');
+    expect(full('e4 c5 Nf3 Nc6 d4 cxd4 Nxd4 g6 c4 Bg7 Be3 Nf6 Nc3 Ng4 Qxg4 Nxd4', 'b')).toBe('Ton cavalier prend son cavalier d4 et menace Nc2+, fourchette sur son roi et sa tour a1.');
+    expect(full('c4 c6 Nf3 d5 e3 Nf6 d4 Bf5 Nc3 e6 Nh4 Bg6 Qb3 Qc7 Nxg6 hxg6 h4', 'b')).toBe('Son pion h2, attaqué par ta dame et ta tour, avance en h4.');
+    expect(full('d4 c5 d5 Nf6 Nf3 e6 Nc3 exd5 Nxd5 Nxd5 Qxd5 Nc6 e4 d6 Ng5 Qe7', 'w')).toBe('Sa dame va en e7 et protège f7 contre la menace de mat, et cloue ton pion e4 sur ton roi.');
+    expect(full('d4 e5 dxe5 Nc6 Nf3 Qe7 Bg5 Qb4+ Nc3 Qa5 Qd5 Bc5 a3 h6 Bh4 g5 Bg3 g4 Nd2', 'w')).toBe('Ton cavalier, attaqué par son pion, s’écarte en d2 ; ton cavalier c3 n’est plus cloué.');
+    expect(full('e4 c5 Nf3 Nc6 d4 cxd4 Nxd4 g6 c4 Bg7 Be3 Nf6 Nc3 Ng4 Qxg4 Nxd4 Qd1', 'b')).toBe('Sa dame va en d1 et garde c2 : plus de fourchette Nc2+ sur son roi et sa tour.');
+    // 9…g6 : le fou blanc est encore en f1 (Bd3 vient au coup 10) et la tour h1 attaque toujours h7.
+    expect(full('d4 e6 Bf4 c5 e3 d5 Nf3 Nf6 c3 Nc6 Nbd2 Nh5 Bg3 Nxg3 hxg3 Qb6 Qc2 g6', 'w')).toBe('Le pion g6 bouche la diagonale de ta dame : elle ne vise plus son pion h7 ; il prépare aussi le fianchetto de son fou en g7.');
+    // « chasse son fou c5 » dit déjà la menace : pas de doublon.
+    expect(full('c4 e5 Nc3 Nc6 g3 Nf6 Bg2 Bc5 e3 O-O Nge2 d6 O-O a6 d4', 'w')).toBe('Le pion d4 chasse son fou c5.');
   });
   it('toujours une seule phrase qui finit par un point', () => {
     const c = new Chess();
