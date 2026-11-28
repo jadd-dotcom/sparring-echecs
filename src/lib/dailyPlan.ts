@@ -82,7 +82,7 @@ export function sessionSteps(s: SessionInput): StepState[] {
       detail: s.threatLeft ? pl(s.threatLeft, 'position') : s.threatDoneToday ? 'fait' : 'rien aujourd’hui' },
     { id: 'revise', label: 'Révision', minutes: 10, done: s.reviseLeft === 0,
       detail: s.reviseLeft ? pl(s.reviseLeft, 'carte') : s.reviseDoneToday ? 'faite' : 'rien aujourd’hui' },
-    { id: 'game', label: 'Une partie contre Maia', minutes: 15, done: s.gameToday, detail: s.gameToday ? 'jouée' : 'partie comptée' },
+    { id: 'game', label: 'Une partie contre Maia', minutes: 15, done: s.gameToday, detail: s.gameToday ? 'jouée' : 'sans aide' },
   ];
 }
 

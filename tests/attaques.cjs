@@ -72,7 +72,8 @@ const key = (fen) => fen.split(' ').slice(0, 4).join(' ');
     const m = ch.move(LINE1[k]);
     await sq(m.from).tap(); await sq(m.to).tap();
   }
-  await p.getByText('Ligne réussie').waitFor({ timeout: 10000 });
+  await p.getByText(/Ligne à revoir \(1 erreur\)/).waitFor({ timeout: 10000 });
+  assert(true, 'ligne rejouée avec une erreur : « à revoir »');
   await p.screenshot({ path: OUT + '/f7-2-rejouer.png' });
   const dd = await p.evaluate((k) => window.__db.cards.where('openingId').equals('g6-system').filter((x) => x.key === k).first(), key(c.fen()));
   assert(dd.due !== 'new', `après la ligne rejouée : la position après 2.♕h5 entre dans le drill (révision le ${dd.due})`);

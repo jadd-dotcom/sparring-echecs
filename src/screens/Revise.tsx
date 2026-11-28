@@ -3,7 +3,7 @@ import { fig } from '../lib/notation';
 import Board, { type BoardArrow } from '../Board';
 import { db, DUE_NEW, type Card } from '../db';
 import { addDays, dayKey, INTERVALS, schedule } from '../lib/srs';
-import { markIntroduced, reviewCounts, reviewQueue } from '../openings';
+import { markIntroduced, reviewCounts, reviewQueue, reviseAllowanceLeft } from '../openings';
 import { formatLine } from '../lib/repertoire';
 import { uciToSan } from '../analysis';
 import { go } from '../router';
@@ -40,9 +40,11 @@ export default function Revise({ opening, only }: { opening?: string; only?: 'th
     if (!empty || scan !== 'todo' || opening) return;
     setScan('running');
     // Révision vide mais des « Lis la menace » attendent dans leur étape : pas de nouvelles positions ici.
-    (only ? Promise.resolve(0) : reviewCounts().then((rc) => rc.threat))
-      .then((pending) => (pending ? [] : fillThreatCards()))
-      .then((made) => { if (mounted.current && made.length) setQueue(made); })
+    // Les nouvelles cartes respectent le plafond du jour : on n'en crée pas plus que la place restante, puis la file est
+    // recalculée (plafond et répartition avec l'étape « Lis la menace » compris).
+    Promise.all([only ? Promise.resolve(0) : reviewCounts().then((rc) => rc.threat), reviseAllowanceLeft()])
+      .then(([pending, left]) => (pending || left <= 0 ? [] : fillThreatCards({ maxNew: left })))
+      .then(async (made) => { if (made.length) { const q = await reviewQueue(opening, { only }); if (mounted.current) setQueue(q); } })
       .catch(() => {})
       .finally(() => { if (mounted.current) setScan('done'); });
   }, [empty, scan, opening, only]);
@@ -160,7 +162,7 @@ export default function Revise({ opening, only }: { opening?: string; only?: 'th
           <h2><BookOpen aria-hidden className="ico book-ico" /> {openingName[card.openingId!] ?? 'Répertoire'}</h2>
           <p>Joue le coup de ton répertoire ({card.myColor === 'w' ? 'Blancs' : 'Noirs'}).{card.due === DUE_NEW && <> <span className="tag">nouvelle</span></>}</p>
           <p className="muted line-text">{fig(formatLine(card.path ?? [])) || 'Position de départ'}</p>
-          {checking && <p className="pulse">Vérification par Stockfish…</p>}
+          {checking && <p className="pulse">Vérification…</p>}
         </div>
         {outcome && (
           <div className={`card ${outcome.ok ? 'good' : 'bad'}`}>

@@ -29,6 +29,7 @@ interface Run {
   refusals: number;            // refus sur le coup en cours
   errors: number;              // erreurs pendant cette partie (de mon côté)
   errorsHim?: number;          // « Les deux camps » : erreurs sur les coups de l'adversaire
+  hints?: number;              // solutions montrées (après 2 refus) pendant cette ligne
   solution: { from: string; to: string; san: string; why: string | null } | null;
   msg: string | null;
   done: boolean;
@@ -112,7 +113,7 @@ export default function PlayLines({ id, sel }: { id: string; sel?: boolean }) {
   useEffect(() => {
     if (!run || run.done || !opening || !progress) return;
     if (run.ply >= run.line.length) {
-      const prog = withLineDone(progress, run.line, run.errors === 0 && !run.errorsHim);
+      const prog = withLineDone(progress, run.line, run.errors === 0 && !run.errorsHim, Date.now(), run.hints ?? 0);
       setProgress(prog);
       saveLineProgress(opening.id, prog).catch(console.error);
       setRun({ ...run, done: true });
@@ -170,7 +171,7 @@ export default function PlayLines({ id, sel }: { id: string; sel?: boolean }) {
     const refusals = run.refusals + 1;
     const m = new Chess(chess.fen()).move(run.line[run.ply]);
     setRun({
-      ...run, refusals, errorsHim: (run.errorsHim ?? 0) + 1,
+      ...run, refusals, errorsHim: (run.errorsHim ?? 0) + 1, hints: (run.hints ?? 0) + (refusals === 2 ? 1 : 0),
       msg: refusals >= 2 ? null : 'Pas le coup de la ligne pour son camp, réessaie.',
       solution: refusals >= 2 ? { from: m.from, to: m.to, san: m.san, why: lessonWhy(lesson, chess.fen(), m.san) } : null,
     });
@@ -197,7 +198,7 @@ export default function PlayLines({ id, sel }: { id: string; sel?: boolean }) {
       } else {
         const m = new Chess(chess.fen()).move(r.expected);
         setRun({
-          ...run, refusals, errors: run.errors + 1, msg: null,
+          ...run, refusals, errors: run.errors + 1, msg: null, hints: (run.hints ?? 0) + (refusals === 2 ? 1 : 0),
           solution: { from: m.from, to: m.to, san: m.san, why: lessonWhy(lesson, chess.fen(), m.san) },
         });
       }

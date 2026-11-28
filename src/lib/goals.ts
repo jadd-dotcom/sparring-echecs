@@ -35,9 +35,9 @@ export const GOAL_MIN_MY_MOVES = 10;
 /** Sortie du répertoire d'une partie (calculée à part) : qui en est sorti, et à quel demi-coup. */
 export type ExitInfo = { by: 'me' | 'opponent' | 'end'; ply: number } | null | undefined;
 
-/** Partie mesurée : analysée, avec au moins 10 de mes coups. Les plus anciennes d'abord. */
+/** Partie mesurée : analysée, avec au moins 10 de mes coups, jouée sans aide. Les plus anciennes d'abord. */
 export function measuredGames(games: Game[]): Game[] {
-  return games.filter((g) => g.id !== undefined && (g.analysis?.length ?? 0) >= GOAL_MIN_MY_MOVES).sort((a, b) => a.date - b.date);
+  return games.filter((g) => g.id !== undefined && !g.assisted && (g.analysis?.length ?? 0) >= GOAL_MIN_MY_MOVES).sort((a, b) => a.date - b.date);
 }
 
 /** Mes gaffes (≥ 30 points) d'une partie, par motif principal. */

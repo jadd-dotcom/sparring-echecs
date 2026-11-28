@@ -91,6 +91,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByRole('button', { name: /Indice/ }).tap();
   await p.getByRole('button', { name: /Montrer le coup/ }).waitFor({ timeout: 20000 });
   assert(true, 'Indice : la pièce du meilleur coup est surlignée');
+  assert(await p.evaluate(() => window.__db.meta.get('current').then((m) => m.value.assisted === true)), 'indice utilisé : partie marquée « avec aide »');
   await p.getByRole('button', { name: /Montrer le coup/ }).tap();
   await p.waitForTimeout(300);
   assert(await p.locator('svg line, svg path, svg polygon').count() > 0, '2e appui : flèche du coup');

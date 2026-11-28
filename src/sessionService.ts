@@ -55,7 +55,7 @@ export async function loadToday(): Promise<TodayData> {
     threatDoneToday: reviewedToday(cards.filter((c) => c.kind === 'threat'), today),
     reviseLeft: reviseQ.length,
     reviseDoneToday: reviewedToday(cards, today),
-    gameToday: games.some((g) => g.source === 'app' && dayKey(new Date(g.date)) === today),
+    gameToday: games.some((g) => g.source === 'app' && !g.assisted && dayKey(new Date(g.date)) === today),
   });
   return {
     steps, next: nextStep(steps), rating: prof.rating, bot: botRating(prof.rating), trapId,

@@ -14,17 +14,27 @@ describe('sommaire de leçon', () => {
     expect(es[0].title).toBe('Bloc 1 · coups 1 à 3');
     expect(es.filter((e) => e.kind === 'extra').every((e) => e.group && e.seq && e.s !== undefined)).toBe(true);
   });
-  it('statuts : pas commencé → en cours (regardé) → fait (rejoué) ; plan et partie type : vus', () => {
+  it('statuts : pas commencé → en cours (regardé) → à revoir (rejoué avec erreurs) → fait (rejoué sans erreur) ; plan et partie type : vus', () => {
     let st = emptyLessonState();
     expect(entryStatus(es[0], st)).toBe('new');
     st = withBlock(st, 'main:0', (b) => ({ ...b, watched: 1 }));
     expect(entryStatus(es[0], st)).toBe('started');
     st = withBlock(st, 'main:0', (b) => ({ ...b, replays: 1, errors: 2 }));
+    expect(entryStatus(es[0], st)).toBe('review');
+    expect(lessonCounts(es, st).done).toBe(0);
+    st = withBlock(st, 'main:0', (b) => ({ ...b, replays: 2, clean: 1 }));
     expect(entryStatus(es[0], st)).toBe('done');
     st = withBlock(st, 'plan', (b) => ({ ...b, watched: 1 }));
     expect(lessonCounts(es, st)).toEqual({ done: 2, total: es.length });
     expect(entryStatus(es[1], { ...st, resume: { key: 'main:1', stage: 'watch', k: 2, at: 0 } })).toBe('started');
     expect(nextEntry(es, 'main:0')!.key).toBe('main:1');
+  });
+  it('progression existante (sans compteur « clean ») : recalculée si les erreurs sont enregistrées, sinon gardée', () => {
+    const at = (b: object) => entryStatus(es[0], withBlock(emptyLessonState(), 'main:0', () => b));
+    expect(at({ replays: 3, errors: 2 })).toBe('done');      // au moins un rejeu sans erreur
+    expect(at({ replays: 2, errors: 2 })).toBe('review');    // peut-être aucun rejeu propre : à revoir
+    expect(at({ replays: 2, errors: 0 })).toBe('done');
+    expect(at({ replays: 1 })).toBe('done');                 // erreurs non enregistrées : état gardé
     expect(nextEntry(es, es[es.length - 1].key)).toBeNull();
   });
 });

@@ -57,7 +57,7 @@ export default function ReviseThreat({ card, remaining, onNext, onResult }: {
   const failed2 = tries2.filter((t) => !t.ok).length;
 
   async function record(q: 1 | 2, uci: string, ok: boolean) {
-    attempts.current = [...attempts.current, { date: Date.now(), uci, ok, q }];
+    attempts.current = [...attempts.current, { date: Date.now(), uci, ok, q, hints: q === 1 ? hints : 0 }];
     await db.cards.update(card.id!, { attempts: attempts.current });
   }
 

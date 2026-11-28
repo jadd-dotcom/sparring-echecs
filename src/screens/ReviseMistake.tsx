@@ -56,7 +56,7 @@ export default function ReviseMistake({ card, remaining, onNext, onResult }: {
     // Réussie du premier coup (au plus l'indice en mots) : la carte avance ; sinon elle revient demain.
     const ok = e.solved && !!e.byUser && failed === 0 && hints <= 1;
     const today = dayKey();
-    if (e.byUser) attempts.current = [...attempts.current, { date: Date.now(), uci: e.byUser.uci, ok }];
+    if (e.byUser) attempts.current = [...attempts.current, { date: Date.now(), uci: e.byUser.uci, ok, hints }];
     await db.cards.update(card.id!, { ...schedule(card, ok, today), attempts: attempts.current });
     onResult(ok);
     setEnd(e);
@@ -83,7 +83,7 @@ export default function ReviseMistake({ card, remaining, onNext, onResult }: {
       else {
         setTries((x) => [...x, t]);
         // Essai raté : la carte revient demain, même si l'on quitte l'écran sans finir.
-        attempts.current = [...attempts.current, { date: Date.now(), uci, ok: false }];
+        attempts.current = [...attempts.current, { date: Date.now(), uci, ok: false, hints }];
         await db.cards.update(card.id!, { ...schedule(card, false, dayKey()), attempts: attempts.current });
       }
     } finally { setChecking(false); }

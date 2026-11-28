@@ -8,6 +8,7 @@ import { Check, CircleCheck, Clock, MessageCircleQuestion, Play, Download, Setti
 import GoalCard from '../GoalCard';
 import { loadToday, startStep, type TodayData } from '../sessionService';
 import { fillThreatCards } from '../threatService';
+import { reviseAllowanceLeft } from '../openings';
 import type { StepState } from '../lib/dailyPlan';
 
 /** Où mène chaque étape de la séance. */
@@ -33,7 +34,8 @@ export default function Home() {
       setD(t);
       // Rien à revoir et pas de partie en cours : nouvelles cartes « Lis la menace » (au plus 5 par jour).
       if (t.reviseLeft === 0 && !t.inProgress) {
-        fillThreatCards({ maxChecks: 8 }).then(async (made) => { if (made.length && alive) setD(await loadToday()); }).catch(() => {});
+        reviseAllowanceLeft().then((left) => (left > 0 ? fillThreatCards({ maxChecks: 8, maxNew: left }) : []))
+          .then(async (made) => { if (made.length && alive) setD(await loadToday()); }).catch(() => {});
       }
       if (!isOfflineReady()) {
         const ok = await waitOfflineReady((b, tt) => alive && setOffline(`${Math.round((100 * b) / tt)} %`));

@@ -16,7 +16,8 @@ export interface LessonEntry {
   e?: number;
 }
 
-export interface BlockState { watched?: number; replays?: number; errors?: number; loops?: number }
+/** `clean` : rejeux sans aucune erreur (compté depuis le brief de clôture) ; `errors` : erreurs cumulées de tous les rejeux. */
+export interface BlockState { watched?: number; replays?: number; errors?: number; loops?: number; clean?: number }
 export type Stage = 'watch' | 'replay' | 'loop' | 'plan' | 'model';
 export interface LessonState { blocks: Record<string, BlockState>; resume?: { key: string; stage: Stage; k: number; at: number } }
 export const emptyLessonState = (): LessonState => ({ blocks: {} });
@@ -38,18 +39,31 @@ export function lessonEntries(l: OpeningLesson): LessonEntry[] {
   return out;
 }
 
-export type EntryStatus = 'done' | 'started' | 'new';
+export type EntryStatus = 'done' | 'review' | 'started' | 'new';
 
-/** ✓ : bloc rejoué au moins une fois (plan / partie type : vus) ; en cours : regardé ou commencé ; sinon pas commencé. */
+/**
+ * Au moins un rejeu sans erreur ? `clean` si enregistré ; sinon recalcul depuis les compteurs : chaque rejeu raté compte au
+ * moins une erreur, donc plus de rejeux que d'erreurs ⇒ au moins un rejeu propre. Sans compteur d'erreurs (ancienne
+ * progression) : on garde l'état tel quel (fait).
+ */
+export function hasCleanReplay(b: BlockState): boolean | null {
+  if ((b.clean ?? 0) > 0) return true;
+  const replays = b.replays ?? 0;
+  if (replays === 0) return false;
+  if (b.errors === undefined) return null;
+  return replays > b.errors;
+}
+
+/** ✓ : bloc rejoué sans erreur (plan / partie type : vus) ; à revoir : rejoué avec erreurs ; en cours : regardé ou commencé. */
 export function entryStatus(e: LessonEntry, st: LessonState): EntryStatus {
   const b = st.blocks[e.key];
   if (!b) return st.resume?.key === e.key ? 'started' : 'new';
   if (e.kind === 'plan' || e.kind === 'model') return b.watched ? 'done' : 'started';
-  if ((b.replays ?? 0) > 0) return 'done';
-  return 'started';
+  if ((b.replays ?? 0) === 0) return 'started';
+  return hasCleanReplay(b) === false ? 'review' : 'done';
 }
 
-export const STATUS_LABEL: Record<EntryStatus, string> = { done: 'fait', started: 'en cours', new: 'pas commencé' };
+export const STATUS_LABEL: Record<EntryStatus, string> = { done: 'fait', review: 'à revoir', started: 'en cours', new: 'pas commencé' };
 
 export function lessonCounts(entries: LessonEntry[], st: LessonState): { done: number; total: number } {
   return { done: entries.filter((e) => entryStatus(e, st) === 'done').length, total: entries.length };

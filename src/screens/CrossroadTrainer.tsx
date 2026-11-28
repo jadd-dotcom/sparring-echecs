@@ -74,7 +74,7 @@ export default function CrossroadTrainer({ id }: { id: string }) {
     setQ1(null); setTries(0); setHints(0); setMsg(null); setEnd(null);
   }
   async function finish(ok: boolean, played?: string) {
-    const st = afterAnswer(prog![card.id], ok, dayKey());
+    const st = afterAnswer(prog![card.id], ok, dayKey(), Date.now(), hints);
     const p = { ...prog!, [card.id]: st };
     setProg(p);
     await saveCrossProgress(id, p);

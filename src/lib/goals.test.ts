@@ -53,6 +53,11 @@ describe('« Mon objectif » : mesure, maîtrise, objectif suivant, retour', () 
     expect(p.baseline).toEqual({ clean: 5, n: 10 });
     expect(p.mastered).toBe(false);
   });
+  it('partie avec aide : jamais mesurée', () => {
+    const after = Array.from({ length: 3 }, (_, i) => game(22 + i));
+    const helped = { ...game(26), assisted: true };
+    expect(goalProgress(G1, [...after, helped], since).total).toBe(3);
+  });
   it('maîtrisé : 7 propres sur les 10 dernières (10 parties au moins) → message, l’objectif suivant devient actif', () => {
     const six = Array.from({ length: 10 }, (_, i) => game(21 + i, i < 4 ? ['piece-en-prise'] : []));          // 6/10
     let s = updateGoals({ ...initialGoalState(since) }, six, T0 + 40 * DAY);

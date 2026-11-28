@@ -141,6 +141,7 @@ export default function OpeningLessonScreen({ id, part, stage: stageParam }: { i
     const key = keyOfBlock(blocks[stage.block], stage.block);
     updateLessonState(id, (st) => withBlock(st, key, (b) => ({
       ...b, replays: (b.replays ?? 0) + 1, errors: (b.errors ?? 0) + (stage.errs ?? 0), ...(stage.loop ? { loops: (b.loops ?? 0) + 1 } : {}),
+      ...(!(stage.errs ?? 0) ? { clean: (b.clean ?? 0) + 1 } : {}),
     }))).catch(() => {});
     if (stage.loop) {
       const loop = stage.loop;
@@ -156,7 +157,8 @@ export default function OpeningLessonScreen({ id, part, stage: stageParam }: { i
     const fens: string[] = [];
     for (let i = s; i < e; i++) { const c = positionAfter(seq, i); if (c.turn() === opening.color) fens.push(c.fen()); }
     introduceDrillCards(opening.id, fens).catch(() => {});
-    if (!extra) saveLessonProgress(opening.id, { blocksDone: stage.block + 1, done: false, at: Date.now() }).catch(() => {});
+    // Progression de la leçon : seulement après un rejeu sans erreur.
+    if (!extra && !(stage.errs ?? 0)) saveLessonProgress(opening.id, { blocksDone: stage.block + 1, done: false, at: Date.now() }).catch(() => {});
   }, [stage, opening, blocks]);
 
   if (!lesson) return <div className="card">Pas de leçon pour cette ouverture.</div>;
@@ -288,7 +290,9 @@ export default function OpeningLessonScreen({ id, part, stage: stageParam }: { i
                 </>
               ) : (
                 <>
-                  <h3><CircleCheck aria-hidden className="ico good-text" /> {extra ? 'Ligne réussie' : 'Bloc réussi'}{stage.loop ? ` · tour ${stage.loop.n}` : ''}</h3>
+                  {(stage.errs ?? 0) === 0
+                    ? <h3 data-testid="block-result" data-clean="true"><CircleCheck aria-hidden className="ico good-text" /> {extra ? 'Ligne réussie' : 'Bloc réussi'}{stage.loop ? ` · tour ${stage.loop.n}` : ''}</h3>
+                    : <h3 data-testid="block-result" data-clean="false"><RotateCcw aria-hidden className="ico" /> {extra ? 'Ligne à revoir' : 'Bloc à revoir'} ({stage.errs} erreur{(stage.errs ?? 0) > 1 ? 's' : ''}){stage.loop ? ` · tour ${stage.loop.n}` : ''} : rejoue-le sans erreur pour le valider.</h3>}
                   {stage.loop && <p className="muted small" data-testid="loop-count">En boucle : tour {stage.loop.n} terminé, {stage.loop.errors + (stage.errs ?? 0)} erreur{stage.loop.errors + (stage.errs ?? 0) > 1 ? 's' : ''} au total. Le bloc recommence…</p>}
                   {extra?.plan && <p className="line-plan" data-testid="line-plan-done"><b>Le plan :</b> {fig(plainText(extra.plan))}</p>}
                   <p className="muted small">Ces coups entrent dans ton drill (première révision demain).</p>
