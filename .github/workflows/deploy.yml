@@ -23,8 +23,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -32,11 +32,18 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+      # 5 parcours critiques dans Chromium (séance, 10 coups contre Maia, bloc de leçon, ligne, carte de révision).
+      - run: npx playwright install --with-deps chromium
+      - name: Parcours critiques (Playwright)
+        run: |
+          npx vite preview --port 4173 --strictPort &
+          for i in $(seq 60); do curl -sf http://localhost:4173/sparring-echecs/ > /dev/null && break; sleep 1; done
+          node tests/ci-critical.cjs "$RUNNER_TEMP"
       # Préparation de la publication : inutile pour une pull request, qui ne déploie jamais.
       - if: github.event_name != 'pull_request'
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -50,4 +57,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

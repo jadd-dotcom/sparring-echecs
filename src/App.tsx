@@ -1,33 +1,35 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import Home from './screens/Home';
-import Play from './screens/Play';
-import Review from './screens/Review';
-import Revise from './screens/Revise';
-import Cards from './screens/Cards';
-import Comment from './screens/Comment';
-import PlayLines from './screens/PlayLines';
-import Stats from './screens/Stats';
-import Settings from './screens/Settings';
-import Openings from './screens/Openings';
-import Report from './screens/Report';
-import Mates from './screens/Mates';
-import Traps from './screens/Traps';
-import PlayMenu from './screens/PlayMenu';
-import Training from './screens/Training';
-import Progress from './screens/Progress';
-import GoalDetail from './screens/GoalDetail';
-import CrossroadTrainer from './screens/CrossroadTrainer';
-import OpeningPage from './screens/OpeningPage';
+// Écrans en chargement différé : chacun dans son propre fichier, téléchargé à la première visite (précaché pour le hors ligne).
+const Play = lazy(() => import('./screens/Play'));
+const Review = lazy(() => import('./screens/Review'));
+const Revise = lazy(() => import('./screens/Revise'));
+const Cards = lazy(() => import('./screens/Cards'));
+const Comment = lazy(() => import('./screens/Comment'));
+const PlayLines = lazy(() => import('./screens/PlayLines'));
+const Stats = lazy(() => import('./screens/Stats'));
+const Settings = lazy(() => import('./screens/Settings'));
+const Openings = lazy(() => import('./screens/Openings'));
+const Report = lazy(() => import('./screens/Report'));
+const Mates = lazy(() => import('./screens/Mates'));
+const Traps = lazy(() => import('./screens/Traps'));
+const PlayMenu = lazy(() => import('./screens/PlayMenu'));
+const Training = lazy(() => import('./screens/Training'));
+const Progress = lazy(() => import('./screens/Progress'));
+const GoalDetail = lazy(() => import('./screens/GoalDetail'));
+const CrossroadTrainer = lazy(() => import('./screens/CrossroadTrainer'));
+const OpeningPage = lazy(() => import('./screens/OpeningPage'));
 import TabBar from './TabBar';
 import { parentOf } from './nav';
-import OpeningLessonScreen from './screens/OpeningLesson';
-import RepertoireEditor from './screens/RepertoireEditor';
-import BoardMastery, { BoardLessonScreen } from './screens/BoardMastery';
-import BoardExercise from './screens/BoardExercise';
-import BoardWarmup from './screens/BoardWarmup';
-import { BoardBlindGame, BoardReplay } from './screens/BoardBlind';
+const OpeningLessonScreen = lazy(() => import('./screens/OpeningLesson'));
+const RepertoireEditor = lazy(() => import('./screens/RepertoireEditor'));
+const BoardMastery = lazy(() => import('./screens/BoardMastery'));
+const BoardLessonScreen = lazy(() => import('./screens/BoardMastery').then((m) => ({ default: m.BoardLessonScreen })));
+const BoardExercise = lazy(() => import('./screens/BoardExercise'));
+const BoardWarmup = lazy(() => import('./screens/BoardWarmup'));
+const BoardBlindGame = lazy(() => import('./screens/BoardBlind').then((m) => ({ default: m.BoardBlindGame })));
+const BoardReplay = lazy(() => import('./screens/BoardBlind').then((m) => ({ default: m.BoardReplay })));
 import { ensureOpenings } from './openings';
-import './selftest';
 import { go, parse, type Route } from './router';
 import { ChevronLeft } from './icons';
 import { loadPrefs } from './prefs';
@@ -79,7 +81,7 @@ export default function App() {
         </header>
       )}
       {toast && <div className="toast" role="status" data-testid="auto-import" onClick={() => setToast(null)}>{toast}</div>}
-      <main>{ready && <>
+      <main>{ready && <Suspense key={route.name} fallback={<p className="muted center-text" data-testid="screen-loading">Chargement…</p>}>
         {route.name === 'home' && <Home />}
         {route.name === 'jouer' && <PlayMenu />}
         {route.name === 'training' && <Training />}
@@ -107,7 +109,7 @@ export default function App() {
         {route.name === 'board' && route.view === 'warmup' && <BoardWarmup />}
         {route.name === 'board' && route.view === 'replay' && <BoardReplay />}
         {route.name === 'board' && route.view === 'blind' && <BoardBlindGame />}
-      </>}</main>
+      </Suspense>}</main>
       {!fit && ready && <TabBar route={route} />}
     </div>
   );

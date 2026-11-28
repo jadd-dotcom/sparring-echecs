@@ -35,6 +35,9 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const busy = useRef(false);
+  // Indice en cours : annulé (commande stop) si l'on quitte la partie.
+  const hintAbort = useRef<AbortController | null>(null);
+  useEffect(() => () => hintAbort.current?.abort(), []);
   const [op, setOp] = useState<Opening | null>(null);
   // Assistance (partie non comptée uniquement)
   const [hint, setHint] = useState<{ fen: string; uci: string; level: 1 | 2 } | null>(null);
@@ -178,7 +181,9 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
     if (hint && hint.fen === fen) { setHint({ ...hint, level: 2 }); return; }
     setHintBusy(true);
     try {
-      const r = await stockfish.analyse(fen, 700);
+      hintAbort.current?.abort();
+      hintAbort.current = new AbortController();
+      const r = await stockfish.analyse(fen, 700, undefined, hintAbort.current.signal);
       if (r.bestMove) setHint({ fen, uci: r.bestMove, level: 1 });
     } finally { setHintBusy(false); }
   }

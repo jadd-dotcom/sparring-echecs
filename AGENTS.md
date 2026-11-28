@@ -49,5 +49,6 @@ Node 22 (version utilisée par le CI).
 | Typage (pas de script dédié ; aussi exécuté par le build) | `npx tsc -b` |
 | Tests unitaires (Vitest) | `npm test` |
 | Build de production (`dist/`) | `npm run build` |
+| Parcours critiques (aussi en CI) | `npx vite preview --port 4173 &` puis `node tests/ci-critical.cjs <dossier>` |
 
-Les scripts `tests/*.cjs` (Playwright) se lancent contre `npx vite preview --port 4173` ; voir le README pour leur usage.
+Les autres scripts `tests/*.cjs` (Playwright) se lancent de la même façon ; voir le README pour leur usage.

@@ -41,6 +41,14 @@ export default defineConfig({
     }),
   ],
   worker: { format: 'es' },
+  build: {
+    rollupOptions: {
+      output: {
+        // Bibliothèques dans leurs propres fichiers (mis en cache séparément de l'appli).
+        manualChunks: { react: ['react', 'react-dom'], dexie: ['dexie'], chess: ['chess.js'] },
+      },
+    },
+  },
   resolve: {
     // Runtime ONNX « wasm » seul (sans WebGPU/JSEP) : plus léger.
     alias: { 'onnxruntime-web': 'onnxruntime-web/wasm' },
