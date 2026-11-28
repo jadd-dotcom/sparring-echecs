@@ -50,7 +50,7 @@ quoi travailler**.
 1. **Perte de la progression** : elle n'existe que dans le navigateur de l'iPad (`src/db.ts:194-219`), sans demande de stockage
    persistant, avec un import destructeur (R-01, R-02 de `docs/project/RISKS.md`).
 2. **Apprendre des explications inexactes** : 24 des 31 phrases « la colonne X s'ouvre pour tes tours » décrivent une colonne
-   seulement semi-ouverte (mesuré, §4.11).
+   seulement semi-ouverte (mesuré, §4.8).
 3. **Casser la progression pendant la refonte** : 27 clés de progression non typées (§2) et des services d'accès aux données
    sans aucun test (§3).
 
@@ -74,7 +74,7 @@ et `src/data/openingLessons.ts` (653).
 
 ### 1.2 Dépendances et flux de données
 - **Navigation** : routage par le fragment d'URL (`src/router.ts:30-70`). `src/App.tsx:1-28` importe statiquement les 27 écrans,
-  donc il n'y a aucun découpage du code (voir §1.6).
+  donc il n'y a aucun découpage du code (voir §1.5).
 - **Démarrage** : `ensureOpenings()` et `loadPrefs()` (`src/App.tsx:48`), puis l'import Chess.com automatique et le recalcul
   des détails en tâche de fond (`src/App.tsx:50-58`). L'analyse de fond se met en pause pendant une partie
   (`src/App.tsx:38-42`).
