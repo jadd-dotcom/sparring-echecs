@@ -84,6 +84,8 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await move('e5c6');
   await p.locator('[data-testid="trap-ex"][data-phase="won"]').waitFor({ timeout: 30000 });
   assert(!/sans indice/.test(await p.getByTestId('trap-result').innerText()), 'réussi avec indices (ne compte pas pour la maîtrise)');
+  // La tentative est écrite en base juste après l'affichage du résultat : on l'attend (pas de lecture trop tôt).
+  await p.waitForFunction(() => window.__db.meta.get('traps').then((m) => !!m?.value?.petrov?.attempts?.length));
   const tp = await p.evaluate(() => window.__db.meta.get('traps').then((m) => m.value.petrov.attempts));
   assert(tp.length === 1 && tp[0].ok && !tp[0].clean, 'tentative enregistrée : réussie, pas « sans indice »');
 

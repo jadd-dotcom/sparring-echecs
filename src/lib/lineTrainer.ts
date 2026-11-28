@@ -128,10 +128,12 @@ export function withLineDone(p: LineProgress, l: Line, clean: boolean, date = Da
   return { ...p, lines: { ...p.lines, [k]: { status: clean ? 'ok' : 'redo', plays: (prev?.plays ?? 0) + 1, lastAt: date, attempts } } };
 }
 
-/** Phrase de la leçon pour un coup (ligne principale ou blocs supplémentaires), sinon null. */
-export function lessonWhy(lesson: OpeningLesson | undefined, fenBefore: string, san: string): string | null {
-  if (!lesson) return null;
-  const key = fenKey(fenBefore);
+/** Index position + coup → « pourquoi » d'une leçon, calculé une seule fois par leçon (les séquences ne changent pas). */
+const whyIndex = new WeakMap<OpeningLesson, Map<string, string>>();
+function indexOf(lesson: OpeningLesson): Map<string, string> {
+  let idx = whyIndex.get(lesson);
+  if (idx) return idx;
+  idx = new Map();
   const seqs: { sans: string[]; whys: (string | null)[] }[] = [
     { sans: lesson.moves.map((m) => m.san), whys: lesson.moves.map((m) => m.why) },
     ...(lesson.extras ?? []).flatMap((x) => x.lines.map((ln) => ({
@@ -139,14 +141,23 @@ export function lessonWhy(lesson: OpeningLesson | undefined, fenBefore: string, 
       whys: [...ln.start.map(() => null), ...ln.moves.map((m) => m.why)],
     }))),
   ];
+  // Même règle qu'avant : la première séquence qui explique ce coup dans cette position l'emporte.
   for (const s of seqs) {
     const c = new Chess();
     for (let i = 0; i < s.sans.length; i++) {
-      if (s.sans[i] === san && s.whys[i] && fenKey(c.fen()) === key) return s.whys[i];
+      const k = fenKey(c.fen()) + ' ' + s.sans[i];
+      if (s.whys[i] && !idx.has(k)) idx.set(k, s.whys[i]!);
       c.move(s.sans[i]);
     }
   }
-  return null;
+  whyIndex.set(lesson, idx);
+  return idx;
+}
+
+/** Phrase de la leçon pour un coup (ligne principale ou blocs supplémentaires), sinon null. */
+export function lessonWhy(lesson: OpeningLesson | undefined, fenBefore: string, san: string): string | null {
+  if (!lesson) return null;
+  return indexOf(lesson).get(fenKey(fenBefore) + ' ' + san) ?? null;
 }
 
 /** Le plan à montrer en fin de ligne : la phrase de plan de cette ligne (blocs par carrefour) puis celui de la leçon,

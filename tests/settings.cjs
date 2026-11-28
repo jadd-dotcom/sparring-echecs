@@ -9,6 +9,8 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   const b = await chromium.launch();
   const ctx = await b.newContext({ ...devices['iPad (gen 7) landscape'], deviceScaleFactor: 1 });
   const p = await ctx.newPage();
+  // Le niveau enregistré s'affiche après le chargement du profil : saisir avant écraserait la saisie (course).
+  const ratingReady = () => p.waitForFunction(() => document.querySelector('#rating')?.value !== '');
   const errors = [];
   p.on('pageerror', (e) => errors.push(e.message));
   const cur = () => p.evaluate(() => window.__db.meta.get('current').then((m) => m?.value ?? null));
@@ -83,11 +85,11 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.evaluate(() => window.__db.meta.get('profile').then((m) => window.__db.meta.put({ key: 'profile', value: { ...m.value, gamesPlayed: 25, calibrationStart: 0 } })));
   await p.goto(URL + '#/settings');
   await p.getByText('échelle de l’appli, pas celle de Chess.com').waitFor();
-  await p.locator('#rating').fill('400');
+  await ratingReady(); await p.locator('#rating').fill('400');
   await p.getByRole('button', { name: 'Enregistrer', exact: true }).tap();
   await p.getByText(/Entre un nombre entre 550 et 2600/).waitFor();
   assert(true, 'niveau hors bornes refusé (400)');
-  await p.locator('#rating').fill('550');
+  await ratingReady(); await p.locator('#rating').fill('550');
   await p.getByRole('button', { name: 'Enregistrer', exact: true }).tap();
   await p.getByText(/Niveau réglé à 550 : Maia jouera à 600/).waitFor();
   await p.screenshot({ path: OUT + '/s-1-reglages.png' });
@@ -98,7 +100,7 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByText('Calibration : partie 1/10').waitFor();
   assert(true, 'accueil : Maia à 600, « Calibration : partie 1/10 »');
   await p.goto(URL + '#/settings');
-  await p.locator('#rating').fill('1200');
+  await ratingReady(); await p.locator('#rating').fill('1200');
   await p.getByRole('button', { name: 'Enregistrer', exact: true }).tap();
   await p.getByText(/Niveau réglé à 1200/).waitFor();
   await home();

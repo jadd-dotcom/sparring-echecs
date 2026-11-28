@@ -40,11 +40,11 @@ export default function Revise({ opening, only }: { opening?: string; only?: 'th
     if (!empty || scan !== 'todo' || opening) return;
     setScan('running');
     // Révision vide mais des « Lis la menace » attendent dans leur étape : pas de nouvelles positions ici.
-    // Les nouvelles cartes respectent le plafond du jour : on n'en crée pas plus que la place restante, puis la file est
-    // recalculée (plafond et répartition avec l'étape « Lis la menace » compris).
+    // Les nouvelles cartes respectent le plafond du jour : on n'en crée pas plus que la place restante (maxNew), et ce
+    // sont elles qui s'affichent.
     Promise.all([only ? Promise.resolve(0) : reviewCounts().then((rc) => rc.threat), reviseAllowanceLeft()])
       .then(([pending, left]) => (pending || left <= 0 ? [] : fillThreatCards({ maxNew: left })))
-      .then(async (made) => { if (made.length) { const q = await reviewQueue(opening, { only }); if (mounted.current) setQueue(q); } })
+      .then((made) => { if (mounted.current && made.length) setQueue(made); })
       .catch(() => {})
       .finally(() => { if (mounted.current) setScan('done'); });
   }, [empty, scan, opening, only]);

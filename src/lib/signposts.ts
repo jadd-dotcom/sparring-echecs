@@ -129,7 +129,18 @@ export function counterText(pos: Chess, mine: Move, after: Chess, t: SignpostThr
  * « Il menace Qxf7 mat → ton cavalier bloque la colonne f : f7 est à l’abri (…Nf6) » (mon coup en notation, …coup
  * pour les Noirs). `threat` : la menace de son coup (par défaut, celle calculée pour cette position).
  */
+const sentenceCache = new Map<string, string>();
+
 export function signpostSentence(card: SignpostCard, me: Color, opts: { lesson?: OpeningLesson; threat?: SignpostThreat | null } = {}): string {
+  // Cache : la phrase ne dépend que de la carte, du camp et de la leçon (sauf menace imposée par l'appelant).
+  if (opts.threat !== undefined) return computeSentence(card, me, opts);
+  const k = `${opts.lesson?.openingId ?? ''}|${me}|${card.crossroad.fen}|${card.his}|${card.mine ?? ''}`;
+  let s = sentenceCache.get(k);
+  if (s === undefined) { s = computeSentence(card, me, opts); sentenceCache.set(k, s); }
+  return s;
+}
+
+function computeSentence(card: SignpostCard, me: Color, opts: { lesson?: OpeningLesson; threat?: SignpostThreat | null }): string {
   const before = new Chess(card.crossroad.fen);
   const pos = new Chess(card.crossroad.fen);
   const his = pos.move(card.his);
