@@ -637,3 +637,18 @@ pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur �
   **docs/POURQUOI-MODIFIES.md** (ligne, coup, avant → après).
 - Tests : `src/lib/moveWhy.test.ts` (les 3 exemples : 7…Qc7, 8…g6, 9.Qc2 ; s'écarte, pare l'échec, menace de mat,
   rien à défendre) ; `tests/lessons-full.cjs` (9.Qc2 dans la leçon du Londres).
+
+## Étape 8 : finitions des « pourquoi » calculés (28/11)
+- Le coup qui CRÉE une menace la nomme (les 64 menaces déjà calculées, les deux camps) : mat (« avec ta dame d5, il
+  menace Qxf7 mat »), fourchette (« menace Nc2+, fourchette sur son roi et sa tour a1 », « menace e5, fourchette sur
+  ton fou d6 et ton cavalier f6 »), prise que la phrase ne disait pas encore (« et menace de prendre ta dame d8 ») ;
+  ligne ouverte : « ouvre la diagonale de sa dame d4, qui menace… ». Pas de doublon avec « chasse son fou c5 ».
+- Toutes les pièces qui attaquent sont nommées (« attaqué par ta dame et ta tour », « par ses deux cavaliers »).
+- Les deux idées gardées : clouage créé (« …, et cloue ton pion e4 sur ton roi ») ou défait (« ; ton cavalier c3
+  n'est plus cloué »).
+- Reformulations : « garde c2 : plus de fourchette Nc2+ sur son roi et sa tour » ; « bouche la diagonale de ta dame :
+  elle ne vise plus son pion h7 » quand la pièce reste attaquée par une autre (9…g6 : la tour h1 vise toujours h7, et
+  le fou blanc est encore en f1 — Bd3 vient au coup 10).
+- 21 « pourquoi » modifiés (fin de docs/POURQUOI-MODIFIES.md). docs/LECONS-OUVERTURES.md régénéré ; docs/CARREFOURS.md
+  régénéré sans changement (aucune de ces phrases n'est sur une carte de carrefour).
+- Tests : `src/lib/moveWhy.test.ts` (les 7 exemples + pas de doublon).

@@ -151,7 +151,7 @@ _Le plan :_ Ensuite dxe5 pour ouvrir la colonne d, puis b3 et Bb2 : tes deux fou
 - 4. cxd5 — Ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours.
 - 4... Nxd5 — Son cavalier reprend en d5 : le matériel reste égal.
 - 5. Bg2 — Ton fou se développe en g2 et vise son cavalier d5.
-- 5... Nb6 — Son cavalier, attaqué par ton fou, s’écarte en b6 ; il surveille aussi d5.
+- 5... Nb6 — Son cavalier, attaqué par ton cavalier et ton fou, s’écarte en b6 ; il surveille aussi d5.
 - 6. d3 — Le pion d3 ouvre la diagonale de ton fou c1.
 - 6... Be7 — Son fou se développe en e7.
 - 7. Nf3 — Ton cavalier va en f3 et attaque son pion e5.
@@ -319,7 +319,7 @@ _Le plan :_ Ensuite Be3 et Qd2, puis Nd5 : ton pion a4 freine …b5 et ton caval
 - 4. cxd5 — Ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours.
 - 4... Nxd5 — Son cavalier reprend en d5 : le matériel reste égal.
 - 5. Bg2 — Ton fou se développe en g2 et vise son cavalier d5.
-- 5... Nc7 — Son cavalier, attaqué par ton fou, s’écarte en c7 ; il surveille aussi d5.
+- 5... Nc7 — Son cavalier, attaqué par ton cavalier et ton fou, s’écarte en c7 ; il surveille aussi d5.
 - 6. Nf3 — Ton cavalier se développe en f3 et surveille d4 et e5.
 - 6... Nc6 — Son cavalier se développe en c6 et surveille d4 et e5.
 - 7. O-O — Petit roque : ton roi se met à l’abri et ta tour se rapproche du centre.
@@ -584,7 +584,7 @@ Chaque ligne se regarde puis se rejoue comme un bloc de la leçon ; ses coups en
 - 8. hxg3 — Tu reprends avec le pion h : ta tour h1 gagne la colonne h.
 - 8... Qb6 — Sa dame va en b6 et attaque ton pion b2.
 - 9. Qc2 — Ta dame va en c2 et protège ton pion b2, attaqué par sa dame ; elle surveille aussi e4.
-- 9... g6 — Le pion g6 bouche la diagonale de ta dame : son pion h7 n’est plus attaqué ; il prépare aussi le fianchetto de son fou en g7.
+- 9... g6 — Le pion g6 bouche la diagonale de ta dame : elle ne vise plus son pion h7 ; il prépare aussi le fianchetto de son fou en g7.
 - 10. Bd3 — Ton fou se développe en d3 et surveille e4.
 - 10... Bd7 — Son fou se développe en d7.
 
@@ -605,10 +605,10 @@ _Le plan :_ Plan : Rd1 et Qb1 protègent ton centre et le pion b2, puis tu roque
 - 6... Nc6 — Le cavalier noir se développe.
 - 7. e4 — Ton pion e4 prend le centre et ouvre la diagonale de ton fou f1.
 - 7... d6 — Le pion d6 soutient son pion c5.
-- 8. Ng5 — Ton cavalier va en g5 et vise e4.
-- 8... Qe7 — Sa dame va en e7 et protège f7 contre la menace de mat ; elle surveille aussi e4 et e5.
+- 8. Ng5 — Ton cavalier va en g5 : avec ta dame d5, il menace Qxf7 mat.
+- 8... Qe7 — Sa dame va en e7 et protège f7 contre la menace de mat, et cloue ton pion e4 sur ton roi.
 - 9. Bb5 — Ton fou cloue son cavalier c6 sur son roi.
-- 9... Bd7 — Son fou va en d7 et protège son cavalier c6, attaqué par ton fou.
+- 9... Bd7 — Son fou va en d7 et protège son cavalier c6, attaqué par ta dame et ton fou ; son cavalier c6 n’est plus cloué.
 - 10. Bc4 — Ton fou va en c4 et vise d5.
 - 10... Nd8 — Son cavalier se met à l’abri en d8.
 
@@ -672,7 +672,7 @@ _Le plan :_ Plan : e4 pour ouvrir le centre contre son pion f5 ; si son cavalier
 - 4... Qb4+ — La dame noire fait échec et vise ton pion b2.
 - 5. Nc3 — Ton cavalier pare l’échec en se développant ; si …Qxb2, Bd2 puis Rb1 chasse la dame (Stockfish : gros avantage blanc).
 - 5... Qa5 — La dame noire recule : tu as un pion de plus et tes pièces sont sorties.
-- 6. Qd5 — Ta dame bouche la rangée de sa dame : ton pion e5 n’est plus attaqué ; elle surveille aussi d4 et e4.
+- 6. Qd5 — Ta dame bouche la rangée de sa dame : sa dame ne vise plus ton pion e5 ; elle surveille aussi d4 et e4.
 - 6... Bc5 — Son fou se développe en c5 et surveille d4.
 - 7. a3 — Le pion a3 contrôle b4 : ni son fou ni son cavalier ne pourront s’y installer.
 - 7... h6 — Le pion h6 chasse ton fou g5.
@@ -680,7 +680,7 @@ _Le plan :_ Plan : e4 pour ouvrir le centre contre son pion f5 ; si son cavalier
 - 8... g5 — Le pion g5 chasse ton fou h4.
 - 9. Bg3 — Ton fou, attaqué par son pion, s’écarte en g3 ; il surveille aussi e5.
 - 9... g4 — Le pion g4 chasse ton cavalier f3.
-- 10. Nd2 — Ton cavalier, attaqué par son pion, s’écarte en d2 ; il surveille aussi e4.
+- 10. Nd2 — Ton cavalier, attaqué par son pion, s’écarte en d2 ; ton cavalier c3 n’est plus cloué.
 - 10... Nge7 — Son cavalier va en e7 et attaque ta dame d5.
 
 _Le plan :_ Son cavalier e7 attaque ta dame : Qc4 la met à l’abri ; tu as un pion de plus et ses pions g sont trop avancés, développe-toi (e3, Be2) puis roque.
@@ -834,7 +834,7 @@ _Le plan :_ C’est le plan de la leçon : cavalier e5 soutenu par f4, puis ta d
 - 6. Nc3 — Ton cavalier se développe en c3 et surveille d5 et e4.
 - 6... Nxe5 — Son cavalier prend ton pion e5.
 - 7. Bf4 — Ton fou va en f4 et vise son cavalier e5.
-- 7... Nxf3+ — Son cavalier, attaqué par ton fou, prend ton cavalier f3 avec échec.
+- 7... Nxf3+ — Son cavalier, attaqué par ton fou et ton cavalier, prend ton cavalier f3 avec échec.
 - 8. gxf3 — Ton pion reprend en f3 : le matériel reste égal.
 - 8... c6 — Le pion c6 prépare …d5 : il pourra occuper tout le centre.
 - 9. Qd2 — Ta dame sort en d2 et surveille d4 et d5.
@@ -1043,7 +1043,7 @@ _Le plan :_ Ton pion f7 est à l’abri : …Na5 échange son fou c4, puis …Rb
 - 8. Bb5 — Son fou, attaqué par ton cavalier, s’écarte en b5 et cloue ton cavalier c6 sur ton roi.
 - 8... dxe5 — Ton pion prend son pion e5 : la colonne d s’ouvre pour tes tours.
 - 9. Nxe5 — Son cavalier reprend en e5 : le matériel reste égal.
-- 9... Bd7 — Ton fou va en d7 et protège ton cavalier c6, attaqué par son cavalier.
+- 9... Bd7 — Ton fou va en d7 et protège ton cavalier c6, attaqué par son fou et son cavalier ; ton cavalier c6 n’est plus cloué.
 - 10. Nxd7 — Son cavalier, attaqué par ton cavalier, prend ton fou d7.
 - 10... Qxd7 — Ta dame reprend en d7 : le matériel reste égal.
 
@@ -1120,7 +1120,7 @@ _Le plan :_ Ensuite …e5 (la case d4 pour ton cavalier), puis …Rb8 et …a6 p
 - 10... Qxd5 — Ta dame reprend en d5 : le matériel reste égal.
 - 11. Bf3 — Son fou va en f3 et contre-attaque ta dame d5 au lieu de défendre son cavalier d4.
 - 11... Qc4 — Ta dame, attaquée par son fou, s’écarte en c4 ; elle surveille aussi d4 et d5.
-- 12. Nxc6 — Son cavalier, attaqué par ta dame, prend ton cavalier c6.
+- 12. Nxc6 — Son cavalier, attaqué par ta dame, ton fou et ton cavalier, prend ton cavalier c6.
 - 12... bxc6 — Ton pion reprend en c6 : le matériel reste égal.
 - 13. b3 — Le pion b3 chasse ta dame c4.
 - 13... Qa6 — Ta dame, attaquée par son pion, s’écarte en a6.
@@ -1135,14 +1135,14 @@ _Le plan :_ Ton fou g7 vise c3 et a1 : sors ton fou c8 (…Bf5 ou …Be6), puis 
 
 - 5. c4 — Le pion c4 prend de l’espace au centre et surveille d5.
 - 5... Bg7 — Ton fou se développe en g7 et vise son cavalier d4.
-- 6. Be3 — Son fou va en e3 et protège son cavalier d4, attaqué par ton fou.
+- 6. Be3 — Son fou va en e3 et protège son cavalier d4, attaqué par ton fou et ton cavalier.
 - 6... Nf6 — Ton cavalier va en f6 et attaque son pion e4.
 - 7. Nc3 — Son cavalier va en c3 et protège son pion e4, attaqué par ton cavalier ; il surveille aussi d5.
 - 7... Ng4 — Ton cavalier va en g4 et vise e5.
 - 8. Qxg4 — Sa dame prend ton cavalier g4.
-- 8... Nxd4 — Ton cavalier prend son cavalier d4.
-- 9. Qd1 — Sa dame va en d1 et protège sa tour a1, menacée par ton cavalier (Nc2+) ; elle surveille aussi d4.
-- 9... Ne6 — Ton cavalier, attaqué par sa dame, s’écarte en e6 ; il surveille aussi d4.
+- 8... Nxd4 — Ton cavalier prend son cavalier d4 et menace Nc2+, fourchette sur son roi et sa tour a1.
+- 9. Qd1 — Sa dame va en d1 et garde c2 : plus de fourchette Nc2+ sur son roi et sa tour.
+- 9... Ne6 — Ton cavalier, attaqué par sa dame et son fou, s’écarte en e6 ; il surveille aussi d4.
 - 10. Rc1 — Sa tour vient en c1, prête si la colonne c s’ouvre.
 - 10... Qa5 — Ta dame cloue son cavalier c3 sur son roi.
 - 11. Qd2 — Sa dame va en d2 : son cavalier c3 n’est plus cloué.
@@ -1152,7 +1152,7 @@ _Le plan :_ Roque, puis …b6 et …Bb7 (ou …Be6) : avec ta dame a5 et ton fou
 
 **Ligne 2 — 5.Nxc6** (début : 1. e4 c5 2. Nf3 Nc6 3. d4 cxd4 4. Nxd4 g6)
 
-- 5. Nxc6 — Son cavalier prend ton cavalier c6.
+- 5. Nxc6 — Son cavalier prend ton cavalier c6 et menace de prendre ta dame d8.
 - 5... bxc6 — Ton pion reprend en c6 : le matériel reste égal.
 - 6. Bd3 — Son fou se développe en d3 et surveille e4.
 - 6... Bg7 — Ton fou se place sur la grande diagonale, d’où il vise le centre et l’autre aile.
@@ -1177,7 +1177,7 @@ _Le plan :_ Ta tour b8 attaque b2 : joue ensuite …Qc7 et …Nd7 pour libérer 
 - 6... Nf6 — Ton cavalier bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée ; il surveille aussi d5 et e4.
 - 7. e5 — Le pion e5 chasse ton cavalier f6.
 - 7... Nd5 — Ton cavalier, attaqué par son pion, s’écarte en d5.
-- 8. e6 — Le pion e6 gagne de l’espace au centre.
+- 8. e6 — Le pion e6 ouvre la diagonale de sa dame d4, qui menace de prendre ta tour h8.
 - 8... f6 — Le pion f6 bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée.
 - 9. exd7+ — Son pion prend ton pion d7, avec échec : la colonne e s’ouvre pour ses tours.
 - 9... Bxd7 — Ton fou reprend en d7 : le matériel reste égal.
@@ -1226,7 +1226,7 @@ _Le plan :_ Vise son pion d4, isolé : ton cavalier ira en f5, ta dame en b6, to
 - 8. Nbd2 — Son cavalier se développe en d2 et surveille e4.
 - 8... Nf6 — Ton cavalier se développe en f6 et surveille d5 et e4.
 - 9. Nc4 — Son cavalier va en c4 et vise e5.
-- 9... Nd7 — Ton cavalier va en d7 et protège ton pion e5, attaqué par son cavalier.
+- 9... Nd7 — Ton cavalier va en d7 et protège ton pion e5, attaqué par ses deux cavaliers.
 
 _Le plan :_ Ton cavalier d7 protège e5 : roque, puis …b6 et …f6 rendent ton centre solide.
 
@@ -1742,9 +1742,9 @@ _Le plan :_ Après Qxe4+, pare l’échec par …Be7, puis …N7f6 : tes cavalie
 
 - 7. Qb3 — Sa dame va en b3 et attaque ton pion b7.
 - 7... Qc7 — Ta dame va en c7 et protège ton pion b7, attaqué par sa dame ; elle surveille aussi e5.
-- 8. Nxg6 — Son cavalier prend ton fou g6.
+- 8. Nxg6 — Son cavalier prend ton fou g6 et menace de prendre ta tour h8.
 - 8... hxg6 — Ton pion reprend en g6 : le matériel reste égal.
-- 9. h4 — Son pion h2, attaqué par ta tour, avance en h4.
+- 9. h4 — Son pion h2, attaqué par ta dame et ta tour, avance en h4.
 - 9... Bd6 — Ton fou se développe en d6 et surveille e5.
 - 10. Bd2 — Son fou se développe en d2.
 - 10... Nbd7 — Ton cavalier se développe en d7 et surveille e5.
@@ -1840,7 +1840,7 @@ _Le plan :_ Après Kh2, ouvre par …dxe4, puis fais le grand roque : ta dame b6
 - 5... Bd6 — Ton fou se développe en d6 et surveille e5.
 - 6. Bd3 — Son fou se développe en d3 et surveille e4.
 - 6... Nbd7 — Ton cavalier se développe en d7 et surveille e5.
-- 7. e4 — Le pion e4 occupe le centre et surveille d5.
+- 7. e4 — Le pion e4 menace e5, fourchette sur ton fou d6 et ton cavalier f6.
 - 7... dxc4 — Ton pion prend son pion c4 : la colonne d s’ouvre pour tes tours.
 - 8. Bxc4 — Son fou reprend en c4 : le matériel reste égal.
 - 8... b5 — Le pion b5 chasse son fou c4.

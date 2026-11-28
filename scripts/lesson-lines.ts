@@ -61,7 +61,11 @@ for (const o of BUILTIN_OPENINGS.filter((x) => !x.archived)) {
       const before = pos.fen();
       const prev = pos.history({ verbose: true }).slice(-1)[0];
       if (i >= k) {
-        const ctx = prev ? { prev: { fen: prev.before, san: prev.san }, threat: THREATS[fk(before)] ?? null } : {};
+        const after = new Chess(before); after.move(l[i]);
+        const ctx = {
+          ...(prev ? { prev: { fen: prev.before, san: prev.san }, threat: THREATS[fk(before)] ?? null, myThreatBefore: THREATS[fk(prev.before)] ?? null } : {}),
+          myThreat: THREATS[fk(after.fen())] ?? null,
+        };
         const why = whys.get(fk(before) + ' ' + l[i]) ?? moveWhy(before, l[i], me, ctx);
         moves.push({ san: l[i], why });
         whys.set(fk(before) + ' ' + l[i], why);
