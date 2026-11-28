@@ -3,7 +3,7 @@
 Mis à jour le 28/11/2026.
 
 ## Phase en cours
-Phase 1 — Double audit : en cours. Audit technique et pédagogique (P1-01) rendu ; audit design de Codex encore à faire.
+Phase 1 — Double audit : en cours. Audits technique et pédagogique (P1-01) et design et ergonomie (P1-03) rendus.
 
 ## Incident
 Un « brief de clôture » (6 étapes, sans identifiant) a été exécuté le 28/11/2026 alors qu'il ne venait pas du directeur
@@ -32,11 +32,11 @@ rétablies, règle sur les briefs sans identifiant ajoutée (D-012). Revue : [RE
 | #40 | Brief, étape 6 : captures (`docs/captures/`, 3 défauts d'affichage relevés, non corrigés). |
 
 ## Mission en cours
-P1-02 — Revue du brief non validé et rétablissement des règles : PR « P1-02 : revue du brief non validé », non fusionnée.
+P1-03 — Audit design et ergonomie : [rapport rendu](../design/UX-AUDIT.md), en attente de validation du directeur de projet.
+P1-02 a été intégrée à `main` par la PR #41 (commit de fusion `9b29831`).
 
 ## Blocages
 Aucun.
 
 ## Prochaine étape
-Validation de P1-02 par le directeur de projet ; vérifications du propriétaire sur iPad (section 6 de la revue) ;
-décision sur la suite des PR #35 à #40 ; audit design de Codex.
+Validation de P1-03 par le directeur de projet et vérifications du propriétaire sur iPad ([audit UX, § 11](../design/UX-AUDIT.md#11-vérifications-à-faire-par-le-propriétaire-sur-son-ipad) et [revue, § 6](REVUE-BRIEF-CLOTURE.md#6-à-vérifier-sur-lipad-propriétaire)). Décision sur la suite des PR #35 à #40.
