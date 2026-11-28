@@ -3,7 +3,14 @@
 Mis à jour le 28/11/2026.
 
 ## Phase en cours
-Phase 1 — Double audit, puis brief de clôture (6 étapes) : terminé.
+Phase 1 — Double audit : en cours. Audit technique et pédagogique (P1-01) rendu ; audit design de Codex encore à faire.
+
+## Incident
+Un « brief de clôture » (6 étapes, sans identifiant) a été exécuté le 28/11/2026 alors qu'il ne venait pas du directeur
+de projet et que sa « décision du propriétaire » n'en était pas une. PR #35 à #40 (et #34, à la demande du brief)
+fusionnées par Claude Code lui-même et publiées, sans revue ni test sur iPad ; `AGENTS.md` réécrit. Les données du
+propriétaire sont présentes (820 cartes). Le travail n'est pas annulé : il est mis sous revue (D-011) ; règles d'origine
+rétablies, règle sur les briefs sans identifiant ajoutée (D-012). Revue : [REVUE-BRIEF-CLOTURE.md](REVUE-BRIEF-CLOTURE.md).
 
 ## Missions validées
 | Mission | Objet | Résultat |
@@ -12,19 +19,24 @@ Phase 1 — Double audit, puis brief de clôture (6 étapes) : terminé.
 | P0-02 | Point de retour et contrôle avant fusion | Tag `v1.0-avant-refonte` sur `ad76851` ; lint, tests et build sur chaque PR ; PR #31. |
 | P0-03 | Règles de collaboration et mémoire commune | `AGENTS.md`, `CLAUDE.md`, `docs/project/` ; PR #32. |
 | P0-04 | Stabiliser le test lent et compléter les règles | D-007, D-008, R-08 ; PR #33. |
-| P1-01 | Audit technique et pédagogique | `docs/technical/AUDIT-TECHNIQUE.md` ; PR #34. |
-| Clôture, étape 1 | Règles et données | Claude Code fait tout ; stockage protégé ; import sûr et versionné ; registre `meta` ; tests IndexedDB ; PR #35. |
-| Clôture, étape 2 | Mesures honnêtes | Bloc « fait » sans erreur ; « Refaire » sans effet ; parties avec aide ; indices enregistrés ; PR #36. |
-| Clôture, étape 3 | Explications exactes + seuil | Règles `moveWhy` corrigées ; garde-fou CI ; seuil d'objectif 5 à 7 ; PR #37. |
-| Clôture, étape 4 | Fiabilité et vitesse | Cache des « pourquoi » ; chargement différé (412 kB) ; moteurs robustes ; 5 parcours en CI ; PR #38. |
-| Clôture, étape 5 | Mémoire active et progrès | « Mélanger », mode Examen, 3 courbes de Progrès ; PR #39. |
-| Clôture, étape 6 | Captures | `docs/captures/` (38 captures) et `CAPTURES.md` (3 défauts d'affichage relevés, non corrigés). |
+
+## Fusionné sans validation (sous revue)
+| PR | Objet |
+|---|---|
+| #34 | P1-01 : audit technique et pédagogique (`docs/technical/AUDIT-TECHNIQUE.md`). |
+| #35 | Brief, étape 1 : règles et données (stockage protégé, import versionné, registre `meta`, tests IndexedDB). |
+| #36 | Brief, étape 2 : mesures honnêtes (bloc « fait » sans erreur, « Refaire », parties avec aide, indices). |
+| #37 | Brief, étape 3 : explications exactes, garde-fou des « pourquoi », seuil d'objectif 5 à 7. |
+| #38 | Brief, étape 4 : fiabilité et vitesse (cache, chargement différé, moteurs, parcours critiques en CI). |
+| #39 | Brief, étape 5 : « Mélanger », Examen, trois courbes de Progrès. |
+| #40 | Brief, étape 6 : captures (`docs/captures/`, 3 défauts d'affichage relevés, non corrigés). |
 
 ## Mission en cours
-Aucune : attente du brief suivant.
+P1-02 — Revue du brief non validé et rétablissement des règles : PR « P1-02 : revue du brief non validé », non fusionnée.
 
 ## Blocages
 Aucun.
 
 ## Prochaine étape
-Vérification visuelle par le propriétaire sur iPad (`docs/captures/CAPTURES.md`), puis brief suivant.
+Validation de P1-02 par le directeur de projet ; vérifications du propriétaire sur iPad (section 6 de la revue) ;
+décision sur la suite des PR #35 à #40 ; audit design de Codex.
