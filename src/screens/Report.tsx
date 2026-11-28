@@ -98,7 +98,7 @@ export default function Report() {
     const gd = await loadGoals(now);
     const gp = gd.goal ? goalProgress(gd.goal, gd.games, gd.state.since, gd.exits) : null;
     const goal = {
-      active: gd.goal && gp ? { name: gd.goal.name, rule: gd.goal.rule, since: gd.state.since, last: gp.last, clean: gp.clean, total: gp.total, baseline: gp.baseline } : null,
+      active: gd.goal && gp ? { name: gd.goal.name, rule: gd.goal.rule, since: gd.state.since, last: gp.last, clean: gp.clean, total: gp.total, baseline: gp.baseline, threshold: gp.threshold } : null,
       mastered: GOALS.filter((x) => gd.state.mastered[x.id] !== undefined).map((x) => ({ name: x.name, at: gd.state.mastered[x.id]! })),
       watch: toWatch(gd.goal, gd.games, gd.exits).map((w) => ({ label: w.label === 'repertoire' ? 'sorties du répertoire par moi' : MOTIF_LABEL[w.label], count: w.count })),
     };

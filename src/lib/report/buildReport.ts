@@ -251,7 +251,7 @@ export function trapsSection(t: TrapsReport): string[] {
 
 export interface GoalReport {
   /** null : tous les objectifs sont maîtrisés. */
-  active: { name: string; rule: string; since: number; last: { date: number; clean: boolean }[]; clean: number; total: number; baseline: { clean: number; n: number } } | null;
+  active: { name: string; rule: string; since: number; last: { date: number; clean: boolean }[]; clean: number; total: number; baseline: { clean: number; n: number }; threshold?: number } | null;
   mastered: { name: string; at: number }[];
   watch: { label: string; count: number }[];
 }
@@ -265,7 +265,7 @@ export function goalSection(g: GoalReport): string[] {
     L.push(
       `**${a.name}** — règle : « ${a.rule} »`, '',
       `- Début : ${fmtDate(a.since)} ; ${a.total} partie${a.total > 1 ? 's' : ''} mesurée${a.total > 1 ? 's' : ''} depuis (analysées, 10 coups au moins).`,
-      `- **${a.clean}/10** parties propres sur les ${a.last.length} dernières${a.last.length ? ` : ${a.last.map((x) => (x.clean ? '✓' : '✗')).join(' ')}` : ''} (maîtrisé à 7/10, 10 parties au moins).`,
+      `- **${a.clean}/10** parties propres sur les ${a.last.length} dernières${a.last.length ? ` : ${a.last.map((x) => (x.clean ? '✓' : '✗')).join(' ')}` : ''} (maîtrisé à ${a.threshold ?? 7}/10, 10 parties au moins ; seuil = point de départ + 3, entre 5 et 7).`,
       `- Point de départ : ${a.baseline.clean}/${a.baseline.n} parties propres sur les ${a.baseline.n} d’avant le début.`,
     );
   }

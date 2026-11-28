@@ -1,8 +1,8 @@
 // « Mon objectif » : une règle à la fois. Trois objectifs dans l'ordre, un seul actif. Mesure : mes parties analysées
 // (Sparring et Chess.com, 10 coups au moins) jouées depuis le début de l'objectif. Partie « propre » = aucune gaffe
-// (≥ 30 points) des motifs de l'objectif (objectif 3 : aucune sortie du répertoire par moi). Maîtrisé : 7 propres sur
+// (≥ 30 points) des motifs de l'objectif (objectif 3 : aucune sortie du répertoire par moi). Maîtrisé : seuil atteint sur
 // les 10 dernières (10 parties au moins depuis le début) ; l'objectif suivant devient actif. Un objectif maîtrisé qui
-// retombe à 5/10 ou moins redevient actif. Fonctions pures.
+// retombe sous son seuil − 2 redevient actif. Seuil : point de départ + 3, entre 5 et 7 sur 10. Fonctions pures.
 import type { Game } from '../db';
 import { MOTIF_ORDER, type Motif } from './report/motifs';
 
@@ -28,8 +28,24 @@ export const GOALS: GoalDef[] = [
 ];
 
 export const GOAL_WINDOW = 10;
+/** Seuil historique (avant le seuil personnalisé) : 7/10 ; retour à 5/10 ou moins. */
 export const GOAL_MASTERED = 7;
 export const GOAL_RELAPSE = 5;
+/** Seuil de maîtrise personnalisé : point de départ + 3, borné entre 5 et 7 sur 10. */
+export const GOAL_THRESHOLD_MIN = 5;
+export const GOAL_THRESHOLD_MAX = 7;
+export const GOAL_THRESHOLD_STEP = 3;
+
+/** Point de départ ramené sur 10 parties (0 sans parties avant le début). */
+export function baselineOn10(b: { clean: number; n: number }): number {
+  return b.n ? Math.round((b.clean / b.n) * GOAL_WINDOW) : 0;
+}
+/** Seuil de maîtrise d'un objectif selon son point de départ. */
+export function masteryThreshold(baselineClean10: number): number {
+  return Math.min(GOAL_THRESHOLD_MAX, Math.max(GOAL_THRESHOLD_MIN, baselineClean10 + GOAL_THRESHOLD_STEP));
+}
+/** Retour d'un objectif maîtrisé : propres ≤ seuil − 2. */
+export const relapseLimit = (threshold: number) => threshold - 2;
 export const GOAL_MIN_MY_MOVES = 10;
 
 /** Sortie du répertoire d'une partie (calculée à part) : qui en est sorti, et à quel demi-coup. */
@@ -69,6 +85,8 @@ export interface GoalState {
   since: number;
   /** Objectifs maîtrisés : id → date de maîtrise. */
   mastered: Partial<Record<GoalId, number>>;
+  /** Seuil atteint à la maîtrise (pour le retour : propres ≤ seuil − 2). Absent : ancien seuil 7/10. */
+  thresholds?: Partial<Record<GoalId, number>>;
   /** Messages à afficher une fois (maîtrise, retour d'un objectif). */
   messages: string[];
 }
@@ -85,6 +103,8 @@ export interface GoalProgress {
   total: number;
   /** Point de départ : les 10 parties d'avant le début de l'objectif. */
   baseline: { clean: number; n: number };
+  /** Seuil de maîtrise (sur 10) : point de départ + 3, entre 5 et 7. */
+  threshold: number;
   mastered: boolean;
 }
 
@@ -95,10 +115,11 @@ export function goalProgress(goal: GoalDef, games: Game[], since: number, exits:
   const before = ms.filter((g) => g.date < since).slice(-GOAL_WINDOW);
   const last = after.slice(-GOAL_WINDOW).map((g) => ({ id: g.id!, date: g.date, clean: isClean(goal, g, exits[g.id!]) }));
   const clean = last.filter((x) => x.clean).length;
+  const baseline = { clean: before.filter((g) => isClean(goal, g, exits[g.id!])).length, n: before.length };
+  const threshold = masteryThreshold(baselineOn10(baseline));
   return {
-    goal, since, last, clean, total: after.length,
-    baseline: { clean: before.filter((g) => isClean(goal, g, exits[g.id!])).length, n: before.length },
-    mastered: after.length >= GOAL_WINDOW && clean >= GOAL_MASTERED,
+    goal, since, last, clean, total: after.length, baseline, threshold,
+    mastered: after.length >= GOAL_WINDOW && clean >= threshold,
   };
 }
 
@@ -110,17 +131,19 @@ export function recentClean(goal: GoalDef, games: Game[], exits: Record<number, 
 
 /**
  * Met l'état à jour : objectif actif maîtrisé → message, l'objectif suivant non maîtrisé devient actif (début = now) ;
- * un objectif maîtrisé qui retombe à 5/10 ou moins (sur les 10 dernières parties) redevient actif, avec un message.
+ * un objectif maîtrisé qui retombe à son seuil − 2 ou moins (sur les 10 dernières parties) redevient actif, avec un message.
  */
 export function updateGoals(state: GoalState, games: Game[], now: number, exits: Record<number, ExitInfo> = {}): GoalState {
-  let s: GoalState = { ...state, mastered: { ...state.mastered }, messages: [...state.messages] };
+  let s: GoalState = { ...state, mastered: { ...state.mastered }, thresholds: { ...state.thresholds }, messages: [...state.messages] };
   // 1. Retour d'un objectif maîtrisé (le premier dans l'ordre).
   for (let i = 0; i < GOALS.length; i++) {
     const g = GOALS[i];
     if (s.mastered[g.id] === undefined || s.active === i) continue;
     const r = recentClean(g, games, exits);
-    if (r.n >= GOAL_WINDOW && r.clean <= GOAL_RELAPSE) {
+    const limit = relapseLimit(s.thresholds?.[g.id] ?? GOAL_MASTERED);
+    if (r.n >= GOAL_WINDOW && r.clean <= limit) {
       delete s.mastered[g.id];
+      delete s.thresholds![g.id];
       s.messages.push(`« ${g.name} » retombe à ${r.clean}/${GOAL_WINDOW} parties propres : cet objectif redevient actif.`);
       s = { ...s, active: i, since: now };
       break;
@@ -132,8 +155,9 @@ export function updateGoals(state: GoalState, games: Game[], now: number, exits:
     const p = goalProgress(g, games, s.since, exits);
     if (!p.mastered) break;
     s.mastered[g.id] = now;
+    s.thresholds![g.id] = p.threshold;
     const next = GOALS.findIndex((x) => s.mastered[x.id] === undefined);
-    s.messages.push(`Objectif maîtrisé : « ${g.name} » (${p.clean}/${GOAL_WINDOW} parties propres).${next >= 0 ? ` Nouvel objectif : « ${GOALS[next].name} ».` : ' Tous les objectifs sont maîtrisés.'}`);
+    s.messages.push(`Objectif maîtrisé : « ${g.name} » (${p.clean}/${GOAL_WINDOW} parties propres, seuil ${p.threshold}/${GOAL_WINDOW}).${next >= 0 ? ` Nouvel objectif : « ${GOALS[next].name} ».` : ' Tous les objectifs sont maîtrisés.'}`);
     s = { ...s, active: next >= 0 ? next : null, since: now };
   }
   return s;

@@ -18,9 +18,10 @@ describe('moveWhy : une phrase par coup, les deux camps', () => {
     expect(why('e4 e5 Nf3 Nc6 Bc4 Bc5 O-O')).toBe('Petit roque : ton roi se met à l’abri et ta tour se rapproche du centre.');
     expect(why('e4 e5 Nf3 Nc6 Bc4 Bc5 O-O Nf6 d3 O-O')).toBe('Petit roque : son roi se met à l’abri.');
   });
-  it('prise, reprise (matériel égal), colonne ouverte', () => {
-    expect(why('c4 d5 cxd5')).toBe('Ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours.');
-    expect(why('d4 d5 c4 c6 cxd5', 'b')).toBe('Son pion prend ton pion d5 : la colonne c s’ouvre pour ses tours.');
+  it('prise, reprise (matériel égal vérifié), colonne ouverte seulement sans aucun pion, sinon semi-ouverte', () => {
+    expect(why('c4 d5 cxd5')).toBe('Ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c devient semi-ouverte pour tes tours.');
+    expect(why('d4 d5 c4 c6 cxd5', 'b')).toBe('Son pion prend ton pion d5 : la colonne c devient semi-ouverte pour ses tours.');
+    expect(why('d4 d5 c4 c6 cxd5 cxd5', 'b')).toBe('Ton pion reprend en d5 : le matériel reste égal.');
     expect(why('c4 d5 cxd5 Qxd5')).toBe('Sa dame reprend en d5 : le matériel reste égal.');
   });
   it('clouage sur la dame (pas pour un pion, pas par la dame) et sur le roi ; déclouage', () => {
@@ -30,14 +31,16 @@ describe('moveWhy : une phrase par coup, les deux camps', () => {
   });
   it('pions : fianchetto, case g4 contrôlée (+ case de fuite si le roi est roqué), c3 prépare d4, attaque d’un pion', () => {
     expect(why('c4 e5 Nc3 Nf6 g3')).toBe('Le pion g3 prépare le fianchetto de ton fou en g2.');
-    expect(why('d4 g6 Nf3 Nf6 Bf4 Bg7 e3 O-O Be2 d6 h3')).toBe('Le pion h3 contrôle g4 : ni son fou ni son cavalier ne pourront s’y installer.');
-    expect(why('c4 e5 Nc3 Nc6 g3 g6 Bg2 Bg7 d3 d6 e4 f5 Nge2 Nf6 O-O O-O exf5 Bxf5 h3')).toMatch(/et ton roi a une case de fuite\.$/);
+    expect(why('d4 g6 Nf3 Nf6 Bf4 Bg7 e3 O-O Be2 d6 h3')).toBe('Le pion h3 contrôle g4.');
+    expect(why('c4 e5 Nc3 Nc6 g3 g6 Bg2 Bg7 d3 d6 e4 f5 Nge2 Nf6 O-O O-O exf5 Bxf5 h3')).toMatch(/et libère h2 pour ton roi\.$/);
+    // Fou déjà sorti : pas de « prépare le fianchetto ».
+    expect(why('e4 e5 Bc4 Nc6 g3')).not.toMatch(/fianchetto/);
     expect(why('e4 c5 c3', 'b')).toBe('Le pion c3 prépare d4 : il pourra occuper tout le centre.');
     expect(why('c4 c5 Nc3 Nf6 g3 d5', 'w')).toBe('Le pion d5 attaque ton pion c4.');
   });
   it('pièces : avant-poste, dame d2 + fou e3 contre un fianchetto, tour derrière son pion', () => {
     expect(why('c4 c5 Nc3 Nc6 g3 g6 Bg2 Bg7 d3 d6 e4 e5 Nge2 Nge7 O-O O-O Be3 Nd4')).toBe('Son cavalier s’installe en d4, un [[avant-poste]] protégé par son pion.');
-    expect(why('c4 d5 cxd5 Nf6 Nf3 Nxd5 d4 g6 e4 Nb6 h3 Bg7 Nc3 O-O Be3 Nc6 Qd2')).toBe('Ta dame sort en d2 : avec ton fou e3, Bh6 échangera son fou g7, le meilleur défenseur de son roi.');
+    expect(why('c4 d5 cxd5 Nf6 Nf3 Nxd5 d4 g6 e4 Nb6 h3 Bg7 Nc3 O-O Be3 Nc6 Qd2')).toBe('Ta dame sort en d2 : avec ton fou e3, elle prépare Bh6, qui propose l’échange de son fou g7.');
     expect(why('c4 e5 Nc3 Nc6 g3 Nf6 Bg2 Bc5 e3 O-O Nge2 d6 O-O a6 d4 Ba7 h3 Re8')).toBe('Sa tour vient en e8 et soutient son pion e5.');
   });
   it('interposition (vraie menace seulement) ; pion qui protège une pièce attaquée', () => {
@@ -85,7 +88,7 @@ describe('moveWhy : une phrase par coup, les deux camps', () => {
     expect(full('c4 c6 Nf3 d5 e3 Nf6 d4 Bf5 Nc3 e6 Nh4 Bg6 Qb3 Qc7 Nxg6 hxg6 h4', 'b')).toBe('Son pion h2, attaqué par ta dame et ta tour, avance en h4.');
     expect(full('d4 c5 d5 Nf6 Nf3 e6 Nc3 exd5 Nxd5 Nxd5 Qxd5 Nc6 e4 d6 Ng5 Qe7', 'w')).toBe('Sa dame va en e7 et protège f7 contre la menace de mat, et cloue ton pion e4 sur ton roi.');
     expect(full('d4 e5 dxe5 Nc6 Nf3 Qe7 Bg5 Qb4+ Nc3 Qa5 Qd5 Bc5 a3 h6 Bh4 g5 Bg3 g4 Nd2', 'w')).toBe('Ton cavalier, attaqué par son pion, s’écarte en d2 ; ton cavalier c3 n’est plus cloué.');
-    expect(full('e4 c5 Nf3 Nc6 d4 cxd4 Nxd4 g6 c4 Bg7 Be3 Nf6 Nc3 Ng4 Qxg4 Nxd4 Qd1', 'b')).toBe('Sa dame va en d1 et garde c2 : plus de fourchette Nc2+ sur son roi et sa tour.');
+    expect(full('e4 c5 Nf3 Nc6 d4 cxd4 Nxd4 g6 c4 Bg7 Be3 Nf6 Nc3 Ng4 Qxg4 Nxd4 Qd1', 'b')).toBe('Sa dame va en d1 et garde c2 : plus de fourchette Nc2+ sur son roi et sa tour ; avec son fou e3, elle menace aussi de prendre ton cavalier d4.');
     // 9…g6 : le fou blanc est encore en f1 (Bd3 vient au coup 10) et la tour h1 attaque toujours h7.
     expect(full('d4 e6 Bf4 c5 e3 d5 Nf3 Nf6 c3 Nc6 Nbd2 Nh5 Bg3 Nxg3 hxg3 Qb6 Qc2 g6', 'w')).toBe('Le pion g6 bouche la diagonale de ta dame : elle ne vise plus son pion h7 ; il prépare aussi le fianchetto de son fou en g7.');
     // « chasse son fou c5 » dit déjà la menace : pas de doublon.

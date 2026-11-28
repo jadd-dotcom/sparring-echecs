@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { detailRefresh } from './detailRefresh';
 import { clearGoalMessages, loadGoals, type GoalData } from './goalService';
-import { GOAL_MASTERED, GOAL_WINDOW, goalProgress, toWatch } from './lib/goals';
+import { GOAL_WINDOW, goalProgress, toWatch } from './lib/goals';
 import { MOTIF_LABEL } from './lib/report/motifs';
 import { Check, PartyPopper, Target, X } from './icons';
 import { go } from './router';
@@ -47,7 +47,7 @@ export default function GoalCard({ compact = false }: { compact?: boolean }) {
           </div>
           <p className="muted small" data-testid="goal-baseline">
             Point de départ : {p.baseline.n ? <>{p.baseline.clean} propre{p.baseline.clean > 1 ? 's' : ''} sur les {p.baseline.n} parties d’avant le {fmt(state.since)}</> : <>aucune partie analysée avant le {fmt(state.since)}</>}.
-            {!compact && <>{' '}Maîtrisé à {GOAL_MASTERED}/{GOAL_WINDOW}.</>}
+            {' '}<span data-testid="goal-threshold">Maîtrisé à {p.threshold}/{GOAL_WINDOW}</span>{!compact && <> (point de départ + 3, entre 5 et 7)</>}.
           </p>
         </> : <h2 className="goal-name" data-testid="goal-name">Tous les objectifs sont maîtrisés</h2>}
       </section>

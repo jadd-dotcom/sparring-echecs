@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Game, MoveAnalysis } from '../db';
 import type { Motif } from './report/motifs';
-import { GOALS, goalBlunderPlies, goalProgress, initialGoalState, isClean, toWatch, updateGoals, type ExitInfo } from './goals';
+import { GOALS, baselineOn10, goalBlunderPlies, goalProgress, initialGoalState, isClean, masteryThreshold, toWatch, updateGoals, type ExitInfo } from './goals';
 
 const DAY = 86400000;
 const T0 = new Date(2026, 10, 1).getTime();
@@ -58,8 +58,23 @@ describe('« Mon objectif » : mesure, maîtrise, objectif suivant, retour', () 
     const helped = { ...game(26), assisted: true };
     expect(goalProgress(G1, [...after, helped], since).total).toBe(3);
   });
-  it('maîtrisé : 7 propres sur les 10 dernières (10 parties au moins) → message, l’objectif suivant devient actif', () => {
-    const six = Array.from({ length: 10 }, (_, i) => game(21 + i, i < 4 ? ['piece-en-prise'] : []));          // 6/10
+  /** 10 parties avant le début, dont `clean` propres (point de départ). */
+  const start = (clean: number) => Array.from({ length: 10 }, (_, i) => game(i, i < clean ? [] : ['piece-en-prise']));
+  it('seuil de maîtrise = point de départ + 3, borné entre 5 et 7 (départs 0, 2, 4, 6)', () => {
+    expect([0, 2, 4, 6].map(masteryThreshold)).toEqual([5, 5, 7, 7]);
+    for (const [b, th] of [[0, 5], [2, 5], [4, 7], [6, 7]] as const) {
+      const p = (n: number) => goalProgress(G1, [...start(b), ...Array.from({ length: 10 }, (_, i) => game(21 + i, i < 10 - n ? ['piece-en-prise'] : []))], since);
+      expect(p(th).baseline).toEqual({ clean: b, n: 10 });
+      expect(p(th).threshold).toBe(th);
+      expect(p(th).mastered, `départ ${b} : ${th}/10`).toBe(true);
+      expect(p(th - 1).mastered, `départ ${b} : ${th - 1}/10`).toBe(false);
+    }
+    // Sans partie avant le début : départ 0, seuil 5.
+    expect(goalProgress(G1, [], since).threshold).toBe(5);
+    expect(baselineOn10({ clean: 2, n: 4 })).toBe(5);
+  });
+  it('maîtrisé : seuil atteint sur les 10 dernières (10 parties au moins) → message, l’objectif suivant devient actif', () => {
+    const six = [...start(4), ...Array.from({ length: 10 }, (_, i) => game(21 + i, i < 4 ? ['piece-en-prise'] : []))];   // 6/10, seuil 7
     let s = updateGoals({ ...initialGoalState(since) }, six, T0 + 40 * DAY);
     expect(s.active).toBe(0);
     expect(s.messages).toEqual([]);
@@ -68,13 +83,16 @@ describe('« Mon objectif » : mesure, maîtrise, objectif suivant, retour', () 
     expect(s.active).toBe(1);
     expect(s.since).toBe(T0 + 41 * DAY);
     expect(s.mastered['rien-donner']).toBe(T0 + 41 * DAY);
-    expect(s.messages[0]).toMatch(/Objectif maîtrisé : « Ne rien donner » \(7\/10 parties propres\)\. Nouvel objectif : « Ne rien laisser passer »/);
+    expect(s.messages[0]).toMatch(/Objectif maîtrisé : « Ne rien donner » \(7\/10 parties propres, seuil 7\/10\)\. Nouvel objectif : « Ne rien laisser passer »/);
+    expect(s.thresholds?.['rien-donner']).toBe(7);
     // 9 parties seulement depuis le début : jamais maîtrisé, même toutes propres.
     expect(goalProgress(G1, Array.from({ length: 9 }, (_, i) => game(21 + i)), since).mastered).toBe(false);
   });
-  it('retour : un objectif maîtrisé qui retombe à 5/10 ou moins redevient actif, avec un message', () => {
-    const base = Array.from({ length: 10 }, (_, i) => game(21 + i));
-    let s = updateGoals(initialGoalState(since), base, T0 + 31 * DAY);
+  it('retour : un objectif maîtrisé qui retombe à son seuil − 2 ou moins redevient actif, avec un message', () => {
+    const base = [...start(4), ...Array.from({ length: 10 }, (_, i) => game(21 + i))];                             // seuil 7 → retour à 5
+    const state0 = updateGoals(initialGoalState(since), base, T0 + 31 * DAY);
+    expect(state0.thresholds?.['rien-donner']).toBe(7);
+    let s = state0;
     expect(s.active).toBe(1);
     const bad = [...base, ...Array.from({ length: 4 }, (_, i) => game(32 + i, ['piece-en-prise']))];          // 6/10 : pas encore
     s = updateGoals({ ...s, messages: [] }, bad, T0 + 36 * DAY);
@@ -85,6 +103,12 @@ describe('« Mon objectif » : mesure, maîtrise, objectif suivant, retour', () 
     expect(s.mastered['rien-donner']).toBeUndefined();
     expect(s.since).toBe(T0 + 37 * DAY);
     expect(s.messages[0]).toMatch(/« Ne rien donner » retombe à 5\/10 parties propres : cet objectif redevient actif/);
+    // Seuil 5 (départ 0) : retour seulement à 3/10 ou moins.
+    const low = { ...initialGoalState(T0 + 55 * DAY), active: 1, mastered: { 'rien-donner': 1 }, thresholds: { 'rien-donner': 5 } };
+    const four = Array.from({ length: 10 }, (_, i) => game(40 + i, i < 6 ? ['piece-en-prise'] : []));            // 4/10
+    expect(updateGoals(low, four, T0 + 60 * DAY).active).toBe(1);
+    const three = Array.from({ length: 10 }, (_, i) => game(40 + i, i < 7 ? ['piece-en-prise'] : []));           // 3/10
+    expect(updateGoals(low, three, T0 + 60 * DAY).active).toBe(0);
   });
   it('À surveiller : gaffes des autres motifs sur les 10 dernières parties (et sorties du répertoire)', () => {
     const gs = [game(1, ['gain-rate', 'gain-rate']), game(2, ['piece-en-prise', 'mat-ouvert']), game(3, ['autre'])];
