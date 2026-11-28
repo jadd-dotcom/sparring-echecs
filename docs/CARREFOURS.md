@@ -20,7 +20,7 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 - **1…c5** → 2.Nc3 : « Le pion c5 prend de l’espace au centre et surveille d4 → ton cavalier se développe en c3 et surveille d5 et e4 (Nc3) »
 - **1…Nf6** → 2.Nc3 : « Son cavalier se développe en f6 et surveille d5 et e4 → ton cavalier se développe en c3 et surveille d5 et e4 (Nc3) »
 - **1…e6** → 2.Nc3 : « Le pion e6 ouvre la diagonale de son fou f8 → ton cavalier se développe en c3 et surveille d5 et e4 (Nc3) »
-- **1…d5** → 2.cxd5 : « Le pion d5 attaque ton pion c4 → ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours (cxd5) »
+- **1…d5** → 2.cxd5 : « Le pion d5 attaque ton pion c4 → ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c devient semi-ouverte pour tes tours (cxd5) »
 
 ### Après 1.c4 e5 2.Nc3
 
@@ -39,7 +39,7 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 
 ### Après 1.c4 e5 2.Nc3 Nf6 3.g3
 
-- **3…d5** → 4.cxd5 : « Le pion d5 attaque ton pion c4 → ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours (cxd5) »
+- **3…d5** → 4.cxd5 : « Le pion d5 attaque ton pion c4 → ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c devient semi-ouverte pour tes tours (cxd5) »
 - **3…Bb4** → 4.Bg2 : « Son fou se développe en b4 et vise ton cavalier c3 → ton fou se place sur la grande diagonale, d’où il vise le centre et l’autre aile (Bg2) »
 
 ### Après 1.c4 c5 2.Nc3
@@ -118,7 +118,7 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 - **2.Nf3** → 2…Nc6 : « Le cavalier blanc se développe et prépare d4 → ton cavalier se développe et surveille les cases d4 et e5 (…Nc6) »
 - **2.Nc3** → 2…Nc6 : « Son cavalier se développe en c3 et surveille d5 et e4 → ton cavalier se développe en c6 et surveille d4 et e5 (…Nc6) »
 - **2.c3** → 2…Nf6 : « Le pion c3 prépare d4 : il pourra occuper tout le centre → ton cavalier va en f6 et attaque son pion e4 (…Nf6) »
-- **2.d4** → 2…cxd4 : « Le pion d4 attaque ton pion c5 → ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours (…cxd4) »
+- **2.d4** → 2…cxd4 : « Le pion d4 attaque ton pion c5 → ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c devient semi-ouverte pour tes tours (…cxd4) »
 - **2.Bc4** → 2…Nc6 : « Le fou blanc vise tout de suite f7 → tu te développes (…Nc6) »
 - **2.Qh5** → 2…d6 : « La dame blanche sort tout de suite : elle vise f7 et aussi ton pion c5, par la 5e rangée → le pion d6 protège c5 ; pas encore …g6, la dame prendrait c5 (…d6) »
 - **2.Qf3** → 2…Nc6 : « La dame blanche sort en f3 : elle vise f7 par la colonne f → tu te développes normalement : la dame seule ne menace rien (…Nc6) »
@@ -174,7 +174,7 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 
 ### Après 1.e4 c5 2.c3 Nf6 3.e5 Nd5
 
-- **4.d4** → 4…cxd4 : « Le pion d4 attaque ton pion c5 → ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours (…cxd4) »
+- **4.d4** → 4…cxd4 : « Le pion d4 attaque ton pion c5 → ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c devient semi-ouverte pour tes tours (…cxd4) »
 - **4.Nf3** → 4…Nc6 : « Son cavalier se développe en f3 et surveille d4 et e5 → ton cavalier se développe en c6 et surveille d4 et e5 (…Nc6) »
 
 ### Après 1.e4 c5 2.d4 cxd4
@@ -213,7 +213,7 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 
 - **3.Nf3** → 3…Nf6 : « Le cavalier blanc se développe et surveille la case e5 → ton cavalier se développe et protège d5 une deuxième fois (…Nf6) »
 - **3.Nc3** → 3…Nf6 : « Son cavalier se développe en c3 et surveille d5 et e4 → ton cavalier se développe en f6 et surveille d5 et e4 (…Nf6) »
-- **3.cxd5** → 3…cxd5 : « Son pion prend ton pion d5 : la colonne c s’ouvre pour ses tours → ton pion reprend en d5 : le matériel reste égal (…cxd5) »
+- **3.cxd5** → 3…cxd5 : « Son pion prend ton pion d5 : la colonne c devient semi-ouverte pour ses tours → ton pion reprend en d5 : le matériel reste égal (…cxd5) »
 
 ### Après 1.d4 d5 2.c4 c6 3.Nf3 Nf6
 

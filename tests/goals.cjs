@@ -67,7 +67,7 @@ const DAY = 86400000;
   await p.goto(URL + '#/stats'); await p.goto(URL);
   await p.getByTestId('goal-msg').waitFor();
   const msg = await p.getByTestId('goal-msg').innerText();
-  assert(/Objectif maîtrisé : « Ne rien donner » \(8\/10 parties propres\)\. Nouvel objectif : « Ne rien laisser passer »/.test(msg), 'maîtrisé : message (' + msg.replace(/\s+/g, ' ') + ')');
+  assert(/Objectif maîtrisé : « Ne rien donner » \(8\/10 parties propres, seuil \d\/10\)\. Nouvel objectif : « Ne rien laisser passer »/.test(msg), 'maîtrisé : message (' + msg.replace(/\s+/g, ' ') + ')');
   assert(await p.getByTestId('goal-name').innerText() === 'Ne rien laisser passer', 'l’objectif suivant devient actif');
   assert(/MES échecs, MES prises, MES attaques/.test(await p.getByTestId('goal-rule').innerText()), 'nouvelle règle');
   assert(/^0 partie propre sur les 10 dernières/.test(await p.getByTestId('goal-score').innerText()), 'nouvel objectif : mesure depuis maintenant');

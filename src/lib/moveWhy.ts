@@ -166,6 +166,30 @@ function dangersOf(fenBefore: string, by: Color, ctx: WhyContext): Danger[] {
   return out.sort((a, b) => Number(b.mate) - Number(a.mate) || VALUE[b.type ?? 'p'] - VALUE[a.type ?? 'p']);
 }
 
+/** Colonne libérée par une prise de pion : « s’ouvre » seulement sans aucun pion dessus, sinon « devient semi-ouverte ».
+ *  Chaîne vide si un de mes pions y reste. */
+function fileOpened(c: Chess, file: string, by: Color, me: Color): string {
+  const pawns = c.board().flat().filter((p) => p && p.type === 'p' && p.square[0] === file);
+  if (pawns.some((p) => p!.color === by)) return '';
+  const who = by === me ? 'tes' : 'ses';
+  return pawns.length ? `la colonne ${file} devient semi-ouverte pour ${who} tours` : `la colonne ${file} s’ouvre pour ${who} tours`;
+}
+
+/** Matériel égal sur l'échiquier (pièces et pions, rois exclus). */
+export function materialEqual(c: Chess): boolean {
+  let w = 0, b = 0;
+  for (const p of c.board().flat()) if (p && p.type !== 'k') { if (p.color === 'w') w += VALUE[p.type]; else b += VALUE[p.type]; }
+  return w === b;
+}
+
+/** Le pion arrive en g3/b3/g6/b6 et le fou de ce côté est encore sur sa case d'origine : il prépare vraiment le fianchetto. */
+function fianchettoReady(c: Chess, to: string, by: Color): boolean {
+  if (!['g3', 'b3', 'g6', 'b6'].includes(to)) return false;
+  const home = ((to[0] === 'g' ? 'f' : 'c') + (by === 'w' ? '1' : '8')) as Square;
+  const b = c.get(home);
+  return !!b && b.type === 'b' && b.color === by;
+}
+
 const lineWord = (a: string, b: string) => (a[0] !== b[0] && a[1] !== b[1] ? 'la diagonale de' : a[0] === b[0] ? 'la colonne de' : 'la rangée de');
 
 /** Une phrase : pourquoi ce coup (du point de vue de `me` : « ton » / « son »). `ctx` : le coup d'avant et sa menace,
@@ -198,7 +222,6 @@ export function moveWhy(fenBefore: string, san: string, me: Color, ctx: WhyConte
   else if (kind === 'fork') what = `${t.san}, fourchette sur ${list(ft.map((x) => (x.type === 'k' ? P('k', opp) : `${P(x.type, opp)} ${x.sq}`)))}`;
   else what = `de prendre ${P(tm.captured as PieceSymbol, opp)} ${tm.to}`;
   const reply = defense(fenBefore, new Chess(c.fen()), m, me, ctx, ctx.prev ? new Chess(ctx.prev.fen).move(ctx.prev.san) : undefined);
-  if (reply && kind === 'take') return base;      // la réponse au coup d'avant reste l'idée principale
   const pron = m.piece === 'p' ? 'il' : FEM_T[m.piece] ? 'elle' : 'il';
   const partner = tm.from !== m.to ? `avec ${P(tm.piece, by)} ${tm.from}, ` : '';
   const subj = m.piece === 'p' ? `Le pion ${m.to}` : cap(P(m.piece, by));
@@ -239,11 +262,10 @@ function describe(fenBefore: string, san: string, me: Color, ctx: WhyContext): s
   // Prises
   if (m.captured) {
     const victim = P(m.captured as PieceSymbol, opp);
-    if (prevMove && prevMove.to === m.to && prevMove.captured) return `${subj} reprend en ${m.to}${chk} : le matériel reste égal.`;
+    if (prevMove && prevMove.to === m.to && prevMove.captured) return `${subj} reprend en ${m.to}${chk}${materialEqual(c) ? ' : le matériel reste égal' : ''}.`;
     if (m.piece === 'p' && m.captured === 'p') {
-      const file = m.from[0];
-      const ownLeft = c.board().flat().some((p) => p && p.type === 'p' && p.color === by && p.square[0] === file);
-      return `${subj} prend ${victim} ${m.to}${chk}${ownLeft ? '' : ` : la colonne ${file} s’ouvre pour ${mine ? 'tes' : 'ses'} tours`}.`;
+      const opened = fileOpened(c, m.from[0], by, me);
+      return `${subj} prend ${victim} ${m.to}${chk}${opened ? ` : ${opened}` : ''}.`;
     }
     return `${subj} prend ${victim} ${m.to}${chk}.`;
   }
@@ -271,12 +293,14 @@ function describe(fenBefore: string, san: string, me: Color, ctx: WhyContext): s
   if (m.piece === 'p') {
     const t = targets[0];
     if (t) return `Le pion ${m.to} ${t.p!.type === 'p' ? 'attaque' : 'chasse'} ${P(t.p!.type, opp)} ${t.s}.`;
-    if (['g3', 'b3', 'g6', 'b6'].includes(m.to)) return `Le pion ${m.to} prépare le fianchetto ${mine ? 'de ton' : 'de son'} fou en ${m.to[0]}${by === 'w' ? '2' : '7'}.`;
+    if (fianchettoReady(c, m.to, by)) return `Le pion ${m.to} prépare le fianchetto ${mine ? 'de ton' : 'de son'} fou en ${m.to[0]}${by === 'w' ? '2' : '7'}.`;
     if ((m.to === 'h3' || m.to === 'h6' || m.to === 'a3' || m.to === 'a6')) {
+      // Un fait seulement : la case contrôlée (et la case libérée à côté du roi roqué de ce côté).
       const g = (m.to[0] === 'h' ? 'g' : 'b') + (by === 'w' ? '4' : '5');
+      const freedSq = m.from as Square;
       const king = c.board().flat().find((p) => p && p.type === 'k' && p.color === by)!;
-      const luft = m.to[0] === 'h' ? king.square[0] === 'g' || king.square[0] === 'h' : king.square[0] === 'b' || king.square[0] === 'c';
-      return `Le pion ${m.to} contrôle ${g} : ni ${mine ? 'son' : 'ton'} fou ni ${mine ? 'son' : 'ton'} cavalier ne pourront s’y installer${luft ? `, et ${mine ? 'ton' : 'son'} roi a une case de fuite` : ''}.`;
+      const nextToKing = Math.abs(king.square.charCodeAt(0) - freedSq.charCodeAt(0)) <= 1 && Math.abs(Number(king.square[1]) - Number(freedSq[1])) <= 1;
+      return `Le pion ${m.to} contrôle ${g}${nextToKing && !c.get(freedSq) ? ` et libère ${freedSq} pour ${mine ? 'ton' : 'son'} roi` : ''}.`;
     }
     const supports = attacked.filter((s) => { const p = c.get(s); return p && p.color === by; }).map((s) => ({ ...c.get(s)!, square: s }));
     const centerHits = attacked.filter((s) => CENTER.includes(s));
@@ -323,7 +347,7 @@ function describe(fenBefore: string, san: string, me: Color, ctx: WhyContext): s
     if (!own) return `${subj} vient sur la colonne ${file}, ${theirs ? 'semi-ouverte' : 'ouverte'}.`;
     const backed = attacked.find((s) => s[0] === file && c.get(s)?.color === by && c.get(s)?.type === 'p');
     if (backed) return `${subj} vient en ${m.to} et soutient ${P('p', by)} ${backed}.`;
-    return `${subj} vient en ${m.to}, prête si la colonne ${file} s’ouvre.`;
+    return `${subj} vient en ${m.to} et se place sur la colonne ${file}.`;
   }
   // Avant-poste : cavalier protégé par un pion, au-delà de la 4e rangée
   if (m.piece === 'n') {
@@ -338,7 +362,7 @@ function describe(fenBefore: string, san: string, me: Color, ctx: WhyContext): s
     const bSq = by === 'w' ? 'e3' : 'e6', hSq = by === 'w' ? 'h6' : 'h3', fSq = by === 'w' ? 'g7' : 'g2';
     const b = c.get(bSq as Square), f = c.get(fSq as Square);
     if (b?.type === 'b' && b.color === by && f?.type === 'b' && f.color === opp) {
-      return `${subj} sort en ${m.to} : avec ${mine ? 'ton' : 'son'} fou ${bSq}, ${by === 'w' ? '' : '…'}B${hSq} échangera ${mine ? 'son' : 'ton'} fou ${fSq}, le meilleur défenseur de ${mine ? 'son' : 'ton'} roi.`;
+      return `${subj} sort en ${m.to} : avec ${mine ? 'ton' : 'son'} fou ${bSq}, elle prépare ${by === 'w' ? '' : '…'}B${hSq}, qui propose l’échange de ${mine ? 'son' : 'ton'} fou ${fSq}.`;
     }
   }
   if (m.piece === 'k') return `${subj} va en ${m.to}, un peu plus à l’abri.`;
@@ -373,8 +397,8 @@ function defense(fenBefore: string, c: Chess, m: Move, me: Color, ctx: WhyContex
   const tail = (kind: 'and' | 'also', skip?: Square): string => {
     const join = (verb: string, rest: string) => (kind === 'and' ? `, et ${verb} ${rest}` : ` ; ${pron} ${verb} aussi ${rest}`);
     if (m.piece === 'p') {
-      if (m.captured === 'p' && !c.board().flat().some((p) => p && p.type === 'p' && p.color === by && p.square[0] === m.from[0])) return `, et la colonne ${m.from[0]} s’ouvre pour ${by === me ? 'tes' : 'ses'} tours`;
-      if (['g3', 'b3', 'g6', 'b6'].includes(m.to)) return join('prépare', `le fianchetto ${by === me ? 'de ton' : 'de son'} fou en ${m.to[0]}${by === 'w' ? '2' : '7'}`);
+      if (m.captured === 'p') { const opened = fileOpened(c, m.from[0], by, me); if (opened) return `, et ${opened}`; }
+      if (fianchettoReady(c, m.to, by)) return join('prépare', `le fianchetto ${by === me ? 'de ton' : 'de son'} fou en ${m.to[0]}${by === 'w' ? '2' : '7'}`);
       if (WIDE_CENTER.has(m.to) && Math.abs(Number(m.to[1]) - Number(m.from[1])) === 2) return join('prend', 'de l’espace au centre');
       for (const b of c.board().flat().filter((p) => p && p.type === 'b' && p.color === by && p.square[1] === homeRank)) {
         if (attackedBy(c, b!.square, by).length > attackedBy(before, b!.square, by).length) return join('ouvre', `la diagonale ${by === me ? 'de ton' : 'de son'} fou ${b!.square}`);
