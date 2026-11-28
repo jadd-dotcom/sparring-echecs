@@ -12,6 +12,7 @@ import type { LineSession } from './linesService';
 import type { LessonProgress } from './openings';
 import type { LessonState } from './lib/lessonPlan';
 import type { CrossProgress } from './lib/crossroadTrainer';
+import type { ExamResult } from './lib/exam';
 
 /** Clés fixes et type de leur valeur. */
 export interface MetaValues {
@@ -42,6 +43,8 @@ export interface MetaValues {
   drillIntroduced: { day: string; count: number };
   /** Date (ms) de la dernière sauvegarde téléchargée (export, ou sauvegarde automatique avant import). */
   lastBackupAt: number;
+  /** Mode Examen : résultats par ouverture (score sur 10, positions ratées). */
+  examResults: Record<string, ExamResult[]>;
 }
 
 /** Clés construites à partir d'un identifiant d'ouverture. */
@@ -57,7 +60,7 @@ export const META_KEYS = [
   'profile', 'current', 'theme', 'pieces', 'sound', 'reviseCap', 'reviseShowMine', 'warmupDay', 'sessionTrap', 'traps',
   'threatScanned', 'chesscomUser', 'chesscomSync', 'chesscomAutoAt', 'goals', 'lastReportAt', 'boardProgress', 'boardStats',
   'lineProgress', 'lineSession', 'openingLessons', 'openingsSeeded', 'openingsArchived', 'openingsRev', 'drillIntroduced',
-  'lastBackupAt',
+  'lastBackupAt', 'examResults',
 ] as const satisfies readonly MetaKey[];
 
 export const META_PATTERNS = ['lessonState:', 'crossroads:'] as const satisfies readonly MetaPattern[];

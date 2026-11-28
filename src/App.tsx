@@ -19,6 +19,7 @@ const Progress = lazy(() => import('./screens/Progress'));
 const GoalDetail = lazy(() => import('./screens/GoalDetail'));
 const CrossroadTrainer = lazy(() => import('./screens/CrossroadTrainer'));
 const OpeningPage = lazy(() => import('./screens/OpeningPage'));
+const Exam = lazy(() => import('./screens/Exam'));
 import TabBar from './TabBar';
 import { parentOf } from './nav';
 const OpeningLessonScreen = lazy(() => import('./screens/OpeningLesson'));
@@ -68,7 +69,7 @@ export default function App() {
     return () => removeEventListener('hashchange', f);
   }, []);
   // Écrans avec un échiquier : tout tient dans la hauteur de l'écran (échiquier ajusté, texte qui défile seul).
-  const fit = ['play', 'review', 'revise', 'lesson', 'comment', 'repertoire', 'lines', 'crossroads'].includes(route.name)
+  const fit = ['play', 'review', 'revise', 'lesson', 'comment', 'repertoire', 'lines', 'crossroads', 'exam'].includes(route.name)
     || (route.name === 'mates' && !!route.level)
     || (route.name === 'traps' && !!route.id)
     || (route.name === 'board' && !!route.view && route.view !== 'lesson');
@@ -94,6 +95,7 @@ export default function App() {
         {route.name === 'lines' && <PlayLines key={`${route.id}-${route.sel ? 's' : ''}`} id={route.id} sel={route.sel} />}
         {route.name === 'opening' && <OpeningPage key={route.id} id={route.id} tab={route.tab} />}
         {route.name === 'crossroads' && <CrossroadTrainer key={route.id} id={route.id} />}
+        {route.name === 'exam' && <Exam key={route.id} id={route.id} />}
         {route.name === 'comment' && <Comment key={route.id ?? 'all'} id={route.id} />}
         {route.name === 'openings' && <Openings />}
         {route.name === 'repertoire' && <RepertoireEditor key={route.id} id={route.id} />}
