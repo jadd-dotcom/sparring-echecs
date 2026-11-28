@@ -1,8 +1,12 @@
 name: Tests et déploiement GitHub Pages
 
 on:
+  # Mise en production : uniquement une poussée sur main (voir la condition du job deploy).
   push:
-    branches: [main, claude/modest-brown-byjuad]
+    branches: [main]
+  # Contrôle avant fusion : chaque pull request vers main exécute le job build, sans jamais déployer.
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -10,7 +14,7 @@ permissions:
   pages: write
   id-token: write
 
-# Un groupe par branche : une poussée sur la branche de travail n'annule plus le déploiement de main.
+# Un groupe par branche (ou par pull request) : un contrôle de PR n'annule pas le déploiement de main.
 concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: true
@@ -25,16 +29,20 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run lint
       - run: npm test
       - run: npm run build
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      # Préparation de la publication : inutile pour une pull request, qui ne déploie jamais.
+      - if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
-    # L'environnement github-pages n'accepte que la branche principale.
-    if: github.ref == 'refs/heads/main'
+    # Seule une poussée sur main publie (ni pull request, ni lancement manuel, ni autre branche).
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     environment:
