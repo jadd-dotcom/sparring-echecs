@@ -163,8 +163,17 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
     await apply(cur, uci);
   }
 
+  /** Une aide est utilisée : la partie est marquée « avec aide » (exclue des objectifs). */
+  async function markAssisted() {
+    if (!cur || cur.assisted) return;
+    const next: CurrentGame = { ...cur, assisted: true };
+    await setCurrent(next);
+    setCur(next);
+  }
+
   async function askHint() {
     if (!cur || !canPlay || hintBusy) return;
+    await markAssisted();
     const fen = chess.fen();
     if (hint && hint.fen === fen) { setHint({ ...hint, level: 2 }); return; }
     setHintBusy(true);
@@ -179,7 +188,7 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
     busy.current = true;
     try {
       // C'est à moi : on retire la réponse de Maia et mon dernier coup.
-      const next: CurrentGame = { ...cur, uci: cur.uci.slice(0, -2), maiaMs: cur.maiaMs.slice(0, -1) };
+      const next: CurrentGame = { ...cur, uci: cur.uci.slice(0, -2), maiaMs: cur.maiaMs.slice(0, -1), assisted: true };
       await setCurrent(next);
       setCur(next);
       setHint(null);
@@ -251,9 +260,11 @@ export default function Play({ opening, unrated }: { opening?: string; unrated?:
             <p className="muted small">Assistance (partie non comptée)</p>
             <div className="row">
               <button disabled={!canPlay || hintBusy} onClick={askHint}><Lightbulb aria-hidden className="ico" />{hint && hint.fen === chess.fen() ? 'Montrer le coup' : 'Indice'}</button>
-              <ThreatCheck fen={chess.fen()} me={cur.myColor} disabled={!canPlay}
-                onArrows={(f, a) => setThreatArrows({ fen: f, a })}
-                onSuite={(f, line, title) => suite.open(f, line, cur.myColor, title)} />
+              <span className="contents" onClickCapture={() => { if (canPlay) markAssisted(); }}>
+                <ThreatCheck fen={chess.fen()} me={cur.myColor} disabled={!canPlay}
+                  onArrows={(f, a) => setThreatArrows({ fen: f, a })}
+                  onSuite={(f, line, title) => suite.open(f, line, cur.myColor, title)} />
+              </span>
               <button disabled={!live || !myTurn || thinking || myMovesCount === 0} onClick={takeBack}><Undo2 aria-hidden className="ico" />Reprendre mon coup</button>
             </div>
           </div>

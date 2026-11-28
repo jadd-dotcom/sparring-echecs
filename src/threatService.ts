@@ -14,16 +14,17 @@ let running: Promise<Card[]> | null = null;
 
 /**
  * Cherche de nouvelles positions « Lis la menace » dans mes parties analysées et crée les cartes (quota du jour).
- * `maxChecks` : positions vérifiées au plus par Stockfish (2 recherches chacune). Renvoie les cartes créées.
+ * `maxChecks` : positions vérifiées au plus par Stockfish (2 recherches chacune) ; `maxNew` : cartes créées au plus
+ * (place restante sous le plafond de la révision). Renvoie les cartes créées.
  */
-export function fillThreatCards(opts: { maxChecks?: number; ms?: number } = {}): Promise<Card[]> {
-  running ??= run(opts.maxChecks ?? 16, opts.ms ?? 500).finally(() => { running = null; });
+export function fillThreatCards(opts: { maxChecks?: number; ms?: number; maxNew?: number } = {}): Promise<Card[]> {
+  running ??= run(opts.maxChecks ?? 16, opts.ms ?? 500, opts.maxNew ?? Infinity).finally(() => { running = null; });
   return running;
 }
 
-async function run(maxChecks: number, ms: number): Promise<Card[]> {
+async function run(maxChecks: number, ms: number, maxNew: number): Promise<Card[]> {
   const cards = await db.cards.toArray();
-  let left = threatQuotaLeft(cards);
+  let left = Math.min(threatQuotaLeft(cards), maxNew);
   if (!left) return [];
   const scanned = new Set<string>(((await db.meta.get(SCANNED))?.value as string[] | undefined) ?? []);
   const taken = new Set<string>([...scanned, ...cards.filter((c) => c.kind === 'threat' && c.key).map((c) => c.key!)]);

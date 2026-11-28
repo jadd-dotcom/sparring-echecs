@@ -25,6 +25,7 @@ describe('séance du jour', () => {
     threatLeft: 2, threatDoneToday: 0, reviseLeft: 15, reviseDoneToday: 0, gameToday: false };
   it('5 étapes avec durée ; « Continuer » = la première non faite', () => {
     const s = sessionSteps(base);
+    expect(s.find((x) => x.id === 'game')).toMatchObject({ label: 'Une partie contre Maia', detail: 'sans aide' });
     expect(s.map((x) => x.id)).toEqual(['warmup', 'trap', 'threat', 'revise', 'game']);
     expect(s.map((x) => x.minutes)).toEqual([3, 4, 5, 10, 15]);
     expect(s[0].detail).toBe('chapitre 3 à revoir');

@@ -250,7 +250,7 @@ export default function Review({ id }: { id: number }) {
               contre <b>{opp}</b>{game.ext?.opp.rating ? ` (${game.ext.opp.rating})` : ''}{game.ext?.timeClass ? ` · ${TIME_CLASS[game.ext.timeClass] ?? game.ext.timeClass}` : ''}
               {' '}· <span className="muted small">sans effet sur ton niveau Maia</span></p>
           )}
-          <b>{game.result}</b> · {game.termination} · tu avais les {game.myColor === 'w' ? 'Blancs' : 'Noirs'}{game.unrated ? ' · non comptée' : ''}
+          <b>{game.result}</b> · {game.termination} · tu avais les {game.myColor === 'w' ? 'Blancs' : 'Noirs'}{game.unrated ? ' · non comptée' : ''}{game.assisted ? <> · <span className="tag" data-testid="assisted">avec aide</span></> : ''}
           <div className="accuracy" aria-label="Précision (formule Lichess)">
             <span>Précision : <b>toi {fmtAcc(acc?.me)}</b></span><span>{imported ? 'Adversaire' : 'Maia'} {fmtAcc(acc?.maia)}</span>
           </div>

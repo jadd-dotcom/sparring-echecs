@@ -51,7 +51,9 @@ const MODEL_LEN = 16;
   assert(true, '2e erreur : solution affichée');
   await tap(uciOf(0));
   for (const k of [2, 4]) { await p.getByText('Joue le coup de la leçon.').waitFor(); await tap(uciOf(k)); }
-  await p.getByText('Bloc réussi', { exact: true }).waitFor();
+  // Rejeu avec erreurs : le bloc est « à revoir », pas « fait ».
+  await p.getByText(/Bloc à revoir \(1 erreur\)/).waitFor();
+  assert(true, 'rejeu avec erreur : bloc « à revoir »');
   await p.waitForTimeout(400);
   const introduced = await p.evaluate(() => window.__db.cards.where('openingId').equals('english').filter((c) => c.due !== 'new').count());
   assert(introduced >= 3, `les coups du bloc entrent dans le drill (${introduced} cartes programmées)`);

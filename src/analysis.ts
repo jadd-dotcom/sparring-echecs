@@ -110,6 +110,12 @@ export async function addErrorDetails(g: Pick<Game, 'startFen' | 'uci' | 'myColo
   return todo.length;
 }
 
+/** Remplace les cartes d'erreur d'une partie ; les autres cartes de la partie (« Lis la menace ») gardent leur progression. */
+export async function replaceMistakeCards(gameId: number, cards: Card[]) {
+  await db.cards.where('gameId').equals(gameId).filter((c) => (c.kind ?? 'mistake') === 'mistake').delete();
+  if (cards.length) await db.cards.bulkAdd(cards);
+}
+
 /** Analyse une partie enregistrée, met à jour la base et crée les cartes. */
 export async function analyseGame(gameId: number, onProgress?: (d: number, t: number) => void): Promise<Game> {
   const g = await db.games.get(gameId);
@@ -132,8 +138,7 @@ export async function analyseGame(gameId: number, onProgress?: (d: number, t: nu
     }));
   await db.transaction('rw', db.games, db.cards, async () => {
     await db.games.update(gameId, { analysis, counts, plies, bars });
-    await db.cards.where('gameId').equals(gameId).delete();
-    if (cards.length) await db.cards.bulkAdd(cards);
+    await replaceMistakeCards(gameId, cards);
   });
   return (await db.games.get(gameId))!;
 }

@@ -67,6 +67,7 @@ export async function finishGame(cur: CurrentGame, result: Game['result'], termi
       ratingBefore: cur.rating, ratingAfter, botElo: cur.botElo, maiaMs: cur.maiaMs,
       ...(cur.openingId ? { openingId: cur.openingId } : {}),
       ...(cur.unrated ? { unrated: true } : {}),
+      ...(cur.assisted ? { assisted: true } : {}),
     });
     // Les parties à thème comptent pour le niveau mais ne changent pas l'alternance des couleurs.
     // Une partie non comptée ne change ni le niveau ni la calibration (gamesPlayed), mais fait alterner la couleur.

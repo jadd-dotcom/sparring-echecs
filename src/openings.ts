@@ -202,6 +202,11 @@ async function prioritized(): Promise<Card[]> {
   return prioritize(cards, motifOf, goalDef?.motifs ?? []);
 }
 
+/** Cartes encore permises aujourd'hui sous le plafond de la révision (Infinity : sans limite). */
+export async function reviseAllowanceLeft(): Promise<number> {
+  return allowance(await getReviseCap(), reviewedToday(await db.cards.toArray()));
+}
+
 /** Les cartes du jour réparties entre l'étape « Lis la menace » (au plus 5) et la Révision (les autres). */
 async function todaySplit() {
   const [all, cards] = await Promise.all([prioritized(), db.cards.toArray()]);

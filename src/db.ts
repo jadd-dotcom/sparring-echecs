@@ -74,6 +74,8 @@ export interface Game {
   repOpeningId?: string;
   /** Partie non comptée (sans effet sur le niveau). */
   unrated?: boolean;
+  /** Partie jouée avec aide (indice, « Qu'est-ce qu'il menace ? », reprise de coup) : exclue des objectifs. */
+  assisted?: boolean;
   /** « Ce que je pensais », saisi pendant la revue : demi-coup → texte. */
   thoughts?: Record<number, string>;
   /** « Ce que je pensais » en un toucher (erreurs et gaffes), avant de voir le meilleur coup : demi-coup → réponse. */
@@ -101,7 +103,7 @@ export interface Card {
   due: string;
   createdAt: number;
   /** Tentatives ; `q` (cartes « Lis la menace ») : 1 = lire sa menace, 2 = la parer. */
-  attempts: { date: number; uci: string; ok: boolean; q?: 1 | 2 }[];
+  attempts: { date: number; uci: string; ok: boolean; q?: 1 | 2; hints?: number }[];
   // --- cartes de drill ---
   openingId?: string;
   key?: string;          // clé de position (fenKey)
@@ -190,6 +192,8 @@ export interface CurrentGame {
   openingId?: string;
   /** Partie non comptée : analysée normalement, sans effet sur le niveau. */
   unrated?: boolean;
+  /** Une aide a été utilisée pendant la partie. */
+  assisted?: boolean;
 }
 
 class SparringDB extends Dexie {

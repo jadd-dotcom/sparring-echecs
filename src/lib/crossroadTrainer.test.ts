@@ -28,7 +28,22 @@ describe('mode Carrefours', () => {
   });
   it('répétition espacée : réussie → J+3 ; ratée → demain', () => {
     const a = afterAnswer(undefined, true, '2026-11-27', 1);
-    expect(a).toEqual({ step: 1, due: '2026-11-30', attempts: [{ date: 1, ok: true }] });
+    expect(a).toEqual({ step: 1, due: '2026-11-30', attempts: [{ date: 1, ok: true, hints: 0 }] });
     expect(afterAnswer(a, false, '2026-11-28', 2).due).toBe('2026-11-29');
+  });
+  it('« Refaire » le même jour : noté, mais la carte n’avance jamais (seule la 1re réponse du jour compte)', () => {
+    const t = (h: number) => new Date(2026, 10, 28, h).getTime();
+    const failed = afterAnswer(undefined, false, '2026-11-28', t(10));
+    expect(failed.step).toBe(0);
+    const redone = afterAnswer(failed, true, '2026-11-28', t(11));
+    expect(redone.step).toBe(0);
+    expect(redone.due).toBe(failed.due);
+    expect(redone.attempts[redone.attempts.length - 1]).toEqual({ date: t(11), ok: true, hints: 0, retry: true });
+    const ok = afterAnswer(undefined, true, '2026-11-28', t(10), 1);
+    const again = afterAnswer(ok, true, '2026-11-28', t(11));
+    expect([again.step, again.due]).toEqual([ok.step, ok.due]);
+    expect(ok.attempts[0].hints).toBe(1);
+    // Le lendemain, la réponse compte de nouveau.
+    expect(afterAnswer(failed, true, '2026-11-29', new Date(2026, 10, 29, 9).getTime()).step).toBe(1);
   });
 });

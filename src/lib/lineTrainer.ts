@@ -8,7 +8,8 @@ import type { OpeningLesson } from '../data/openingLessons';
 
 export type Line = string[];   // coups SAN depuis la position initiale
 
-export interface LineStat { status: 'ok' | 'redo'; plays: number; lastAt: number }
+/** `attempts` : chaque ligne jouée jusqu'au bout (sans erreur ? solutions montrées), pour mesurer la réussite sans aide. */
+export interface LineStat { status: 'ok' | 'redo'; plays: number; lastAt: number; attempts?: { date: number; ok: boolean; hints: number }[] }
 export interface LineError { line: string; ply: number; expected: string; played: string; date: number }
 /** Progression d'une ouverture : tour en cours (statut de chaque ligne) et erreurs. */
 export interface LineProgress { round: number; lines: Record<string, LineStat>; errors: LineError[] }
@@ -114,16 +115,17 @@ export function withError(p: LineProgress, l: Line, ply: number, played: string,
   const prev = p.lines[k];
   return {
     ...p,
-    lines: { ...p.lines, [k]: { status: 'redo', plays: prev?.plays ?? 0, lastAt: date } },
+    lines: { ...p.lines, [k]: { ...prev, status: 'redo', plays: prev?.plays ?? 0, lastAt: date } },
     errors: [...p.errors, { line: k, ply, expected: l[ply], played, date }],
   };
 }
 
 /** Fin de ligne : ✓ si aucune erreur pendant cette ligne, sinon « à refaire ». */
-export function withLineDone(p: LineProgress, l: Line, clean: boolean, date = Date.now()): LineProgress {
+export function withLineDone(p: LineProgress, l: Line, clean: boolean, date = Date.now(), hints = 0): LineProgress {
   const k = lineKey(l);
   const prev = p.lines[k];
-  return { ...p, lines: { ...p.lines, [k]: { status: clean ? 'ok' : 'redo', plays: (prev?.plays ?? 0) + 1, lastAt: date } } };
+  const attempts = [...(prev?.attempts ?? []), { date, ok: clean, hints }];
+  return { ...p, lines: { ...p.lines, [k]: { status: clean ? 'ok' : 'redo', plays: (prev?.plays ?? 0) + 1, lastAt: date, attempts } } };
 }
 
 /** Phrase de la leçon pour un coup (ligne principale ou blocs supplémentaires), sinon null. */

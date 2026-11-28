@@ -3,9 +3,10 @@
 import type { RepNode } from './repertoire';
 import type { OpeningLesson } from '../data/openingLessons';
 import { moveLabel, type SignpostCard } from './crossroads';
-import { schedule } from './srs';
+import { dayKey, schedule } from './srs';
 
-export interface CrossCardState { step: number; due: string; attempts: { date: number; ok: boolean }[] }
+/** `hints` : indices utilisés ; `retry` : « Refaire » le même jour (enregistré, sans effet sur la répétition espacée). */
+export interface CrossCardState { step: number; due: string; attempts: { date: number; ok: boolean; hints?: number; retry?: boolean }[] }
 export type CrossProgress = Record<string, CrossCardState>;
 
 export const NEW_CROSS_PER_SESSION = 8;
@@ -48,7 +49,12 @@ export function acceptedReplies(root: RepNode, card: SignpostCard): string[] {
 }
 
 /** Réussie (Q1 juste, Q2 du premier coup, sans indice) : la carte avance ; sinon elle revient demain. */
-export function afterAnswer(prev: CrossCardState | undefined, ok: boolean, today: string, now = Date.now()): CrossCardState {
+export function afterAnswer(prev: CrossCardState | undefined, ok: boolean, today: string, now = Date.now(), hints = 0): CrossCardState {
+  const attempts = prev?.attempts ?? [];
+  // Seule la 1re réponse du jour compte : une réponse refaite le même jour est notée, la carte n'avance pas.
+  if (prev && attempts.some((a) => dayKey(new Date(a.date)) === today)) {
+    return { ...prev, attempts: [...attempts, { date: now, ok, hints, retry: true }] };
+  }
   const s = schedule({ step: prev?.step ?? 0, due: prev?.due ?? today }, ok, today);
-  return { ...s, attempts: [...(prev?.attempts ?? []), { date: now, ok }] };
+  return { ...s, attempts: [...attempts, { date: now, ok, hints }] };
 }
