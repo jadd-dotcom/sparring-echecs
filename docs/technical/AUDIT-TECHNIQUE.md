@@ -262,7 +262,31 @@ Conséquences :
   (argument 2), et pour `public.cjs` l'URL publique.
 
 ### 3.3 Résultat de leur exécution
-Exécution en cours au moment de ce commit : résultats complétés dans un commit suivant.
+Protocole :
+- `npm run build` puis `npx vite preview --port 4173 --strictPort` ;
+- chaque script lancé seul avec `timeout 300 node tests/<script>.cjs <dossier temporaire> <url>` ;
+- les sorties (captures, `exemple-rapport.md`) dans un dossier temporaire hors du dépôt ; `git status` inchangé après coup.
+
+**Résultat : 32 scripts sur 34 réussissent (dont `coords`, avec un délai plus long). `settings` est instable (1 réussite sur
+3 passages) et `traps` échoue à chaque fois.**
+
+| Script | Résultat | Durée |
+|---|---|---|
+| appearance, attaques, autoimport, cancel, chesscom, comment, crossroads, e2e, explore, goals, ingame, layout, lessons, lessons-full, lines, london, material, mates, motifs, offline, opening, pieces-shots, review2, revise, screens, today, v2 | code 0 | 6 à 108 s |
+| board | code 0 | 188 s |
+| report | code 0 (23 contrôles « ok ») | 211 s |
+| selftest20 | code 0 : 20 parties Maia contre un joueur aléatoire, 0 plantage, 0 coup illégal, Maia 35 ms par coup en médiane | 19 s |
+| public (URL publique) | code 0 (13 contrôles « ok ») | 31 s |
+| coords | dépasse 300 s au 1er passage (code 124, interrompu par `timeout`) ; code 0 au 2e passage avec 1 500 s de délai (61 contrôles « ok ») | 317 s |
+| **settings** | **instable** : échec au 1er passage et au 1er relancement, `Timeout 30000ms exceeded` en attendant « Niveau réglé à 1200 » (`tests/settings.cjs:103`) ; code 0 au 2e relancement | 43 s |
+| **traps** | **échec reproductible** (3 passages sur 3) : `TypeError: Cannot read properties of undefined (reading 'attempts')` (`tests/traps.cjs:87`) | 3 s |
+
+Causes probables (hypothèses, non corrigées) :
+- **traps** : le test lit `meta.traps.petrov` dès l'affichage « réussi ». Or `finish` met à jour l'écran avant que
+  `recordTrapAttempt`, asynchrone, ait écrit en base (`src/TrapExercise.tsx:51-54`, `src/screens/Traps.tsx:30-33`). C'est une
+  course entre le test et l'écriture.
+- **settings** : délai d'attente de 30 s atteint après « Enregistrer » ; course de même nature, cause précise non vérifiée.
+- **coords** : script long (61 contrôles au pixel), simplement plus lent que le délai choisi.
 
 ---
 
@@ -593,7 +617,7 @@ la phase 2.
 | P2-A | `lessonWhy` sans cache, recalculé à chaque rendu (≈ 1 s pour l'onglet Carrefours de …c5/…g6, mesuré ; `src/screens/OpeningPage.tsx:223`) | index position → « pourquoi » calculé une fois, mise en cache des phrases | écrans d'ouvertures fluides sur iPad | petit | faible |
 | P2-B | Bundle de 1 063 kB, 27 écrans chargés d'emblée (`src/App.tsx:1-28`) | découpage par écran (`import()` dynamique) | démarrage plus rapide | petit | faible |
 | P2-C | Stockfish sans annulation ni gestion d'erreur ; Maia sans repli (`src/engines/stockfish.ts:96-97`, `src/screens/Play.tsx:114-116`) | commande `stop`, délai maximal, `onerror`, repli si Maia échoue | moins de blocages en partie | moyen | moyen |
-| P2-D | Scripts Playwright hors CI, et plusieurs en échec ou en timeout (§3.3) | réparer et intégrer quelques parcours critiques au CI | moins de régressions d'interface | moyen | faible |
+| P2-D | Scripts Playwright hors CI ; `traps` échoue à chaque fois, `settings` est instable (§3.3) | réparer et intégrer quelques parcours critiques au CI | moins de régressions d'interface | moyen | faible |
 | P2-E | Crochets de test (`__db`…) exposés en production (`src/selftest.ts:81`) | ne les charger qu'en mode test | réduit la surface d'erreur | petit | faible (les tests Playwright en dépendent) |
 | P2-F | Message « Vérification par Stockfish… » trompeur dans le drill (`src/screens/Revise.tsx:163`) ; libellé « partie comptée » coché par une partie non comptée (`src/lib/dailyPlan.ts:85`, `src/sessionService.ts:53`) | aligner libellés et règles | confiance dans ce que dit l'appli | petit | faible |
 | P2-G | Logique métier dans 20 écrans ou composants (§6) | extraire progressivement vers des services testés | partage clair avec Codex, tests possibles | grand | moyen |
