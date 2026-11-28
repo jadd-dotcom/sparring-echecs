@@ -1,8 +1,7 @@
 # CLAUDE.md
 
-Les règles du chantier sont dans [AGENTS.md](AGENTS.md) : les lire avant toute mission.
+Les règles du chantier sont dans [AGENTS.md](AGENTS.md) : les lire avant tout brief.
 
-Rôle de Claude Code : responsable technique et pédagogique (logique, moteurs, données, algorithmes pédagogiques, tests,
-`docs/technical/`). Le design et l'expérience utilisateur relèvent de Codex.
+Rôle de Claude Code : tout le travail du dépôt (code, interface, contenu pédagogique, tests, documentation).
 
 État du chantier : [docs/project/STATUS.md](docs/project/STATUS.md).

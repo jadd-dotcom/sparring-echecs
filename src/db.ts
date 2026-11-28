@@ -8,6 +8,7 @@ import { RATING_START, type Score } from './lib/rating';
 import type { ProfileData } from './lib/profile';
 import type { ExternalMeta } from './lib/chesscom';
 import type { ThoughtTag } from './lib/thoughts';
+import { BACKUP_VERSION, migrateBackup, type Backup } from './lib/backup';
 
 /** Origine d'une partie : contre Maia dans l'appli, ou importée de Chess.com (sans effet sur le niveau). */
 export type GameSource = 'app' | 'chesscom';
@@ -231,28 +232,30 @@ export const setCurrent = (g: CurrentGame | null) =>
   g ? db.meta.put({ key: 'current', value: g }) : db.meta.delete('current');
 
 // ---------- Export / import JSON ----------
-export interface Backup { app: 'sparring-echecs'; version: 1 | 2 | 3; exportedAt: string; games: Game[]; cards: Card[]; meta: Meta[]; openings?: Opening[]; holes?: Hole[]; mateRuns?: MateRun[] }
+export type { Backup } from './lib/backup';
 
 export async function exportAll(): Promise<Backup> {
   return {
-    app: 'sparring-echecs', version: 3, exportedAt: new Date().toISOString(),
+    app: 'sparring-echecs', version: BACKUP_VERSION, exportedAt: new Date().toISOString(),
     games: await db.games.toArray(), cards: await db.cards.toArray(), meta: await db.meta.toArray(),
     openings: await db.openings.toArray(), holes: await db.holes.toArray(), mateRuns: await db.mateRuns.toArray(),
   };
 }
 
-export async function importAll(data: Backup) {
-  if (data?.app !== 'sparring-echecs' || !Array.isArray(data.games) || !Array.isArray(data.cards)) {
-    throw new Error('Fichier de sauvegarde invalide');
-  }
+/**
+ * Remplace les données par celles du fichier, après contrôle de version et migration (lib/backup.ts).
+ * Un fichier sans `meta` (ou sans `openings`) laisse la table actuelle intacte. Renvoie la version d'origine du fichier.
+ */
+export async function importAll(raw: unknown): Promise<{ migratedFrom: number; games: number; cards: number }> {
+  const data = migrateBackup(raw);
   await db.transaction('rw', [db.games, db.cards, db.meta, db.openings, db.holes, db.mateRuns], async () => {
-    await Promise.all([db.games.clear(), db.cards.clear(), db.meta.clear(), db.holes.clear()]);
+    await Promise.all([db.games.clear(), db.cards.clear(), db.holes.clear(), db.mateRuns.clear()]);
     await db.games.bulkPut(data.games);
-    await db.cards.bulkPut(data.cards.map((c) => ({ ...c, kind: c.kind ?? 'mistake' })));
-    await db.meta.bulkPut(data.meta ?? []);
+    await db.cards.bulkPut(data.cards);
+    if (data.meta) { await db.meta.clear(); await db.meta.bulkPut(data.meta); }
     if (data.openings) { await db.openings.clear(); await db.openings.bulkPut(data.openings); }
-    await db.holes.bulkPut(data.holes ?? []);
-    await db.mateRuns.clear();
-    await db.mateRuns.bulkPut(data.mateRuns ?? []);
+    await db.holes.bulkPut(data.holes);
+    await db.mateRuns.bulkPut(data.mateRuns);
   });
+  return { migratedFrom: data.migratedFrom, games: data.games.length, cards: data.cards.length };
 }

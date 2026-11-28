@@ -31,6 +31,7 @@ import './selftest';
 import { go, parse, type Route } from './router';
 import { ChevronLeft } from './icons';
 import { loadPrefs } from './prefs';
+import { requestPersistentStorage } from './storage';
 import { autoImportMessage, autoImportOnStart } from './autoImport';
 import { resumeAnalysis, setAnalysisPause } from './chesscomImport';
 import { resumeDetailRefresh, setDetailRefreshPause, startDetailRefresh } from './detailRefresh';
@@ -45,7 +46,7 @@ export default function App() {
   const [route, setRoute] = useState<Route>(() => parse(location.hash));
   const [ready, setReady] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  useEffect(() => { Promise.all([ensureOpenings(), loadPrefs()]).catch(console.error).finally(() => setReady(true)); }, []);
+  useEffect(() => { requestPersistentStorage().catch(() => {}); Promise.all([ensureOpenings(), loadPrefs()]).catch(console.error).finally(() => setReady(true)); }, []);
   // Import Chess.com automatique (une fois par ouverture, avec Internet et un pseudo enregistré).
   useEffect(() => {
     if (!ready) return;
