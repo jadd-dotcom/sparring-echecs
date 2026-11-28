@@ -1,9 +1,10 @@
 // Leçons complètes : pour chaque ouverture active, les lignes du répertoire qui n'ont pas encore d'explication.
 // Chaque ligne reprend la partie déjà expliquée (`start`, sans commentaire) puis un « pourquoi » par coup (les deux
-// camps, src/lib/moveWhy.ts ; une explication déjà écrite ailleurs pour la même position est reprise) et une phrase
+// camps, src/lib/moveWhy.ts, qui répond d'abord au coup d'avant ; une explication déjà écrite ailleurs pour la même
+// position est reprise) et une phrase
 // de plan (src/data/linePlans.ts, écrite à la main). Lignes rangées par carrefour (là où son coup change ma réponse).
 // Sortie : src/data/lessonLines.ts. Usage : npm run lesson-lines
-import { writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { Chess } from 'chess.js';
 import { BUILTIN_OPENINGS } from '../src/data/openings';
 import { OPENING_LESSONS, type LessonExtra, type LessonLine } from '../src/data/openingLessons';
@@ -13,6 +14,11 @@ import { crossroads, moveLabel, type Crossroad } from '../src/lib/crossroads';
 import { orderedLines } from '../src/lib/lineTrainer';
 import { branchName } from '../src/lib/crossroadTrainer';
 import { moveWhy } from '../src/lib/moveWhy';
+import type { SignpostThreat } from '../src/lib/signposts';
+
+// Menaces « s'il rejouait » après chaque coup du répertoire (npm run why-threats) : la réponse dit d'abord ce qu'elle
+// fait contre la menace du coup d'avant.
+const THREATS: Record<string, SignpostThreat | null> = existsSync('scripts/why-threats.json') ? JSON.parse(readFileSync('scripts/why-threats.json', 'utf8')) : {};
 
 const fk = (fen: string) => fen.split(' ').slice(0, 4).join(' ');
 const isPrefix = (a: string[], b: string[]) => a.length <= b.length && a.every((m, i) => m === b[i]);
@@ -55,7 +61,8 @@ for (const o of BUILTIN_OPENINGS.filter((x) => !x.archived)) {
       const before = pos.fen();
       const prev = pos.history({ verbose: true }).slice(-1)[0];
       if (i >= k) {
-        const why = whys.get(fk(before) + ' ' + l[i]) ?? moveWhy(before, l[i], me, prev ? { to: prev.to, captured: prev.captured } : undefined);
+        const ctx = prev ? { prev: { fen: prev.before, san: prev.san }, threat: THREATS[fk(before)] ?? null } : {};
+        const why = whys.get(fk(before) + ' ' + l[i]) ?? moveWhy(before, l[i], me, ctx);
         moves.push({ san: l[i], why });
         whys.set(fk(before) + ' ' + l[i], why);
       }

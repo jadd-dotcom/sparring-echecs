@@ -124,7 +124,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Ba7",
-       "why": "Son fou se met à l’abri en a7 et surveille d4."
+       "why": "Son fou, attaqué par ton pion, s’écarte en a7 ; il surveille aussi d4."
       },
       {
        "san": "h3",
@@ -166,7 +166,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "cxd5",
-       "why": "Ton pion prend son pion d5 : la colonne c s’ouvre pour tes tours."
+       "why": "Ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours."
       },
       {
        "san": "Nxd5",
@@ -178,7 +178,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nb6",
-       "why": "Son cavalier se met à l’abri en b6 et surveille d5."
+       "why": "Son cavalier, attaqué par ton fou, s’écarte en b6 ; il surveille aussi d5."
       },
       {
        "san": "d3",
@@ -194,7 +194,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nc6",
-       "why": "Son cavalier se développe en c6 et surveille d4 et e5."
+       "why": "Son cavalier va en c6 et protège son pion e5, attaqué par ton cavalier ; il surveille aussi d4."
       },
       {
        "san": "Be3",
@@ -282,7 +282,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "cxd5",
-       "why": "Ton pion prend son pion d5."
+       "why": "Ton pion prend son pion d5, qui attaquait ton pion c4."
       },
       {
        "san": "cxd5",
@@ -504,7 +504,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "cxd5",
-       "why": "Ton pion prend son pion d5 : la colonne c s’ouvre pour tes tours."
+       "why": "Ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours."
       },
       {
        "san": "exd5",
@@ -581,7 +581,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "cxd5",
-       "why": "Ton pion prend son pion d5 : la colonne c s’ouvre pour tes tours."
+       "why": "Ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours."
       },
       {
        "san": "Qxd5",
@@ -593,7 +593,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Qd8",
-       "why": "Sa dame se met à l’abri en d8 et surveille d4 et d5."
+       "why": "Sa dame, attaquée par ton cavalier, s’écarte en d8 ; elle surveille aussi d4 et d5."
       },
       {
        "san": "d4",
@@ -739,7 +739,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "cxd5",
-       "why": "Ton pion prend son pion d5 : la colonne c s’ouvre pour tes tours."
+       "why": "Ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours."
       },
       {
        "san": "Nxd5",
@@ -751,7 +751,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nc7",
-       "why": "Son cavalier se met à l’abri en c7 et surveille d5."
+       "why": "Son cavalier, attaqué par ton fou, s’écarte en c7 ; il surveille aussi d5."
       },
       {
        "san": "Nf3",
@@ -933,7 +933,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "dxc5",
-       "why": "Ton pion prend son pion c5 : la colonne d s’ouvre pour tes tours."
+       "why": "Ton pion prend son pion c5, qui attaquait ton pion d4, et la colonne d s’ouvre pour tes tours."
       },
       {
        "san": "Nfd7",
@@ -973,7 +973,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
      "moves": [
       {
        "san": "Qa5",
-       "why": "Sa dame se met à l’abri en a5 et surveille d5 et e5."
+       "why": "Sa dame, attaquée par ton cavalier, s’écarte en a5 ; elle surveille aussi d5 et e5."
       },
       {
        "san": "d4",
@@ -1063,7 +1063,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nb6",
-       "why": "Son cavalier se met à l’abri en b6 et surveille d5."
+       "why": "Son cavalier, attaqué par ton pion, s’écarte en b6 ; il surveille aussi d5."
       },
       {
        "san": "h3",
@@ -1177,11 +1177,11 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Qc2",
-       "why": "Ta dame sort en c2 et surveille e4."
+       "why": "Ta dame va en c2 et protège ton pion b2, attaqué par sa dame ; elle surveille aussi e4."
       },
       {
        "san": "g6",
-       "why": "Le pion g6 prépare le fianchetto de son fou en g7."
+       "why": "Le pion g6 bouche la diagonale de ta dame : son pion h7 n’est plus attaqué ; il prépare aussi le fianchetto de son fou en g7."
       },
       {
        "san": "Bd3",
@@ -1258,7 +1258,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Qe7",
-       "why": "Sa dame cloue ton pion e4 sur ton roi."
+       "why": "Sa dame va en e7 et protège f7 contre la menace de mat ; elle surveille aussi e4 et e5."
       },
       {
        "san": "Bb5",
@@ -1266,7 +1266,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Bd7",
-       "why": "Son fou va en d7 : son cavalier c6 n’est plus cloué."
+       "why": "Son fou va en d7 et protège son cavalier c6, attaqué par ton fou."
       },
       {
        "san": "Bc4",
@@ -1489,7 +1489,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Qd5",
-       "why": "Ta dame sort en d5 et surveille d4, e4 et e5."
+       "why": "Ta dame bouche la rangée de sa dame : ton pion e5 n’est plus attaqué ; elle surveille aussi d4 et e4."
       },
       {
        "san": "Bc5",
@@ -1505,7 +1505,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Bh4",
-       "why": "Ton fou se met à l’abri en h4."
+       "why": "Ton fou, attaqué par son pion, s’écarte en h4."
       },
       {
        "san": "g5",
@@ -1513,7 +1513,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Bg3",
-       "why": "Ton fou se met à l’abri en g3 et surveille e5."
+       "why": "Ton fou, attaqué par son pion, s’écarte en g3 ; il surveille aussi e5."
       },
       {
        "san": "g4",
@@ -1521,7 +1521,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nd2",
-       "why": "Ton cavalier va en d2 : ton cavalier c3 n’est plus cloué."
+       "why": "Ton cavalier, attaqué par son pion, s’écarte en d2 ; il surveille aussi e4."
       },
       {
        "san": "Nge7",
@@ -2020,15 +2020,15 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
      "moves": [
       {
        "san": "Qc5",
-       "why": "Sa dame se met à l’abri en c5 et surveille d4, d5 et e5."
+       "why": "Sa dame, attaquée par ton fou, s’écarte en c5 ; elle surveille aussi d4, d5 et e5."
       },
       {
        "san": "Be3",
-       "why": "Ton fou va en e3 et attaque sa dame c5."
+       "why": "Ton fou va en e3 et contre-attaque sa dame c5 au lieu de défendre ton pion e5."
       },
       {
        "san": "Qe7",
-       "why": "Sa dame se met à l’abri en e7 et surveille e5."
+       "why": "Sa dame, attaquée par ton fou, s’écarte en e7 ; elle surveille aussi e5."
       },
       {
        "san": "Nc3",
@@ -2044,7 +2044,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nxf3+",
-       "why": "Son cavalier prend ton cavalier f3, avec échec."
+       "why": "Son cavalier, attaqué par ton fou, prend ton cavalier f3 avec échec."
       },
       {
        "san": "gxf3",
@@ -2165,11 +2165,11 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "e5",
-       "why": "Le pion e5 chasse ton cavalier f6."
+       "why": "Son pion e4, attaqué par ton cavalier, avance en e5 et chasse ton cavalier f6."
       },
       {
        "san": "Nd5",
-       "why": "Ton cavalier se met à l’abri en d5."
+       "why": "Ton cavalier, attaqué par son pion, s’écarte en d5."
       },
       {
        "san": "d4",
@@ -2177,7 +2177,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "cxd4",
-       "why": "Ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours."
+       "why": "Ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours."
       },
       {
        "san": "Nf3",
@@ -2201,11 +2201,11 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nb6",
-       "why": "Ton cavalier va en b6 et attaque son fou c4."
+       "why": "Ton cavalier, attaqué par son fou, s’écarte en b6 et attaque son fou c4 ; il surveille aussi d5."
       },
       {
        "san": "Bb5",
-       "why": "Son fou cloue ton cavalier c6 sur ton roi."
+       "why": "Son fou, attaqué par ton cavalier, s’écarte en b5 et cloue ton cavalier c6 sur ton roi."
       },
       {
        "san": "dxe5",
@@ -2217,11 +2217,11 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Bd7",
-       "why": "Ton fou va en d7 : ton cavalier c6 n’est plus cloué."
+       "why": "Ton fou va en d7 et protège ton cavalier c6, attaqué par son cavalier."
       },
       {
        "san": "Nxd7",
-       "why": "Son cavalier prend ton fou d7."
+       "why": "Son cavalier, attaqué par ton cavalier, prend ton fou d7."
       },
       {
        "san": "Qxd7",
@@ -2243,7 +2243,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "cxd4",
-       "why": "Ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours."
+       "why": "Ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours."
       },
       {
        "san": "c3",
@@ -2251,15 +2251,15 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nf6",
-       "why": "Ton cavalier va en f6 et attaque son pion e4."
+       "why": "Ton cavalier va en f6 et contre-attaque son pion e4 au lieu de défendre ton pion d4."
       },
       {
        "san": "e5",
-       "why": "Le pion e5 chasse ton cavalier f6."
+       "why": "Son pion e4, attaqué par ton cavalier, avance en e5 et chasse ton cavalier f6."
       },
       {
        "san": "Nd5",
-       "why": "Ton cavalier se met à l’abri en d5."
+       "why": "Ton cavalier, attaqué par son pion, s’écarte en d5."
       },
       {
        "san": "Nf3",
@@ -2283,7 +2283,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nb6",
-       "why": "Ton cavalier va en b6 et attaque son fou c4."
+       "why": "Ton cavalier, attaqué par son fou, s’écarte en b6 et attaque son fou c4 ; il surveille aussi d5."
       }
      ],
      "plan": "Même position que dans la ligne 2.c3 : …dxe5 ouvre le centre, puis …g6 et …Bg7 pour viser son pion d4."
@@ -2333,7 +2333,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "d6",
-       "why": "Le pion d6 soutient ton pion c5."
+       "why": "Le pion d6 protège ton pion c5, attaqué par son pion, et ouvre la diagonale de ton fou c8."
       },
       {
        "san": "d5",
@@ -2341,7 +2341,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Na5",
-       "why": "Ton cavalier se met à l’abri en a5."
+       "why": "Ton cavalier, attaqué par son pion, s’écarte en a5."
       },
       {
        "san": "Na3",
@@ -2462,7 +2462,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "exd5",
-       "why": "Son pion prend ton pion d5 : la colonne e s’ouvre pour ses tours."
+       "why": "Son pion prend ton pion d5, qui attaquait son pion e4, et la colonne e s’ouvre pour ses tours."
       },
       {
        "san": "Nxd5",
@@ -2478,15 +2478,15 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Bf3",
-       "why": "Son fou va en f3 et attaque ta dame d5."
+       "why": "Son fou va en f3 et contre-attaque ta dame d5 au lieu de défendre son cavalier d4."
       },
       {
        "san": "Qc4",
-       "why": "Ta dame se met à l’abri en c4 et surveille d4 et d5."
+       "why": "Ta dame, attaquée par son fou, s’écarte en c4 ; elle surveille aussi d4 et d5."
       },
       {
        "san": "Nxc6",
-       "why": "Son cavalier prend ton cavalier c6."
+       "why": "Son cavalier, attaqué par ta dame, prend ton cavalier c6."
       },
       {
        "san": "bxc6",
@@ -2498,7 +2498,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Qa6",
-       "why": "Ta dame se met à l’abri en a6."
+       "why": "Ta dame, attaquée par son pion, s’écarte en a6."
       }
      ],
      "plan": "Ton fou g7 vise c3 et a1 : sors ton fou c8 (…Bf5 ou …Be6), puis tes tours sur les colonnes b et d contre ses pions de l’aile dame."
@@ -2533,7 +2533,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Be3",
-       "why": "Son fou se développe en e3 et surveille d4."
+       "why": "Son fou va en e3 et protège son cavalier d4, attaqué par ton fou."
       },
       {
        "san": "Nf6",
@@ -2541,7 +2541,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nc3",
-       "why": "Son cavalier se développe en c3 et surveille d5 et e4."
+       "why": "Son cavalier va en c3 et protège son pion e4, attaqué par ton cavalier ; il surveille aussi d5."
       },
       {
        "san": "Ng4",
@@ -2557,11 +2557,11 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Qd1",
-       "why": "Sa dame va en d1 et vise d4."
+       "why": "Sa dame va en d1 et protège sa tour a1, menacée par ton cavalier (Nc2+) ; elle surveille aussi d4."
       },
       {
        "san": "Ne6",
-       "why": "Ton cavalier se met à l’abri en e6 et surveille d4."
+       "why": "Ton cavalier, attaqué par sa dame, s’écarte en e6 ; il surveille aussi d4."
       },
       {
        "san": "Rc1",
@@ -2674,7 +2674,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nf6",
-       "why": "Ton cavalier bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée."
+       "why": "Ton cavalier bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée ; il surveille aussi d5 et e4."
       },
       {
        "san": "e5",
@@ -2682,7 +2682,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nd5",
-       "why": "Ton cavalier se met à l’abri en d5."
+       "why": "Ton cavalier, attaqué par son pion, s’écarte en d5."
       },
       {
        "san": "e6",
@@ -2706,7 +2706,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "e5",
-       "why": "Le pion e5 chasse sa dame d4."
+       "why": "Le pion e5 contre-attaque sa dame d4 au lieu de défendre ton cavalier d5."
       }
      ],
      "plan": "Ton pion e5 chasse sa dame : ensuite sors ton fou f8 (…Be7), échange son fou c4 par …Be6 et roque ; tes pions c6 et e5 te donnent de l’espace."
@@ -2757,7 +2757,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "cxd4",
-       "why": "Ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours."
+       "why": "Ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours."
       },
       {
        "san": "cxd4",
@@ -2769,7 +2769,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "exd5",
-       "why": "Son pion prend ton pion d5 : la colonne e s’ouvre pour ses tours."
+       "why": "Son pion prend ton pion d5, qui attaquait son fou c4, et la colonne e s’ouvre pour ses tours."
       },
       {
        "san": "exd5",
@@ -2777,7 +2777,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Bb5",
-       "why": "Son fou cloue ton cavalier c6 sur ton roi."
+       "why": "Son fou, attaqué par ton pion, s’écarte en b5 et cloue ton cavalier c6 sur ton roi."
       },
       {
        "san": "Ne7",
@@ -2857,7 +2857,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nd7",
-       "why": "Ton cavalier va en d7 et vise e5."
+       "why": "Ton cavalier va en d7 et protège ton pion e5, attaqué par son cavalier."
       }
      ],
      "plan": "Ton cavalier d7 protège e5 : roque, puis …b6 et …f6 rendent ton centre solide."
@@ -2885,7 +2885,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "cxd4",
-       "why": "Ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours."
+       "why": "Ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours."
       },
       {
        "san": "Nxd4",
@@ -2941,11 +2941,11 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "d4",
-       "why": "Le pion d4 attaque ton pion c5."
+       "why": "Le pion d4 contre-attaque ton pion c5 au lieu de défendre son pion e4."
       },
       {
        "san": "cxd4",
-       "why": "Ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours."
+       "why": "Ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours."
       },
       {
        "san": "e5",
@@ -2953,7 +2953,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nd5",
-       "why": "Ton cavalier se met à l’abri en d5."
+       "why": "Ton cavalier, attaqué par son pion, s’écarte en d5."
       },
       {
        "san": "cxd4",
@@ -2969,11 +2969,11 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nb6",
-       "why": "Ton cavalier va en b6 et attaque son fou c4."
+       "why": "Ton cavalier, attaqué par son fou, s’écarte en b6 et attaque son fou c4 ; il surveille aussi d5."
       },
       {
        "san": "Bb3",
-       "why": "Son fou se met à l’abri en b3 et surveille d5."
+       "why": "Son fou, attaqué par ton cavalier, s’écarte en b3 ; il surveille aussi d5."
       },
       {
        "san": "dxe5",
@@ -3115,7 +3115,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "b6",
-       "why": "Le pion b6 prépare le fianchetto de ton fou en b7."
+       "why": "Le pion b6 protège ton pion c5, attaqué par son fou, et prépare le fianchetto de ton fou en b7."
       },
       {
        "san": "Qd2",
@@ -3262,7 +3262,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Bb3",
-       "why": "Son fou se met à l’abri en b3 et surveille d5."
+       "why": "Son fou, attaqué par ton pion, s’écarte en b3 ; il surveille aussi d5."
       },
       {
        "san": "O-O",
@@ -3294,7 +3294,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "cxd4",
-       "why": "Ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours."
+       "why": "Ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours."
       },
       {
        "san": "Nxd4",
@@ -3476,7 +3476,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "cxd4",
-       "why": "Ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours."
+       "why": "Ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours."
       },
       {
        "san": "cxd4",
@@ -3492,7 +3492,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Nb6",
-       "why": "Ton cavalier va en b6 et attaque son fou c4."
+       "why": "Ton cavalier, attaqué par son fou, s’écarte en b6 et attaque son fou c4 ; il surveille aussi d5."
       }
      ],
      "plan": "Même position que dans la ligne 2.c3 : …dxe5 ouvre le centre, puis …g6 et …Bg7 pour viser son pion d4."
@@ -3709,7 +3709,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Bh4",
-       "why": "Son fou cloue ton cavalier f6 sur ta dame."
+       "why": "Son fou, attaqué par ton pion, s’écarte en h4 et cloue ton cavalier f6 sur ta dame."
       },
       {
        "san": "Be7",
@@ -3934,7 +3934,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Bg6",
-       "why": "Ton fou se met à l’abri en g6 et surveille e4."
+       "why": "Ton fou, attaqué par son pion, s’écarte en g6 ; il surveille aussi e4."
       },
       {
        "san": "h4",
@@ -4015,7 +4015,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Be7",
-       "why": "Ton fou se met à l’abri en e7."
+       "why": "Ton fou, attaqué par son pion, s’écarte en e7."
       },
       {
        "san": "Nbd2",
@@ -4051,7 +4051,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "e6",
-       "why": "Le pion e6 protège ton fou f5, attaqué par son fou d3."
+       "why": "Le pion e6 protège ton fou f5, attaqué par son fou, et ouvre la diagonale de ton fou f8."
       },
       {
        "san": "Nf3",
@@ -4091,7 +4091,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "g6",
-       "why": "Le pion g6 prépare le fianchetto de ton fou en g7."
+       "why": "Le pion g6 protège ton pion f5, attaqué par sa dame, et prépare le fianchetto de ton fou en g7."
       },
       {
        "san": "cxd5",
@@ -4107,7 +4107,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "fxe4",
-       "why": "Ton pion prend son pion e4."
+       "why": "Ton pion prend son pion e4, qui attaquait ton cavalier d5."
       }
      ],
      "plan": "Après Qxe4+, pare l’échec par …Be7, puis …N7f6 : tes cavaliers d5 et f6 tiennent le centre, et tu roques dès que possible."
@@ -4142,7 +4142,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Qc7",
-       "why": "Ta dame sort en c7 et surveille e5."
+       "why": "Ta dame va en c7 et protège ton pion b7, attaqué par sa dame ; elle surveille aussi e5."
       },
       {
        "san": "Nxg6",
@@ -4154,7 +4154,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "h4",
-       "why": "Le pion h4 gagne de l’espace à l’aile roi."
+       "why": "Son pion h2, attaqué par ta tour, avance en h4."
       },
       {
        "san": "Bd6",
@@ -4188,7 +4188,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "exd5",
-       "why": "Son pion prend ton pion d5 : la colonne e s’ouvre pour ses tours."
+       "why": "Son pion prend ton pion d5, qui attaquait son pion e4, et la colonne e s’ouvre pour ses tours."
       },
       {
        "san": "Nf6",
@@ -4270,7 +4270,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "cxd5",
-       "why": "Son pion prend ton pion d5 : la colonne c s’ouvre pour ses tours."
+       "why": "Son pion prend ton pion d5, qui attaquait son pion c4, et la colonne c s’ouvre pour ses tours."
       },
       {
        "san": "cxd5",
@@ -4408,7 +4408,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Bh5",
-       "why": "Ton fou se met à l’abri en h5."
+       "why": "Ton fou, attaqué par son pion, s’écarte en h5."
       },
       {
        "san": "e4",
@@ -4495,7 +4495,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Bb3",
-       "why": "Son fou se met à l’abri en b3 et surveille d5."
+       "why": "Son fou, attaqué par ton pion, s’écarte en b3 ; il surveille aussi d5."
       },
       {
        "san": "b4",
@@ -4503,7 +4503,7 @@ export const GENERATED_EXTRAS: Record<string, LessonExtra[]> = {
       },
       {
        "san": "Na4",
-       "why": "Son cavalier se met à l’abri en a4."
+       "why": "Son cavalier, attaqué par ton pion, s’écarte en a4."
       },
       {
        "san": "Be7",

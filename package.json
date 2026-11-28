@@ -13,6 +13,7 @@
     "verify-mates": "sh scripts/verify-mates.sh",
     "signpost-threats": "npx esbuild scripts/signpost-threats.ts --bundle --platform=node --format=esm --packages=external --outfile=scripts/.signpost-threats.mjs --log-level=warning && node scripts/.signpost-threats.mjs; rm -f scripts/.signpost-threats.mjs",
     "crossroads-doc": "npx esbuild scripts/crossroads-doc.ts --bundle --platform=node --format=esm --packages=external --outfile=scripts/.cx.mjs --log-level=warning && node scripts/.cx.mjs; rm -f scripts/.cx.mjs",
+    "why-threats": "npx esbuild scripts/why-threats.ts --bundle --platform=node --format=esm --packages=external --outfile=scripts/.why-threats.mjs --log-level=warning && node scripts/.why-threats.mjs; rm -f scripts/.why-threats.mjs",
     "lesson-lines": "npx esbuild scripts/lesson-lines.ts --bundle --platform=node --format=esm --packages=external --outfile=scripts/.lesson-lines.mjs --log-level=warning && node scripts/.lesson-lines.mjs; rm -f scripts/.lesson-lines.mjs",
     "lessons-doc": "npx esbuild scripts/lessons-doc.ts --bundle --platform=node --format=esm --packages=external --outfile=scripts/.lessons-doc.mjs --log-level=warning && node scripts/.lessons-doc.mjs && rm scripts/.lessons-doc.mjs",
     "board-doc": "npx esbuild scripts/board-doc.ts --bundle --platform=node --format=esm --packages=external --outfile=scripts/.board-doc.mjs --log-level=warning && node scripts/.board-doc.mjs && rm scripts/.board-doc.mjs"

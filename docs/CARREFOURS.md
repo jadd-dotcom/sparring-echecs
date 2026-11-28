@@ -20,7 +20,7 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 - **1…c5** → 2.Nc3 : « Le pion c5 prend de l’espace au centre et surveille d4 → ton cavalier se développe en c3 et surveille d5 et e4 (Nc3) »
 - **1…Nf6** → 2.Nc3 : « Son cavalier se développe en f6 et surveille d5 et e4 → ton cavalier se développe en c3 et surveille d5 et e4 (Nc3) »
 - **1…e6** → 2.Nc3 : « Le pion e6 ouvre la diagonale de son fou f8 → ton cavalier se développe en c3 et surveille d5 et e4 (Nc3) »
-- **1…d5** → 2.cxd5 : « Le pion d5 attaque ton pion c4 → ton pion prend son pion d5 : la colonne c s’ouvre pour tes tours (cxd5) »
+- **1…d5** → 2.cxd5 : « Le pion d5 attaque ton pion c4 → ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours (cxd5) »
 
 ### Après 1.c4 e5 2.Nc3
 
@@ -39,7 +39,7 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 
 ### Après 1.c4 e5 2.Nc3 Nf6 3.g3
 
-- **3…d5** → 4.cxd5 : « Le pion d5 attaque ton pion c4 → ton pion prend son pion d5 : la colonne c s’ouvre pour tes tours (cxd5) »
+- **3…d5** → 4.cxd5 : « Le pion d5 attaque ton pion c4 → ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours (cxd5) »
 - **3…Bb4** → 4.Bg2 : « Son fou se développe en b4 et vise ton cavalier c3 → ton fou se place sur la grande diagonale, d’où il vise le centre et l’autre aile (Bg2) »
 
 ### Après 1.c4 c5 2.Nc3
@@ -64,8 +64,8 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 
 ### Après 1.c4 d5 2.cxd5 Qxd5 3.Nc3
 
-- **3…Qd8** → 4.d4 : « Sa dame se met à l’abri en d8 et surveille d4 et d5 → le pion d4 prend de l’espace au centre et surveille e5 (d4) »
-- **3…Qa5** → 4.d4 : « Sa dame se met à l’abri en a5 et surveille d5 et e5 → le pion d4 prend de l’espace au centre et surveille e5 (d4) »
+- **3…Qd8** → 4.d4 : « Sa dame, attaquée par ton cavalier, s’écarte en d8 ; elle surveille aussi d4 et d5 → le pion d4 prend de l’espace au centre et surveille e5 (d4) »
+- **3…Qa5** → 4.d4 : « Sa dame, attaquée par ton cavalier, s’écarte en a5 ; elle surveille aussi d5 et e5 → le pion d4 prend de l’espace au centre et surveille e5 (d4) »
 
 ### Après 1.c4 d5 2.cxd5 Qxd5 3.Nc3 Qd8 4.d4 Nf6 5.Nf3
 
@@ -104,7 +104,7 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 ### Après 1.d4 e5 2.dxe5 Nc6 3.Nf3 Qe7 4.Bg5
 
 - **4…Qb4+** → 5.Nc3 : « La dame noire fait échec et vise ton pion b2 → ton cavalier pare l’échec en se développant ; si …Qxb2, Bd2 puis Rb1 chasse la dame (Stockfish : gros avantage blanc) (Nc3) »
-- **4…Qc5** → 5.Be3 : « Sa dame se met à l’abri en c5 et surveille d4, d5 et e5 → ton fou va en e3 et attaque sa dame c5 (Be3) »
+- **4…Qc5** → 5.Be3 : « Sa dame, attaquée par ton fou, s’écarte en c5 ; elle surveille aussi d4, d5 et e5 → ton fou va en e3 et contre-attaque sa dame c5 au lieu de défendre ton pion e5 (Be3) »
 
 ## Système …c5 / …g6 (Dragon accéléré) (Noirs) — 14 carrefours, 43 cartes
 
@@ -118,7 +118,7 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 - **2.Nf3** → 2…Nc6 : « Le cavalier blanc se développe et prépare d4 → ton cavalier se développe et surveille les cases d4 et e5 (…Nc6) »
 - **2.Nc3** → 2…Nc6 : « Son cavalier se développe en c3 et surveille d5 et e4 → ton cavalier se développe en c6 et surveille d4 et e5 (…Nc6) »
 - **2.c3** → 2…Nf6 : « Le pion c3 prépare d4 : il pourra occuper tout le centre → ton cavalier va en f6 et attaque son pion e4 (…Nf6) »
-- **2.d4** → 2…cxd4 : « Le pion d4 attaque ton pion c5 → ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours (…cxd4) »
+- **2.d4** → 2…cxd4 : « Le pion d4 attaque ton pion c5 → ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours (…cxd4) »
 - **2.Bc4** → 2…Nc6 : « Le fou blanc vise tout de suite f7 → tu te développes (…Nc6) »
 - **2.Qh5** → 2…d6 : « La dame blanche sort tout de suite : elle vise f7 et aussi ton pion c5, par la 5e rangée → le pion d6 protège c5 ; pas encore …g6, la dame prendrait c5 (…d6) »
 - **2.Qf3** → 2…Nc6 : « La dame blanche sort en f3 : elle vise f7 par la colonne f → tu te développes normalement : la dame seule ne menace rien (…Nc6) »
@@ -147,7 +147,7 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 ### Après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.Nxc6 bxc6
 
 - **6.Bd3** → 6…Bg7 : « Son fou se développe en d3 et surveille e4 → ton fou se place sur la grande diagonale, d’où il vise le centre et l’autre aile (…Bg7) »
-- **6.Qd4** → 6…Nf6 : « Il menace de prendre ta tour h8 → ton cavalier bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée (…Nf6) »
+- **6.Qd4** → 6…Nf6 : « Il menace de prendre ta tour h8 → ton cavalier bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée ; il surveille aussi d5 et e4 (…Nf6) »
 
 ### Après 1.e4 c5 2.Nf3 Nc6 3.Bc4 g6
 
@@ -174,12 +174,12 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 
 ### Après 1.e4 c5 2.c3 Nf6 3.e5 Nd5
 
-- **4.d4** → 4…cxd4 : « Le pion d4 attaque ton pion c5 → ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours (…cxd4) »
+- **4.d4** → 4…cxd4 : « Le pion d4 attaque ton pion c5 → ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours (…cxd4) »
 - **4.Nf3** → 4…Nc6 : « Son cavalier se développe en f3 et surveille d4 et e5 → ton cavalier se développe en c6 et surveille d4 et e5 (…Nc6) »
 
 ### Après 1.e4 c5 2.d4 cxd4
 
-- **3.c3** → 3…Nf6 : « Il menace de prendre ton pion d4 → ton cavalier va en f6 et attaque son pion e4 (…Nf6) »
+- **3.c3** → 3…Nf6 : « Il menace de prendre ton pion d4 → ton cavalier va en f6 et contre-attaque son pion e4 au lieu de défendre ton pion d4 (…Nf6) »
 - **3.Nf3** → 3…Nc6 : « Son cavalier va en f3 et attaque ton pion d4 → ton cavalier se développe en c6 et surveille d4 et e5 (…Nc6) »
 
 ### Après 1.e4 c5 2.Bc4 Nc6
@@ -228,7 +228,7 @@ par coup-panneau ; sa phrase-panneau dit ce que son coup change → ma réponse 
 ### Après 1.d4 d5 2.e3 Bf5
 
 - **3.c4** → 3…e6 : « Les Blancs attaquent ton pion d5 → le pion e6 soutient d5 ; ton fou f5 est déjà dehors (…e6) »
-- **3.Bd3** → 3…e6 : « Il menace de prendre ton fou f5 → le pion e6 protège ton fou f5, attaqué par son fou d3 (…e6) »
+- **3.Bd3** → 3…e6 : « Il menace de prendre ton fou f5 → le pion e6 protège ton fou f5, attaqué par son fou, et ouvre la diagonale de ton fou f8 (…e6) »
 
 ### Après 1.c4 c6
 

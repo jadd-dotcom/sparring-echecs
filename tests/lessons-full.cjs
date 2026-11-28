@@ -56,6 +56,19 @@ const assert = (c, m) => { if (!c) throw new Error('ÉCHEC: ' + m); console.log(
   await p.getByTestId('back').tap();
   await p.locator('[data-testid="toc-extra:cx-english-1:0"][data-status="done"]').waitFor({ timeout: 5000 }).catch(() => {});
   assert(await p.locator('[data-testid="toc-extra:cx-english-1:0"]').getAttribute('data-status') === 'done', 'sommaire : ligne ✓');
+  // Étape 7 : le « pourquoi » calculé répond d'abord au coup d'avant (Londres, ligne 1…e6 : 8…Qb6 9.Qc2).
+  await p.getByTestId('tab-openings').tap();
+  await p.getByTestId('open-london').tap();
+  await p.getByTestId('opening-head').waitFor();
+  await p.locator('[data-testid="toc-extra:cx-london-1:0"]').getByRole('button', { name: 'Regarder' }).tap();
+  await p.locator('.lesson-play[data-stage="watch"]').waitFor();
+  let qc2 = '';
+  for (let i = 0; i < 25 && !/^9\./.test(qc2); i++) {
+    await p.getByRole('button', { name: 'Coup suivant' }).tap();
+    qc2 = (await p.locator('.side-col h3').filter({ hasText: /^\d+\.|^\d+…/ }).first().innerText().catch(() => '')).trim();
+  }
+  const whyQc2 = await p.locator('.side-col .why').first().innerText();
+  assert(/^9\.\s*♕c2/.test(qc2) && /^Ta dame va en c2 et protège ton pion b2, attaqué par sa dame/.test(whyQc2), '9.♕c2 : « ' + whyQc2 + ' »');
   assert(errors.length === 0, 'aucune erreur JavaScript' + (errors.length ? ' : ' + errors.join(' | ') : ''));
   await b.close();
 })().catch((e) => { console.error(e); process.exit(1); });

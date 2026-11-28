@@ -620,3 +620,20 @@ pour l'adversaire (sa meilleure réponse), avec une phrase en mots. Indicateur �
 - Tests : `src/lib/materialBar.test.ts`, `src/lib/signposts.test.ts` (les 4 positions), `src/lib/dailyPlan.test.ts`,
   `src/lib/moveWhy.test.ts` ; navigateur : `tests/material.cjs` (nouveau), `tests/today.cjs` (5 positions, pas de
   doublon), `tests/crossroads.cjs`.
+
+## Étape 7 : « pourquoi » calculés — répondre d'abord au coup d'avant (28/11)
+- Même angle mort que les phrases-panneaux : quand le coup d'avant attaquait une pièce, le « pourquoi » calculé de la
+  réponse parlait de développement. Nouvelle règle (`src/lib/moveWhy.ts`, les deux camps) : on regarde d'abord ce que
+  le coup précédent de l'autre camp attaque — une pièce nouvellement attaquée et pas assez défendue (sans défense,
+  attaquée par moins cher qu'elle, ou plus d'attaquants que de défenseurs), ou sa menace « s'il rejouait » d'au moins
+  2 points ou d'un mat (Stockfish profondeur 14, une fois pour toutes : `npm run why-threats` →
+  `scripts/why-threats.json`, 927 positions, 64 menaces). Si le coup y répond, on le dit en premier : « protège X,
+  attaqué par … », « bouche la diagonale de … », « s'écarte en … » (un pion « avance »), « prend …, qui attaquait X »,
+  « pare l'échec », « contre-attaque … au lieu de défendre X » ; puis ce que le coup fait d'autre (fianchetto, centre,
+  clouage, cases surveillées). Une pièce seulement menacée par le moteur (fourchette) est dite « menacée par … (Nc2+) ».
+- Les « pourquoi » écrits à la main ne changent pas (ni ceux repris pour une même position).
+- Régénéré : `src/data/lessonLines.ts`, docs/LECONS-OUVERTURES.md, docs/CARREFOURS.md (les phrases-panneaux reprennent
+  ces « pourquoi »). **72 « pourquoi » modifiés** (79 avec les répétitions), listés pour relecture dans
+  **docs/POURQUOI-MODIFIES.md** (ligne, coup, avant → après).
+- Tests : `src/lib/moveWhy.test.ts` (les 3 exemples : 7…Qc7, 8…g6, 9.Qc2 ; s'écarte, pare l'échec, menace de mat,
+  rien à défendre) ; `tests/lessons-full.cjs` (9.Qc2 dans la leçon du Londres).

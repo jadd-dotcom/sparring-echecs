@@ -1,10 +1,27 @@
-// « Pourquoi » d'un coup d'ouverture, en une phrase, calculé sur la position (règles simples, sans moteur) : roque,
-// prise / reprise, échec, clouage, attaque, pion qui prend le centre / prépare un fianchetto / ouvre une diagonale /
-// soutient / chasse, développement (cases du centre surveillées), grande diagonale, colonne ouverte, avant-poste…
-// Sert aux lignes du répertoire qui n'avaient pas encore d'explication (leçons complètes), relues dans
-// docs/LECONS-OUVERTURES.md.
+// « Pourquoi » d'un coup d'ouverture, en une phrase, calculé sur la position (règles simples ; la menace « s'il
+// rejouait » vient de Stockfish, calculée à part). D'abord ce que le coup précédent de l'autre camp attaque (une pièce
+// attaquée et pas assez défendue, ou sa menace d'au moins 2 points ou d'un mat) : si le coup y répond, on le dit en
+// premier (protège, bouche la ligne, s'écarte, prend l'attaquant, pare l'échec, contre-attaque au lieu de défendre),
+// puis ce qu'il fait d'autre. Sinon : roque, prise / reprise, échec, clouage, attaque, pion qui prend le centre /
+// prépare un fianchetto / ouvre une diagonale / soutient / chasse, développement, grande diagonale, colonne ouverte,
+// avant-poste… Sert aux lignes du répertoire qui n'avaient pas d'explication écrite à la main (leçons complètes),
+// relues dans docs/LECONS-OUVERTURES.md.
 import { Chess, type Color, type Move, type PieceSymbol, type Square } from 'chess.js';
 import { pieceWords, VALUE } from './words';
+import { flipTurn } from './report/facts';
+import type { SignpostThreat } from './signposts';
+
+/** Ce qu'on sait du coup d'avant (de l'autre camp). */
+export interface WhyContext {
+  /** Position avant son coup, et son coup (SAN). */
+  prev?: { fen: string; san: string };
+  /** Sa menace « s'il rejouait » après ce coup (Stockfish : scripts/why-threats.json), ou null. */
+  threat?: SignpostThreat | null;
+}
+
+/** Une de mes pièces (ou une case, pour un mat) menacée par le coup d'avant ; `via` : sa menace (moteur) quand la
+ *  pièce n'est pas encore attaquée (ex. fourchette …Nc2+). */
+interface Danger { sq: Square; type: PieceSymbol | null; att: Square; attType: PieceSymbol; mate: boolean; via?: string }
 
 const CENTER: Square[] = ['d4', 'd5', 'e4', 'e5'];
 const WIDE_CENTER = new Set(['c4', 'c5', 'd4', 'd5', 'e4', 'e5', 'f4', 'f5']);
@@ -76,8 +93,52 @@ function blockedTarget(before: Chess, after: Chess, to: Square, by: Color): { sq
   return null;
 }
 
-/** Une phrase : pourquoi ce coup (du point de vue de `me` : « ton » / « son »). */
-export function moveWhy(fenBefore: string, san: string, me: Color, prevMove?: { to: string; captured?: string }): string {
+/** Mal défendue : sans défense, attaquée par moins cher qu'elle, ou plus d'attaquants que de défenseurs. */
+function underDefended(pos: Chess, sq: Square, type: PieceSymbol, by: Color): boolean {
+  const opp: Color = by === 'w' ? 'b' : 'w';
+  const att = pos.attackers(sq, opp);
+  if (!att.length) return false;
+  const def = pos.attackers(sq, by).length;
+  return def === 0 || Math.min(...att.map((a) => VALUE[pos.get(a)!.type])) < VALUE[type] || att.length > def;
+}
+
+/** Ce que le coup d'avant attaque : mes pièces nouvellement attaquées et mal défendues, puis sa menace (moteur). */
+function dangersOf(fenBefore: string, by: Color, ctx: WhyContext): Danger[] {
+  const now = new Chess(fenBefore);
+  const opp: Color = by === 'w' ? 'b' : 'w';
+  const out: Danger[] = [];
+  if (ctx.prev) {
+    const was = new Chess(ctx.prev.fen);
+    for (const row of now.board()) for (const p of row) {
+      if (!p || p.color !== by || p.type === 'k') continue;
+      const fresh = now.attackers(p.square, opp).filter((a) => !was.attackers(p.square, opp).includes(a));
+      if (!fresh.length || !underDefended(now, p.square, p.type, by)) continue;
+      const att = fresh.sort((a, b) => VALUE[now.get(a)!.type] - VALUE[now.get(b)!.type])[0];
+      out.push({ sq: p.square, type: p.type, att, attType: now.get(att)!.type, mate: false });
+    }
+  }
+  if (ctx.threat) {
+    try {
+      const tm = new Chess(flipTurn(fenBefore)).move(ctx.threat.san);
+      // La case visée : celle du mat, celle que son coup prend, ou une de mes pièces qu'il prend ensuite (fourchette).
+      const cand = ctx.threat.mate || tm.captured ? tm.to : ctx.threat.captured?.sq;
+      const piece = cand ? now.get(cand as Square) : null;
+      if (cand && (ctx.threat.mate || (piece && piece.color === by))) {
+        const sq = cand as Square;
+        const direct = now.attackers(sq, opp).includes(tm.from as Square) || ctx.threat.mate;
+        const same = out.find((d) => d.sq === sq);
+        if (same) { if (ctx.threat.mate) Object.assign(same, { mate: true, att: tm.from as Square, attType: tm.piece }); }
+        else out.push({ sq, type: piece && piece.color === by ? piece.type : null, att: tm.from as Square, attType: tm.piece, mate: !!ctx.threat.mate, ...(direct ? {} : { via: tm.san }) });
+      }
+    } catch { /* menace qui n'est plus jouable */ }
+  }
+  return out.sort((a, b) => Number(b.mate) - Number(a.mate) || VALUE[b.type ?? 'p'] - VALUE[a.type ?? 'p']);
+}
+
+const lineWord = (a: string, b: string) => (a[0] !== b[0] && a[1] !== b[1] ? 'la diagonale de' : a[0] === b[0] ? 'la colonne de' : 'la rangée de');
+
+/** Une phrase : pourquoi ce coup (du point de vue de `me` : « ton » / « son »). `ctx` : le coup d'avant et sa menace. */
+export function moveWhy(fenBefore: string, san: string, me: Color, ctx: WhyContext = {}): string {
   const c = new Chess(fenBefore);
   const m: Move = c.move(san);
   const by = m.color;
@@ -88,6 +149,9 @@ export function moveWhy(fenBefore: string, san: string, me: Color, prevMove?: { 
   const homeRank = by === 'w' ? '1' : '8';
   const check = c.inCheck();
   const chk = check ? ', avec échec' : '';
+  const prevMove = ctx.prev ? new Chess(ctx.prev.fen).move(ctx.prev.san) : undefined;
+  const reply = defense(fenBefore, c, m, me, ctx, prevMove);
+  if (reply) return reply;
 
   // Roques
   if (m.isKingsideCastle() || m.isQueensideCastle()) {
@@ -209,4 +273,98 @@ export function moveWhy(fenBefore: string, san: string, me: Color, prevMove?: { 
   if (wasAttacked) return `${subj} se met à l’abri en ${m.to}${centerHits.length ? ` et surveille ${list(centerHits)}` : ''}.`;
   if (centerHits.length) return `${subj} va en ${m.to} et vise ${list(centerHits)}.`;
   return `${subj} se replace en ${m.to}.`;
+}
+
+/**
+ * Réponse au coup d'avant : pare l'échec, prend l'attaquant, s'écarte, bouche la ligne, protège ; sinon contre-attaque
+ * au lieu de défendre. null : le coup ne répond à rien (ou c'est une reprise : « reprend », plus clair).
+ */
+function defense(fenBefore: string, c: Chess, m: Move, me: Color, ctx: WhyContext, prevMove?: Move): string | null {
+  if (m.isKingsideCastle() || m.isQueensideCastle()) return null;
+  if (prevMove && prevMove.captured && m.captured && prevMove.to === m.to) return null;      // reprise
+  const before = new Chess(fenBefore);
+  const by = m.color;
+  const opp: Color = by === 'w' ? 'b' : 'w';
+  const P = (t: PieceSymbol, col: Color) => pieceWords(t, col, me);
+  const subj = m.piece === 'p' && !m.captured ? `Le pion ${m.to}` : cap(P(m.piece, by));
+  const pron = FEM_T[m.piece] ? 'elle' : 'il';
+  const homeRank = by === 'w' ? '1' : '8';
+  const centerHits = attackedBy(c, m.to as Square, by).filter((s) => CENTER.includes(s));
+  // Ce que le coup fait d'autre (ajouté si la phrase reste courte) : `and` → « , et prépare… », `also` → « ; il
+  // prépare aussi… ». `skip` : la case déjà nommée (pas de « surveille aussi e5 » après « protège ton pion e5 »).
+  const tail = (kind: 'and' | 'also', skip?: Square): string => {
+    const join = (verb: string, rest: string) => (kind === 'and' ? `, et ${verb} ${rest}` : ` ; ${pron} ${verb} aussi ${rest}`);
+    if (m.piece === 'p') {
+      if (m.captured === 'p' && !c.board().flat().some((p) => p && p.type === 'p' && p.color === by && p.square[0] === m.from[0])) return `, et la colonne ${m.from[0]} s’ouvre pour ${by === me ? 'tes' : 'ses'} tours`;
+      if (['g3', 'b3', 'g6', 'b6'].includes(m.to)) return join('prépare', `le fianchetto ${by === me ? 'de ton' : 'de son'} fou en ${m.to[0]}${by === 'w' ? '2' : '7'}`);
+      if (WIDE_CENTER.has(m.to) && Math.abs(Number(m.to[1]) - Number(m.from[1])) === 2) return join('prend', 'de l’espace au centre');
+      for (const b of c.board().flat().filter((p) => p && p.type === 'b' && p.color === by && p.square[1] === homeRank)) {
+        if (attackedBy(c, b!.square, by).length > attackedBy(before, b!.square, by).length) return join('ouvre', `la diagonale ${by === me ? 'de ton' : 'de son'} fou ${b!.square}`);
+      }
+      return '';
+    }
+    const hits = centerHits.filter((x) => x !== skip);
+    return hits.length ? ` ; ${pron} surveille aussi ${list(hits)}` : '';
+  };
+  /** Ce que la pièce fait en arrivant : clouage, puis attaque d'une pièce (plus chère ou sans défense). */
+  const bonus = (): string => {
+    if ('brq'.includes(m.piece)) {
+      const pin = pinOf(c, m.to as Square, m.piece, by);
+      if (pin) return ` et cloue ${P(pin.type, opp)} ${pin.pinned} sur ${pin.behind === 'k' ? (by === me ? 'son roi' : 'ton roi') : (by === me ? 'sa dame' : 'ta dame')}`;
+    }
+    const t = attackedBy(c, m.to as Square, by).map((x) => ({ x, p: c.get(x) })).filter((y) => y.p && y.p.color === opp && y.p.type !== 'k')
+      .filter((y) => VALUE[y.p!.type] > VALUE[m.piece] || c.attackers(y.x, opp).length === 0).sort((a, b) => VALUE[b.p!.type] - VALUE[a.p!.type])[0];
+    return t ? ` et ${m.piece === 'p' && t.p!.type !== 'p' ? 'chasse' : 'attaque'} ${P(t.p!.type, opp)} ${t.x}` : '';
+  };
+  const done = (t: string, kind: 'and' | 'also' | null = 'and', skip?: Square) => { const x = kind ? t + tail(kind, skip) : t; return (x.length <= 150 ? x : t) + '.'; };
+  const chk = c.inCheck() ? ' avec échec' : '';
+
+  // En échec : il faut d'abord parer.
+  if (before.inCheck()) {
+    const checker = before.attackers(before.board().flat().find((p) => p && p.type === 'k' && p.color === by)!.square, opp)[0];
+    const ck = checker ? P(before.get(checker)!.type, opp) : '';
+    if (m.piece === 'k') return done(`${subj} sort de l’échec en ${m.to}`, null);
+    if (m.captured && m.to === checker) return done(`${subj} prend ${ck} ${m.to}, qui donnait échec`);
+    return done(`${subj} pare l’échec de ${ck} en ${m.to}${m.from[1] === homeRank && m.piece !== 'p' ? ' et se développe' : ''}`, null);
+  }
+
+  const dangers = dangersOf(fenBefore, by, ctx);
+  if (!dangers.length) return null;
+  for (const d of dangers) {
+    const X = d.type ? `${P(d.type, by)} ${d.sq}` : `la case ${d.sq}`;
+    const A = P(d.attType, opp);
+    const e = d.type && FEM_T[d.type] ? 'e' : '';
+    const att = d.via ? `menacé${e} par ${A} (${d.via})` : `attaqué${e} par ${A}`;
+    const what = d.mate ? `plus de menace de mat en ${d.sq}` : `${X} n’est plus ${d.via ? `menacé${e}` : `attaqué${e}`}`;
+    // Prend l'attaquant.
+    if (m.captured && m.to === d.att) return done(`${subj} prend ${A} ${m.to}${chk}, qui ${d.mate ? `menaçait de mater en ${d.sq}` : `attaquait ${X}`}`);
+    // La pièce visée part : elle prend, avance (pion) ou s'écarte.
+    if (!d.mate && d.type && m.from === d.sq) {
+      const who = `${cap(P(d.type, by))}${d.type === 'p' ? ` ${d.sq}` : ''}, ${att},`;
+      if (m.captured) return done(`${who} prend ${P(m.captured as PieceSymbol, opp)} ${m.to}${chk}`, null);
+      return done(`${who} ${d.type === 'p' ? 'avance' : 's’écarte'} en ${m.to}${bonus()}`, 'also');
+    }
+    // Bouche la ligne (de l'attaquant, ou d'une pièce à longue portée qui soutient la menace de mat).
+    const sliders = [d.att, ...(d.mate ? before.attackers(d.sq, opp) : [])].filter((sq, i, a) => a.indexOf(sq) === i && 'bqr'.includes(before.get(sq as Square)?.type ?? ''));
+    const cut = sliders.find((sq) => between(sq, d.sq).includes(m.to) && !c.attackers(d.sq, opp).includes(sq as Square));
+    if (cut) return done(`${subj} bouche ${lineWord(cut, d.sq)} ${P(before.get(cut as Square)!.type, opp)} : ${what}`, 'also', d.sq);
+    // Protège (et la pièce n'est plus mal défendue).
+    if (c.attackers(d.sq, by).includes(m.to as Square) && (d.mate || d.via || (d.type && !underDefended(c, d.sq, d.type, by)))) {
+      const how = d.mate ? `protège ${d.sq} contre la menace de mat` : `protège ${X}, ${att}`;
+      return done(m.piece === 'p' ? `${subj} ${how}` : `${subj} va en ${m.to} et ${how}`, m.piece === 'p' ? 'and' : 'also', d.sq);
+    }
+  }
+  // Rien ne pare : contre-attaque au lieu de défendre.
+  const d = dangers.find((x) => x.type) ?? dangers[0];
+  const X = d.type ? `${P(d.type, by)} ${d.sq}` : `la case ${d.sq}`;
+  const instead = d.mate ? `au lieu de parer la menace de mat en ${d.sq}` : `au lieu de défendre ${X}`;
+  if (d.via) return null;                         // menace seulement vue par le moteur : pas de « au lieu de »
+  if (m.captured) return done(`${subj} prend ${P(m.captured as PieceSymbol, opp)} ${m.to}${chk} ${instead}`, null);
+  if (c.inCheck()) return done(`${subj} donne échec en ${m.to} ${instead}`, null);
+  const target = attackedBy(c, m.to as Square, by).map((s) => ({ s, p: c.get(s) })).filter((x) => x.p && x.p.color === opp && x.p.type !== 'k')
+    .filter((x) => !before.attackers(x.s, by).includes(m.from as Square))
+    .filter((x) => VALUE[x.p!.type] > VALUE[m.piece] || c.attackers(x.s, opp).length === 0)
+    .sort((a, b) => VALUE[b.p!.type] - VALUE[a.p!.type])[0];
+  if (target && (d.mate || VALUE[target.p!.type] >= VALUE[d.type ?? 'p'])) return done(`${subj} ${m.piece === 'p' ? '' : `va en ${m.to} et `}contre-attaque ${P(target.p!.type, opp)} ${target.s} ${instead}`, null);
+  return null;
 }
