@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { exportAll, getCurrent, getProfile, importAll, setProfile, type Profile } from '../db';
+import { getCurrent, getProfile, setProfile, type Profile } from '../db';
+import { downloadBackup, lastBackupAt, safeImport } from '../backupService';
+import { isStoragePersisted } from '../storage';
+import { backupAgeText } from '../lib/backup';
 import { colorModeOf, withManualRating, type ColorMode } from '../lib/profile';
 import { CALIBRATION_GAMES, K_CALIBRATION, RATING_MAX, RATING_MIN } from '../lib/rating';
 import { loadSoundSetting, playSound, setSoundEnabled } from '../sound';
@@ -17,7 +20,10 @@ export default function Settings() {
   const [inProgress, setInProgress] = useState(false);
   const [sound, setSound] = useState(true);
   const [cap, setCap] = useState<number | null>(null);
+  const [persisted, setPersisted] = useState<boolean | null>(null);
+  const [backupAt, setBackupAt] = useState<number | undefined | null>(null);
   useEffect(() => { getReviseCap().then(setCap); }, []);
+  useEffect(() => { isStoragePersisted().then(setPersisted); lastBackupAt().then(setBackupAt); }, []);
 
   useEffect(() => {
     (async () => {
@@ -55,22 +61,17 @@ export default function Settings() {
   }
 
   async function doExport() {
-    const data = await exportAll();
-    const blob = new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `sparring-echecs-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    setMsg(`Exporté : ${data.games.length} parties, ${data.cards.length} cartes.`);
+    const r = await downloadBackup();
+    setBackupAt(r.at);
+    setMsg(`Exporté : ${r.games} parties, ${r.cards} cartes.`);
   }
   async function doImport(f: File | undefined) {
     if (!f) return;
-    if (!confirm('Remplacer toutes les données actuelles par ce fichier ?')) return;
+    if (!confirm('Remplacer toutes les données actuelles par ce fichier ? Une sauvegarde de l’état actuel est d’abord téléchargée.')) return;
     try {
-      const data = JSON.parse(await f.text());
-      await importAll(data);
-      setMsg(`Importé : ${data.games.length} parties, ${data.cards.length} cartes.`);
+      const r = await safeImport(await f.text());
+      setMsg(`Importé : ${r.games} parties, ${r.cards} cartes${r.migratedFrom < 3 ? ` (ancien format ${r.migratedFrom}, converti)` : ''}. Rechargement…`);
+      setTimeout(() => location.reload(), 1500);
     } catch (e) { setMsg('Erreur : ' + (e as Error).message); }
   }
 
@@ -127,6 +128,9 @@ export default function Settings() {
       <section className="card">
         <h2>Sauvegarde</h2>
         <p>Tes parties, ton niveau et tes cartes sont stockés uniquement sur cet appareil. Exporte-les régulièrement.</p>
+        <p data-testid="storage-persisted">Stockage protégé : <b>{persisted === null ? '…' : persisted ? 'oui' : 'non'}</b>
+          {persisted === false && <span className="muted small"> (le navigateur peut effacer les données s’il manque de place)</span>}</p>
+        <p data-testid="last-backup">Dernière sauvegarde : <b>{backupAt === null ? '…' : backupAgeText(backupAt)}</b></p>
         <div className="col">
           <button className="primary" onClick={doExport}>Exporter (JSON)</button>
           <label className="button">Importer un fichier JSON

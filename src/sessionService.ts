@@ -12,6 +12,8 @@ import { trapStatus } from './lib/traps';
 import { TRAPS } from './data/traps';
 import { errorsToComment } from './lib/commentQueue';
 import { botRating } from './lib/rating';
+import { getMeta } from './metaKeys';
+import { backupReminderDue, daysSince } from './lib/backup';
 
 export interface TodayData {
   steps: StepState[];
@@ -22,15 +24,18 @@ export interface TodayData {
   toComment: number;
   inProgress: boolean;
   reviseLeft: number;
+  /** Jours depuis la dernière sauvegarde (null : jamais) et rappel discret (au-delà de 14 jours). */
+  backupDays: number | null;
+  backupDue: boolean;
 }
 
 export const markWarmupDone = () => db.meta.put({ key: 'warmupDay', value: dayKey() });
 
 export async function loadToday(): Promise<TodayData> {
   const today = dayKey();
-  const [prof, warm, bp, tp, cards, games, current, stored] = await Promise.all([
+  const [prof, warm, bp, tp, cards, games, current, stored, backupAt] = await Promise.all([
     getProfile(), db.meta.get('warmupDay'), getBoardProgress(), getTrapProgress(), db.cards.toArray(), db.games.toArray(), getCurrent(),
-    db.meta.get('sessionTrap'),
+    db.meta.get('sessionTrap'), getMeta('lastBackupAt'),
   ]);
   // Piège du jour : gardé toute la journée (même s'il devient maîtrisé entre-temps).
   let trapId = (stored?.value as { day: string; id: string | null } | undefined)?.day === today ? (stored!.value as { id: string | null }).id : undefined;
@@ -55,6 +60,7 @@ export async function loadToday(): Promise<TodayData> {
   return {
     steps, next: nextStep(steps), rating: prof.rating, bot: botRating(prof.rating), trapId,
     toComment: errorsToComment(games).length, inProgress: !!current, reviseLeft: reviseQ.length,
+    backupDays: daysSince(backupAt), backupDue: backupReminderDue(backupAt, games.length > 0),
   };
 }
 

@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { go } from '../router';
 import { isOfflineReady, waitOfflineReady } from '../offline';
-import { Check, CircleCheck, Clock, MessageCircleQuestion, Play, Settings } from '../icons';
+import { Check, CircleCheck, Clock, MessageCircleQuestion, Play, Download, Settings } from '../icons';
 import GoalCard from '../GoalCard';
 import { loadToday, startStep, type TodayData } from '../sessionService';
 import { fillThreatCards } from '../threatService';
@@ -79,6 +79,11 @@ export default function Home() {
         {d.toComment > 0 && (
           <button className="link-row" data-testid="to-comment" onClick={() => go({ name: 'comment' })}>
             <MessageCircleQuestion aria-hidden className="ico" />{d.toComment} erreur{d.toComment > 1 ? 's' : ''} à commenter
+          </button>
+        )}
+        {d.backupDue && (
+          <button className="link-row muted" data-testid="backup-reminder" onClick={() => go({ name: 'settings' })}>
+            <Download aria-hidden className="ico" />{d.backupDays === null ? 'Aucune sauvegarde de tes données' : `Dernière sauvegarde il y a ${d.backupDays} jours`} : exporter
           </button>
         )}
         <button className="link-row" data-testid="free-game" onClick={() => go({ name: 'jouer' })}><Play aria-hidden className="ico" />Partie libre</button>
