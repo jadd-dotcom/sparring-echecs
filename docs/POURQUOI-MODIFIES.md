@@ -1,0 +1,233 @@
+# « Pourquoi » calculés modifiés (étape 7)
+
+Règle (src/lib/moveWhy.ts) : avant de décrire un coup, on regarde ce que le coup précédent de l’autre camp attaque — une pièce attaquée et pas assez défendue (sans défense, attaquée par moins cher qu’elle, ou plus d’attaquants que de défenseurs), ou sa menace « s’il rejouait » d’au moins 2 points ou d’un mat (Stockfish, scripts/why-threats.json). Si le coup y répond, on le dit d’abord (protège, bouche la ligne, s’écarte / avance, prend l’attaquant, pare l’échec, contre-attaque au lieu de défendre), puis ce qu’il fait d’autre. Les « pourquoi » écrits à la main ne changent pas.
+
+72 « pourquoi » modifiés (79 avec les répétitions de la même position dans plusieurs lignes), sur 924 coups expliqués par calcul.
+
+## Anglaise
+
+- **8…Ba7** — Carrefour après 1.c4 e5 2.Nc3 Nc6 3.g3 · ligne 3…Nf6
+  - avant : Son fou se met à l’abri en a7 et surveille d4.
+  - après : Son fou, attaqué par ton pion, s’écarte en a7 ; il surveille aussi d4.
+- **4.cxd5** — Carrefour après 1.c4 e5 2.Nc3 · ligne 2…Nf6 (aussi : 2…Nf6)
+  - avant : Ton pion prend son pion d5 : la colonne c s’ouvre pour tes tours.
+  - après : Ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours.
+- **5…Nb6** — Carrefour après 1.c4 e5 2.Nc3 · ligne 2…Nf6
+  - avant : Son cavalier se met à l’abri en b6 et surveille d5.
+  - après : Son cavalier, attaqué par ton fou, s’écarte en b6 ; il surveille aussi d5.
+- **7…Nc6** — Carrefour après 1.c4 e5 2.Nc3 · ligne 2…Nf6
+  - avant : Son cavalier se développe en c6 et surveille d4 et e5.
+  - après : Son cavalier va en c6 et protège son pion e5, attaqué par ton cavalier ; il surveille aussi d4.
+- **8.cxd5** — Carrefour après 1.c4 e5 2.Nc3 Nf6 3.g3 · ligne 3…Bb4
+  - avant : Ton pion prend son pion d5.
+  - après : Ton pion prend son pion d5, qui attaquait ton pion c4.
+- **3.cxd5** — Carrefour après 1.c4 · ligne 1…e6
+  - avant : Ton pion prend son pion d5 : la colonne c s’ouvre pour tes tours.
+  - après : Ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours.
+- **2.cxd5** — Carrefour après 1.c4 · ligne 1…d5
+  - avant : Ton pion prend son pion d5 : la colonne c s’ouvre pour tes tours.
+  - après : Ton pion prend son pion d5, qui attaquait ton pion c4, et la colonne c s’ouvre pour tes tours.
+- **3…Qd8** — Carrefour après 1.c4 · ligne 1…d5
+  - avant : Sa dame se met à l’abri en d8 et surveille d4 et d5.
+  - après : Sa dame, attaquée par ton cavalier, s’écarte en d8 ; elle surveille aussi d4 et d5.
+- **5…Nc7** — Carrefour après 1.c4 c5 2.Nc3 · ligne 2…Nf6
+  - avant : Son cavalier se met à l’abri en c7 et surveille d5.
+  - après : Son cavalier, attaqué par ton fou, s’écarte en c7 ; il surveille aussi d5.
+- **9.dxc5** — Carrefour après 1.c4 d5 2.cxd5 Qxd5 3.Nc3 Qd8 4.d4 Nf6 5.Nf3 · ligne 5…e6
+  - avant : Ton pion prend son pion c5 : la colonne d s’ouvre pour tes tours.
+  - après : Ton pion prend son pion c5, qui attaquait ton pion d4, et la colonne d s’ouvre pour tes tours.
+- **3…Qa5** — Carrefour après 1.c4 d5 2.cxd5 Qxd5 3.Nc3 · ligne 3…Qa5
+  - avant : Sa dame se met à l’abri en a5 et surveille d5 et e5.
+  - après : Sa dame, attaquée par ton cavalier, s’écarte en a5 ; elle surveille aussi d5 et e5.
+- **5…Nb6** — Carrefour après 1.c4 d5 2.cxd5 · ligne 2…Nf6
+  - avant : Son cavalier se met à l’abri en b6 et surveille d5.
+  - après : Son cavalier, attaqué par ton pion, s’écarte en b6 ; il surveille aussi d5.
+
+## Londres
+
+- **9.Qc2** — Carrefour après 1.d4 · ligne 1…e6
+  - avant : Ta dame sort en c2 et surveille e4.
+  - après : Ta dame va en c2 et protège ton pion b2, attaqué par sa dame ; elle surveille aussi e4.
+- **9…g6** — Carrefour après 1.d4 · ligne 1…e6
+  - avant : Le pion g6 prépare le fianchetto de son fou en g7.
+  - après : Le pion g6 bouche la diagonale de ta dame : son pion h7 n’est plus attaqué ; il prépare aussi le fianchetto de son fou en g7.
+- **8…Qe7** — Carrefour après 1.d4 · ligne 1…c5 : 2.d5
+  - avant : Sa dame cloue ton pion e4 sur ton roi.
+  - après : Sa dame va en e7 et protège f7 contre la menace de mat ; elle surveille aussi e4 et e5.
+- **9…Bd7** — Carrefour après 1.d4 · ligne 1…c5 : 2.d5
+  - avant : Son fou va en d7 : son cavalier c6 n’est plus cloué.
+  - après : Son fou va en d7 et protège son cavalier c6, attaqué par ton fou.
+- **6.Qd5** — Carrefour après 1.d4 · ligne 1…e5 : le gambit Englund et son piège
+  - avant : Ta dame sort en d5 et surveille d4, e4 et e5.
+  - après : Ta dame bouche la rangée de sa dame : ton pion e5 n’est plus attaqué ; elle surveille aussi d4 et e4.
+- **8.Bh4** — Carrefour après 1.d4 · ligne 1…e5 : le gambit Englund et son piège
+  - avant : Ton fou se met à l’abri en h4.
+  - après : Ton fou, attaqué par son pion, s’écarte en h4.
+- **9.Bg3** — Carrefour après 1.d4 · ligne 1…e5 : le gambit Englund et son piège
+  - avant : Ton fou se met à l’abri en g3 et surveille e5.
+  - après : Ton fou, attaqué par son pion, s’écarte en g3 ; il surveille aussi e5.
+- **10.Nd2** — Carrefour après 1.d4 · ligne 1…e5 : le gambit Englund et son piège
+  - avant : Ton cavalier va en d2 : ton cavalier c3 n’est plus cloué.
+  - après : Ton cavalier, attaqué par son pion, s’écarte en d2 ; il surveille aussi e4.
+- **4…Qc5** — Carrefour après 1.d4 e5 2.dxe5 Nc6 3.Nf3 Qe7 4.Bg5 · ligne 4…Qc5
+  - avant : Sa dame se met à l’abri en c5 et surveille d4, d5 et e5.
+  - après : Sa dame, attaquée par ton fou, s’écarte en c5 ; elle surveille aussi d4, d5 et e5.
+- **5.Be3** — Carrefour après 1.d4 e5 2.dxe5 Nc6 3.Nf3 Qe7 4.Bg5 · ligne 4…Qc5
+  - avant : Ton fou va en e3 et attaque sa dame c5.
+  - après : Ton fou va en e3 et contre-attaque sa dame c5 au lieu de défendre ton pion e5.
+- **5…Qe7** — Carrefour après 1.d4 e5 2.dxe5 Nc6 3.Nf3 Qe7 4.Bg5 · ligne 4…Qc5
+  - avant : Sa dame se met à l’abri en e7 et surveille e5.
+  - après : Sa dame, attaquée par ton fou, s’écarte en e7 ; elle surveille aussi e5.
+- **7…Nxf3+** — Carrefour après 1.d4 e5 2.dxe5 Nc6 3.Nf3 Qe7 4.Bg5 · ligne 4…Qc5
+  - avant : Son cavalier prend ton cavalier f3, avec échec.
+  - après : Son cavalier, attaqué par ton fou, prend ton cavalier f3 avec échec.
+
+## Système …c5/…g6
+
+- **3.e5** — Carrefour après 1.e4 c5 · ligne 2.c3
+  - avant : Le pion e5 chasse ton cavalier f6.
+  - après : Son pion e4, attaqué par ton cavalier, avance en e5 et chasse ton cavalier f6.
+- **3…Nd5** — Carrefour après 1.e4 c5 · ligne 2.c3
+  - avant : Ton cavalier se met à l’abri en d5.
+  - après : Ton cavalier, attaqué par son pion, s’écarte en d5.
+- **4…cxd4** — Carrefour après 1.e4 c5 · ligne 2.c3 (aussi : 3.Nc3, 3.c3, 3.Nf3)
+  - avant : Ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours.
+  - après : Ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours.
+- **7…Nb6** — Carrefour après 1.e4 c5 · ligne 2.c3 (aussi : 2.d4, 3.c3, 4.Nf3)
+  - avant : Ton cavalier va en b6 et attaque son fou c4.
+  - après : Ton cavalier, attaqué par son fou, s’écarte en b6 et attaque son fou c4 ; il surveille aussi d5.
+- **8.Bb5** — Carrefour après 1.e4 c5 · ligne 2.c3
+  - avant : Son fou cloue ton cavalier c6 sur ton roi.
+  - après : Son fou, attaqué par ton cavalier, s’écarte en b5 et cloue ton cavalier c6 sur ton roi.
+- **9…Bd7** — Carrefour après 1.e4 c5 · ligne 2.c3
+  - avant : Ton fou va en d7 : ton cavalier c6 n’est plus cloué.
+  - après : Ton fou va en d7 et protège ton cavalier c6, attaqué par son cavalier.
+- **10.Nxd7** — Carrefour après 1.e4 c5 · ligne 2.c3
+  - avant : Son cavalier prend ton fou d7.
+  - après : Son cavalier, attaqué par ton cavalier, prend ton fou d7.
+- **2…cxd4** — Carrefour après 1.e4 c5 · ligne 2.d4
+  - avant : Ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours.
+  - après : Ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours.
+- **3…Nf6** — Carrefour après 1.e4 c5 · ligne 2.d4
+  - avant : Ton cavalier va en f6 et attaque son pion e4.
+  - après : Ton cavalier va en f6 et contre-attaque son pion e4 au lieu de défendre ton pion d4.
+- **4.e5** — Carrefour après 1.e4 c5 · ligne 2.d4
+  - avant : Le pion e5 chasse ton cavalier f6.
+  - après : Son pion e4, attaqué par ton cavalier, avance en e5 et chasse ton cavalier f6.
+- **4…Nd5** — Carrefour après 1.e4 c5 · ligne 2.d4
+  - avant : Ton cavalier se met à l’abri en d5.
+  - après : Ton cavalier, attaqué par son pion, s’écarte en d5.
+- **6…d6** — Carrefour après 1.e4 c5 · ligne 2.d3
+  - avant : Le pion d6 soutient ton pion c5.
+  - après : Le pion d6 protège ton pion c5, attaqué par son pion, et ouvre la diagonale de ton fou c8.
+- **7…Na5** — Carrefour après 1.e4 c5 · ligne 2.d3
+  - avant : Ton cavalier se met à l’abri en a5.
+  - après : Ton cavalier, attaqué par son pion, s’écarte en a5.
+- **9.exd5** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.Nc3 Bg7 6.Be3 Nf6 · ligne 7.Be2
+  - avant : Son pion prend ton pion d5 : la colonne e s’ouvre pour ses tours.
+  - après : Son pion prend ton pion d5, qui attaquait son pion e4, et la colonne e s’ouvre pour ses tours.
+- **11.Bf3** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.Nc3 Bg7 6.Be3 Nf6 · ligne 7.Be2
+  - avant : Son fou va en f3 et attaque ta dame d5.
+  - après : Son fou va en f3 et contre-attaque ta dame d5 au lieu de défendre son cavalier d4.
+- **11…Qc4** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.Nc3 Bg7 6.Be3 Nf6 · ligne 7.Be2
+  - avant : Ta dame se met à l’abri en c4 et surveille d4 et d5.
+  - après : Ta dame, attaquée par son fou, s’écarte en c4 ; elle surveille aussi d4 et d5.
+- **12.Nxc6** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.Nc3 Bg7 6.Be3 Nf6 · ligne 7.Be2
+  - avant : Son cavalier prend ton cavalier c6.
+  - après : Son cavalier, attaqué par ta dame, prend ton cavalier c6.
+- **13…Qa6** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.Nc3 Bg7 6.Be3 Nf6 · ligne 7.Be2
+  - avant : Ta dame se met à l’abri en a6.
+  - après : Ta dame, attaquée par son pion, s’écarte en a6.
+- **6.Be3** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 · ligne 5.c4
+  - avant : Son fou se développe en e3 et surveille d4.
+  - après : Son fou va en e3 et protège son cavalier d4, attaqué par ton fou.
+- **7.Nc3** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 · ligne 5.c4
+  - avant : Son cavalier se développe en c3 et surveille d5 et e4.
+  - après : Son cavalier va en c3 et protège son pion e4, attaqué par ton cavalier ; il surveille aussi d5.
+- **9.Qd1** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 · ligne 5.c4
+  - avant : Sa dame va en d1 et vise d4.
+  - après : Sa dame va en d1 et protège sa tour a1, menacée par ton cavalier (Nc2+) ; elle surveille aussi d4.
+- **9…Ne6** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 · ligne 5.c4
+  - avant : Ton cavalier se met à l’abri en e6 et surveille d4.
+  - après : Ton cavalier, attaqué par sa dame, s’écarte en e6 ; il surveille aussi d4.
+- **6…Nf6** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.Nxc6 bxc6 · ligne 6.Qd4
+  - avant : Ton cavalier bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée.
+  - après : Ton cavalier bouche la diagonale de sa dame : ta tour h8 n’est plus attaquée ; il surveille aussi d5 et e4.
+- **7…Nd5** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.Nxc6 bxc6 · ligne 6.Qd4
+  - avant : Ton cavalier se met à l’abri en d5.
+  - après : Ton cavalier, attaqué par son pion, s’écarte en d5.
+- **10…e5** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.Nxc6 bxc6 · ligne 6.Qd4
+  - avant : Le pion e5 chasse sa dame d4.
+  - après : Le pion e5 contre-attaque sa dame d4 au lieu de défendre ton cavalier d5.
+- **6…cxd4** — Carrefour après 1.e4 c5 2.Nf3 Nc6 · ligne 3.Bc4
+  - avant : Ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours.
+  - après : Ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours.
+- **8.exd5** — Carrefour après 1.e4 c5 2.Nf3 Nc6 · ligne 3.Bc4
+  - avant : Son pion prend ton pion d5 : la colonne e s’ouvre pour ses tours.
+  - après : Son pion prend ton pion d5, qui attaquait son fou c4, et la colonne e s’ouvre pour ses tours.
+- **9.Bb5** — Carrefour après 1.e4 c5 2.Nf3 Nc6 · ligne 3.Bc4
+  - avant : Son fou cloue ton cavalier c6 sur ton roi.
+  - après : Son fou, attaqué par ton pion, s’écarte en b5 et cloue ton cavalier c6 sur ton roi.
+- **9…Nd7** — Carrefour après 1.e4 c5 2.Nf3 Nc6 · ligne 3.Bb5
+  - avant : Ton cavalier va en d7 et vise e5.
+  - après : Ton cavalier va en d7 et protège ton pion e5, attaqué par son cavalier.
+- **4.d4** — Carrefour après 1.e4 c5 2.Nf3 Nc6 · ligne 3.c3
+  - avant : Le pion d4 attaque ton pion c5.
+  - après : Le pion d4 contre-attaque ton pion c5 au lieu de défendre son pion e4.
+- **5…Nd5** — Carrefour après 1.e4 c5 2.Nf3 Nc6 · ligne 3.c3
+  - avant : Ton cavalier se met à l’abri en d5.
+  - après : Ton cavalier, attaqué par son pion, s’écarte en d5.
+- **8.Bb3** — Carrefour après 1.e4 c5 2.Nf3 Nc6 · ligne 3.c3
+  - avant : Son fou se met à l’abri en b3 et surveille d5.
+  - après : Son fou, attaqué par ton cavalier, s’écarte en b3 ; il surveille aussi d5.
+- **8…b6** — Carrefour après 1.e4 c5 2.Nf3 Nc6 3.Bb5 g6 · ligne 4.Bxc6
+  - avant : Le pion b6 prépare le fianchetto de ton fou en b7.
+  - après : Le pion b6 protège ton pion c5, attaqué par son fou, et prépare le fianchetto de ton fou en b7.
+- **8.Bb3** — Carrefour après 1.e4 c5 2.Nc3 Nc6 · ligne 3.f4
+  - avant : Son fou se met à l’abri en b3 et surveille d5.
+  - après : Son fou, attaqué par ton pion, s’écarte en b3 ; il surveille aussi d5.
+- **5…cxd4** — Carrefour après 1.e4 c5 2.c3 Nf6 3.e5 Nd5 · ligne 4.Nf3
+  - avant : Ton pion prend son pion d4 : la colonne c s’ouvre pour tes tours.
+  - après : Ton pion prend son pion d4, qui attaquait ton pion c5, et la colonne c s’ouvre pour tes tours.
+
+## Londres en défense
+
+- **10.Bh4** — Carrefour après 1.d4 d5 2.c4 c6 3.Nf3 Nf6 · ligne 4.Nc3 : …e6 d’abord
+  - avant : Son fou cloue ton cavalier f6 sur ta dame.
+  - après : Son fou, attaqué par ton pion, s’écarte en h4 et cloue ton cavalier f6 sur ta dame.
+- **6…Bg6** — Carrefour après 1.d4 d5 · ligne 2.Nc3
+  - avant : Ton fou se met à l’abri en g6 et surveille e4.
+  - après : Ton fou, attaqué par son pion, s’écarte en g6 ; il surveille aussi e4.
+- **8…Be7** — Carrefour après 1.d4 d5 2.e3 Bf5 · ligne 2.e3 : le fou sort tout de suite
+  - avant : Ton fou se met à l’abri en e7.
+  - après : Ton fou, attaqué par son pion, s’écarte en e7.
+- **3…e6** — Carrefour après 1.d4 d5 2.e3 Bf5 · ligne 3.Bd3
+  - avant : Le pion e6 protège ton fou f5, attaqué par son fou d3.
+  - après : Le pion e6 protège ton fou f5, attaqué par son fou, et ouvre la diagonale de ton fou f8.
+- **8…g6** — Carrefour après 1.d4 d5 2.e3 Bf5 · ligne 3.Bd3
+  - avant : Le pion g6 prépare le fianchetto de ton fou en g7.
+  - après : Le pion g6 protège ton pion f5, attaqué par sa dame, et prépare le fianchetto de ton fou en g7.
+- **10…fxe4** — Carrefour après 1.d4 d5 2.e3 Bf5 · ligne 3.Bd3
+  - avant : Ton pion prend son pion e4.
+  - après : Ton pion prend son pion e4, qui attaquait ton cavalier d5.
+- **7…Qc7** — Carrefour après 1.c4 c6 · ligne 1.c4 c6 : même placement
+  - avant : Ta dame sort en c7 et surveille e5.
+  - après : Ta dame va en c7 et protège ton pion b7, attaqué par sa dame ; elle surveille aussi e5.
+- **9.h4** — Carrefour après 1.c4 c6 · ligne 1.c4 c6 : même placement
+  - avant : Le pion h4 gagne de l’espace à l’aile roi.
+  - après : Son pion h2, attaqué par ta tour, avance en h4.
+- **3.exd5** — Carrefour après 1.c4 c6 · ligne 2.e4
+  - avant : Son pion prend ton pion d5 : la colonne e s’ouvre pour ses tours.
+  - après : Son pion prend ton pion d5, qui attaquait son pion e4, et la colonne e s’ouvre pour ses tours.
+- **3.cxd5** — Carrefour après 1.c4 c6 · ligne 2.Nc3
+  - avant : Son pion prend ton pion d5 : la colonne c s’ouvre pour ses tours.
+  - après : Son pion prend ton pion d5, qui attaquait son pion c4, et la colonne c s’ouvre pour ses tours.
+- **8…Bh5** — Carrefour au premier coup · ligne 1.Nf3 d5 2.g3 : contre le fianchetto
+  - avant : Ton fou se met à l’abri en h5.
+  - après : Ton fou, attaqué par son pion, s’écarte en h5.
+- **9.Bb3** — Carrefour après 1.d4 d5 2.c4 c6 · ligne 3.Nc3
+  - avant : Son fou se met à l’abri en b3 et surveille d5.
+  - après : Son fou, attaqué par ton pion, s’écarte en b3 ; il surveille aussi d5.
+- **10.Na4** — Carrefour après 1.d4 d5 2.c4 c6 · ligne 3.Nc3
+  - avant : Son cavalier se met à l’abri en a4.
+  - après : Son cavalier, attaqué par ton pion, s’écarte en a4.
