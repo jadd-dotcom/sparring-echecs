@@ -1,0 +1,275 @@
+[
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/01-aujourdhui.jpg",
+  "title": "Aujourd’hui",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/02-partie-en-cours.jpg",
+  "title": "Partie en cours (matériel)",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/03-ouvertures.jpg",
+  "title": "Ouvertures",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/04-ouverture-lecon.jpg",
+  "title": "Page d’une ouverture : onglet Leçon",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/05-ouverture-lignes.jpg",
+  "title": "Page d’une ouverture : onglet Lignes",
+  "defects": [
+   "textes qui se chevauchent : <label .unrated-toggle> « En boucle » et <label .unrated-toggle> « Mélanger »"
+  ]
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/06-ouverture-carrefours.jpg",
+  "title": "Page d’une ouverture : onglet Carrefours",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/07-ouverture-pieges.jpg",
+  "title": "Page d’une ouverture : onglet Pièges",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/08-bloc-lecon.jpg",
+  "title": "Bloc de leçon",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/09-jouer-lignes.jpg",
+  "title": "Jouer les lignes",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/10-examen.jpg",
+  "title": "Examen",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/11-carte-carrefours.jpg",
+  "title": "Carte Carrefours",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/12-pieges.jpg",
+  "title": "Pièges",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/13-mats.jpg",
+  "title": "Mats",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/14-echiquier.jpg",
+  "title": "Échiquier (maîtrise)",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/15-carte-revision.jpg",
+  "title": "Carte de révision",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/16-revue.jpg",
+  "title": "Revue de partie",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/17-explorer.jpg",
+  "title": "Explorer",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/18-progres.jpg",
+  "title": "Progrès (courbes)",
+  "defects": []
+ },
+ {
+  "device": "ipad-portrait",
+  "label": "iPad portrait 820×1180",
+  "file": "ipad-portrait/19-reglages.jpg",
+  "title": "Réglages",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/01-aujourdhui.jpg",
+  "title": "Aujourd’hui",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/02-partie-en-cours.jpg",
+  "title": "Partie en cours (matériel)",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/03-ouvertures.jpg",
+  "title": "Ouvertures",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/04-ouverture-lecon.jpg",
+  "title": "Page d’une ouverture : onglet Leçon",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/05-ouverture-lignes.jpg",
+  "title": "Page d’une ouverture : onglet Lignes",
+  "defects": [
+   "déborde de l’écran à droite de 33 px : <button> « Validées »",
+   "textes qui se chevauchent : <label .unrated-toggle> « En boucle » et <label .unrated-toggle> « Mélanger »"
+  ]
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/06-ouverture-carrefours.jpg",
+  "title": "Page d’une ouverture : onglet Carrefours",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/07-ouverture-pieges.jpg",
+  "title": "Page d’une ouverture : onglet Pièges",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/08-bloc-lecon.jpg",
+  "title": "Bloc de leçon",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/09-jouer-lignes.jpg",
+  "title": "Jouer les lignes",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/10-examen.jpg",
+  "title": "Examen",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/11-carte-carrefours.jpg",
+  "title": "Carte Carrefours",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/12-pieges.jpg",
+  "title": "Pièges",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/13-mats.jpg",
+  "title": "Mats",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/14-echiquier.jpg",
+  "title": "Échiquier (maîtrise)",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/15-carte-revision.jpg",
+  "title": "Carte de révision",
+  "defects": [
+   "textes qui se chevauchent : <p .muted.small> « Solution : après 2 essais ratés ou 2 indices · Pas » et <button .ghost> « Toutes mes cartes »"
+  ]
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/16-revue.jpg",
+  "title": "Revue de partie",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/17-explorer.jpg",
+  "title": "Explorer",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/18-progres.jpg",
+  "title": "Progrès (courbes)",
+  "defects": []
+ },
+ {
+  "device": "iphone",
+  "label": "iPhone 390×844",
+  "file": "iphone/19-reglages.jpg",
+  "title": "Réglages",
+  "defects": []
+ }
+]
