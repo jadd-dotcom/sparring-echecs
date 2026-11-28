@@ -8,11 +8,18 @@ le directeur de projet rédige les missions, les contrôle et les valide.
 - Ne rien faire hors du périmètre de la mission. Un besoin hors périmètre se signale dans le rapport.
 
 ## Git et publication
-- Une branche par mission. Jamais de push direct sur `main`. Toujours une pull request vers `main`.
+- Une PR par mission, depuis une branche repartie de `main` à jour ; la branche de session peut être réutilisée.
+- Jamais de push direct sur `main`. Toujours une pull request vers `main`.
 - Ne jamais fusionner soi-même une pull request.
+- Ne jamais demander la fusion d'une PR dont un contrôle est rouge, même si la cause est connue.
 - `main` = production : toute fusion sur `main` publie le site (`.github/workflows/deploy.yml`, job `deploy`).
 - Chaque pull request vers `main` exécute lint, tests et build, sans déployer.
 - Point de retour : tag `v1.0-avant-refonte` (commit `ad76851`).
+
+## Limites des agents cloud
+- Pas de push de tag (refusé par l'environnement, HTTP 403).
+- Pas de relance de job CI (refusé par GitHub, `403 Resource not accessible by integration`).
+- Ces actions reviennent au propriétaire.
 
 ## Preuves
 - Donner les commandes réellement exécutées et leurs résultats réels.
