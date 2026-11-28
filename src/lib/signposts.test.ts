@@ -54,7 +54,10 @@ describe('phrases-panneaux : la menace d’abord (mat en f7), puis le « pourquo
     const ld = signpostCards(parsePgn(BUILTIN_OPENINGS.find((x) => x.id === 'london-def')!.pgn).root, 'b').find((x) => x.id === 'd4 d5 e3 Bf5 Bd3')!;
     expect(signpostSentence(ld, 'b', { threat: t })).toBe('Il menace de prendre ton fou f5 → tu défends f5 (…e6)');
   });
-  it('chaque carte du répertoire actif : une phrase, mon coup entre parenthèses, la menace d’abord quand il y en a une', () => {
+  // Délai explicite : ce test construit les 109 phrases du répertoire actif, et chacune appelle deux fois lessonWhy, qui
+  // rejoue toute la leçon de l'ouverture avec chess.js. Environ 2 000 ms en local, 5 023 ms une fois sur le runner
+  // GitHub (limite par défaut de Vitest : 5 000 ms, d'où un échec aléatoire du CI). 20 000 ms laissent une marge large.
+  it('chaque carte du répertoire actif : une phrase, mon coup entre parenthèses, la menace d’abord quand il y en a une', { timeout: 20_000 }, () => {
     for (const op of BUILTIN_OPENINGS.filter((x) => !x.archived)) {
       const l = OPENING_LESSONS.find((x) => x.openingId === op.id);
       for (const c of signpostCards(parsePgn(op.pgn).root, op.color)) {
